@@ -1,0 +1,8 @@
+{
+  "name": "Be4L v0.6",
+  "description": "A high-contrast social platform focusing on real-world activities, quests, and authentic captures. Minimize screen time, maximize life time.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
