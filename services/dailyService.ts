@@ -46,33 +46,17 @@ export const dailyService = {
         return target;
     },
 
-    /**
-     * Calculates the start of the current "Active Window".
-     * - If Now >= Today's Notification Time -> Window Start is Today's Notification Time.
-     * - If Now < Today's Notification Time -> Window Start is Yesterday's Notification Time.
-     */
     getCurrentWindowStart: (): Date => {
-        // 1. Get True Current Time (UTC timestamp wrapped in Date)
         const now = new Date();
+        // RAPID TESTING MODE: 2 Minutes Fixed Cycles
+        // This ensures that when the cycle flips, all previous posts disappear
+        const cycleMs = 2 * 60 * 1000;
+        return new Date(Math.floor(now.getTime() / cycleMs) * cycleMs);
+    },
 
-        // 2. Get relative PHT date string to determine "Today's" date in PHT context
-        const nowPHT = dailyService.getNowPHT();
-        const todayStr = nowPHT.toISOString().split('T')[0];
-
-        // 3. Get the scheduled notification time for this PHT date
-        const todayNotifTime = dailyService.getNotificationTime(todayStr);
-
-        // 4. Compare True Now vs Scheduled Time
-        if (now.getTime() >= todayNotifTime.getTime()) {
-            return todayNotifTime;
-        } else {
-            // It's early morning (e.g., 8 AM), notification for "Today" hasn't happened yet.
-            // Active window is yesterday's.
-            const yesterdayPHT = new Date(nowPHT);
-            yesterdayPHT.setDate(yesterdayPHT.getDate() - 1);
-            const yesterdayStr = yesterdayPHT.toISOString().split('T')[0];
-
-            return dailyService.getNotificationTime(yesterdayStr);
-        }
+    getNextResetTime: (): Date => {
+        const now = new Date();
+        const cycleMs = 2 * 60 * 1000;
+        return new Date(Math.ceil(now.getTime() / cycleMs) * cycleMs);
     }
 };

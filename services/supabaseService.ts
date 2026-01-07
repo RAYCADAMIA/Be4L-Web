@@ -1,63 +1,10 @@
-import { MOCK_USER, MOCK_CAPTURES, MOCK_QUESTS, MOCK_MESSAGES } from '../constants';
+
+import { supabase } from '../utils/supabaseClient';
 import { User, Capture, Quest, Message, QuestStatus } from '../types';
 import { dailyService } from './dailyService';
+import { MOCK_USER, MOCK_CAPTURES, MOCK_QUESTS, OTHER_USERS, POSITIVE_QUOTES } from '../constants'; // Fallback
 
-// Simulating API delays
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const TAKEN_USERNAMES = ['admin', 'test', 'sarah_j', 'mike_runs', 'dave_climbs', 'pickle_king', 'art_anna'];
-
-// LocalStorage Keys
-const STORAGE_KEYS = {
-  USER: 'be4l_user_v1',
-  CAPTURES: 'be4l_captures_v6',
-  QUESTS: 'be4l_quests_v1',
-  MESSAGES: 'be4l_messages_v1',
-};
-
-// Initialize Data from LocalStorage or Defaults
-const loadData = <T>(key: string, defaultData: T): T => {
-  try {
-    const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : defaultData;
-  } catch (e) {
-    console.error(`Failed to load ${key}`, e);
-    return defaultData;
-  }
-};
-
-const saveData = (key: string, data: any) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch (e) {
-    console.error(`Failed to save ${key}`, e);
-  }
-};
-
-// In-memory store (synced with LS)
-let currentUser = loadData<User>(STORAGE_KEYS.USER, MOCK_USER);
-let currentCaptures = loadData<Capture[]>(STORAGE_KEYS.CAPTURES, MOCK_CAPTURES);
-// Helper to fix mock dates (mock data has 'Today...' strings)
-const fixMockDate = (dateStr: string): string => {
-  const now = new Date();
-  if (dateStr.includes('Today') || dateStr.includes('Tonight')) {
-    return new Date().toISOString();
-  }
-  if (dateStr.includes('Tomorrow')) {
-    const tmr = new Date(now);
-    tmr.setDate(tmr.getDate() + 1);
-    return tmr.toISOString();
-  }
-  return dateStr;
-};
-
-let currentQuests = loadData<Quest[]>(STORAGE_KEYS.QUESTS, MOCK_QUESTS.map(q => ({
-  ...q,
-  start_time: fixMockDate(q.start_time)
-})));
-// Messages are mocked static for now in chat service, can be persisted later if needed
-
-// MOCK DATA for Chats
+// Keep MOCK_CHATS for now as Chat isn't migrated
 export const MOCK_CHATS = [
   { id: '1', name: 'Sarah J', lastMsg: 'See you tomorrow!', time: '10:30 AM', unread: 2, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200' },
   { id: '2', name: 'Pickleball Crew', lastMsg: 'Mike joined the quest.', time: '9:15 AM', unread: 0, avatar: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=200' },
@@ -80,325 +27,373 @@ export const MOCK_CHAT_MESSAGES: Record<string, Message[]> = {
   ]
 };
 
+// Local fallback for session-only persistence if DB is unreachable or auth is missing
+let localCaptures: Capture[] = [];
 
 export const supabaseService = {
   auth: {
-    sendOtp: async (phone: string): Promise<{ success: boolean }> => {
-      await delay(1000);
-      console.log(`OTP sent to ${phone}`);
+    sendOtp: async (phone: string): Promise<{ success: boolean; error?: string }> => {
+      // Format phone to E.164 (Assuming +63 based on UI)
+      const formattedPhone = phone.startsWith('+') ? phone : `+63${phone}`;
+
+      console.log(`Sending OTP to ${formattedPhone}...`);
+
+      const { error } = await supabase.auth.signInWithOtp({ phone: formattedPhone });
+
+      if (error) {
+        console.error("❌ Supabase Auth Error:", error.message);
+        // If it's a configuration issue (provider disabled), we still return success 
+        // to allow the user to use the '0000' dev bypass on the next screen.
+        if (error.message.includes("provider_disabled") || error.message.includes("not found")) {
+          console.warn("⚠️ Phone provider not configured in Supabase. Using mock flow fallback.");
+          return { success: true };
+        }
+        return { success: false, error: error.message };
+      }
+
       return { success: true };
     },
-    verifyOtp: async (phone: string, otp: string): Promise<{ user: User | null }> => {
-      await delay(1000);
-      return { user: currentUser };
+
+    verifyOtp: async (phone: string, otp: string): Promise<{ user: User | null; error?: string }> => {
+      // DEV BYPASS: If OTP is '0000' or any 4-digit code if we want to be less strict
+      if (otp === '0000') {
+        console.warn("🛠️ Dev Mode: Bypassing verification with '0000'");
+        // We ensure we have a profile record for this mock user if possible
+        return { user: MOCK_USER as User };
+      }
+
+      const formattedPhone = phone.startsWith('+') ? phone : `+63${phone}`;
+
+      try {
+        const { data, error } = await supabase.auth.verifyOtp({
+          phone: formattedPhone,
+          token: otp,
+          type: 'sms',
+        });
+
+        if (error) {
+          console.error("❌ Supabase Auth Error:", error.message);
+
+          if (error.message.toLowerCase().includes("anonymous") || error.message.toLowerCase().includes("disabled")) {
+            return {
+              user: null,
+              error: "Auth Service Blocked: Please enable 'Anonymous Sign-ins' and 'Phone' in your Supabase Dashboard (Authentication -> Providers)."
+            };
+          }
+
+          return { user: null, error: error.message };
+        }
+
+        if (data.session && data.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+
+          if (profile) return { user: { ...profile, email: data.user.email } as User };
+
+          const newUserProfile = {
+            id: data.user.id,
+            username: `user_${data.user.id.slice(0, 5)}`,
+            name: phone,
+            avatar_url: `https://ui-avatars.com/api/?name=${phone}&background=CCFF00&color=000`,
+            streak_count: 0,
+          };
+
+          await supabase.from('profiles').insert(newUserProfile);
+          return { user: { ...newUserProfile, email: data.user.email } as User };
+        }
+      } catch (err: any) {
+        console.error("❌ Verify OTP Crash:", err.message);
+        return { user: null, error: "Connection Error. Try code '0000' for dev bypass." };
+      }
+
+      return { user: null, error: "Verification failed. Check the code or use '0000' for dev mode." };
     },
+
     checkUsernameAvailability: async (username: string): Promise<boolean> => {
-      await delay(800);
-      if (TAKEN_USERNAMES.includes(username.toLowerCase().trim())) {
-        return false;
-      }
-      return true;
+      const { data } = await supabase.from('profiles').select('username').eq('username', username).single();
+      return !data;
     },
+
     updateProfile: async (userId: string, data: Partial<User>): Promise<boolean> => {
-      await delay(1000);
-      currentUser = { ...currentUser, ...data };
-      saveData(STORAGE_KEYS.USER, currentUser);
-      return true;
+      const { error } = await supabase.from('profiles').update(data).eq('id', userId);
+      return !error;
     },
-    getCurrentUser: async (): Promise<User> => {
-      // Check streak validity on load
-      const now = new Date();
-      const lastPosted = currentUser.last_posted_date ? new Date(currentUser.last_posted_date) : null;
 
-      if (lastPosted) {
-        // Calculate difference in days (ignoring time, strictly calendar days)
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const lastDate = new Date(lastPosted.getFullYear(), lastPosted.getMonth(), lastPosted.getDate());
-        const diffTime = Math.abs(today.getTime() - lastDate.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    getCurrentUser: async (): Promise<User | null> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
 
-        if (diffDays > 1) {
-          // Missed a day (or more) -> Reset streak
-          // But only if we are past "yesterday"
-          console.log(`Streak broken! Last posted: ${diffDays} days ago.`);
-          currentUser = { ...currentUser, streak_count: 0 };
-          saveData(STORAGE_KEYS.USER, currentUser);
-        }
-      } else {
-        // Never posted
-        if (currentUser.streak_count > 0) {
-          currentUser = { ...currentUser, streak_count: 0 };
-          saveData(STORAGE_KEYS.USER, currentUser);
-        }
-      }
-      return currentUser;
-    }
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      return profile ? { ...profile, email: user.email } as User : null;
+    },
   },
 
   captures: {
     getFeed: async (): Promise<Capture[]> => {
-      await delay(500);
+      try {
+        const windowStart = dailyService.getCurrentWindowStart();
 
-      // Get the current daily window start
-      const windowStart = dailyService.getCurrentWindowStart();
-      console.log(`[DailyCapture] Active Window Start (PHT): ${windowStart.toLocaleString()}`);
+        const { data, error } = await supabase
+          .from('captures')
+          .select(`*, user:profiles(*)`)
+          .gte('created_at', windowStart.toISOString())
+          .order('created_at', { ascending: false });
 
-      // Filter captures that are AFTER the window start
-      const validCaptures = currentCaptures.filter(c => {
-        const captureTime = new Date(c.created_at);
-        return captureTime.getTime() >= windowStart.getTime();
-      });
+        const remoteData = (data || []) as Capture[];
+        // Merge local captures that fall within the window
+        const filteredLocal = localCaptures.filter(c => new Date(c.created_at) >= windowStart);
 
-      return validCaptures.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    },
-    getVault: async (userId: string): Promise<Capture[]> => {
-      await delay(500);
-      return currentCaptures.filter(c => c.user_id === userId);
-    },
-    postCapture: async (newCapture: Capture): Promise<boolean> => {
-      await delay(1000);
-      currentCaptures.unshift(newCapture);
-      saveData(STORAGE_KEYS.CAPTURES, currentCaptures);
+        // --- GENERATE MOCK POSTS FOR PULSE FEED ---
+        // Dynamically create posts that fit within the current cycle window
+        const mockPosts: Capture[] = [];
+        const now = new Date();
+        const cycleDuration = now.getTime() - windowStart.getTime();
 
-      // --- STREAK LOGIC UPDATE ---
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        // Generate 15-20 posts
+        const numMocks = 18;
 
-      const lastPosted = currentUser.last_posted_date ? new Date(currentUser.last_posted_date) : null;
+        for (let i = 0; i < numMocks; i++) {
+          // Random User
+          const user = OTHER_USERS[i % OTHER_USERS.length];
 
-      let newStreak = currentUser.streak_count;
+          // Random Time within the CURRENT cycle
+          // (windowStart) + random offset up to (now - windowStart)
+          const randomOffset = Math.floor(Math.random() * cycleDuration);
+          const postTime = new Date(windowStart.getTime() + randomOffset);
 
-      if (!lastPosted) {
-        // First post ever
-        newStreak = 1;
-      } else {
-        const lastDate = new Date(lastPosted.getFullYear(), lastPosted.getMonth(), lastPosted.getDate());
-        const diffTime = Math.abs(today.getTime() - lastDate.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          // High Interaction Counts (15+)
+          const reactions = Math.floor(Math.random() * 35) + 15; // 15 to 50
+          const comments = Math.floor(Math.random() * 8);
 
-        if (diffDays === 0) {
-          // Posted again today - keep streak, don't increment
-          console.log("Already posted today. Streak maintained.");
-          // No change to count
-        } else if (diffDays === 1) {
-          // Posted yesterday - increment
-          newStreak += 1;
-          console.log("Streak incremented!");
-        } else {
-          // Missed days - reset to 1 (since they posted today)
-          newStreak = 1;
-          console.log("Streak reset to 1.");
+          mockPosts.push({
+            id: `mock-${i}-${windowStart.getTime()}`,
+            user_id: user.id,
+            user: user,
+            front_image_url: `https://picsum.photos/150/200?random=${i * 10 + 1}`,
+            back_image_url: `https://picsum.photos/400/600?random=${i * 10 + 2}`,
+            location_name: ['Downtown', 'The Void', 'Cyber Cafe', 'Neon District', 'Metro Station', 'Sky Lounge'][i % 6],
+            caption: POSITIVE_QUOTES[i % POSITIVE_QUOTES.length],
+            created_at: postTime.toISOString(),
+            privacy: 'public',
+            reaction_count: reactions,
+            comment_count: comments,
+            reactions: [], // Ideally populate this but count shows on UI
+            music_track: i % 3 === 0 ? ['Espresso', 'Birds of a Feather', 'Lunch'][i % 3] : undefined
+          });
         }
+
+        return [...filteredLocal, ...remoteData, ...mockPosts].sort((a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      } catch (err) {
+        console.error("❌ Unexpected Feed Error:", err);
+        return localCaptures;
       }
-
-      currentUser = {
-        ...currentUser,
-        streak_count: newStreak,
-        last_posted_date: now.toISOString()
-      };
-      saveData(STORAGE_KEYS.USER, currentUser);
-
-      return true;
     },
+
+    getAllFeed: async (): Promise<Capture[]> => {
+      // Lore Feed (All Time)
+      const { data, error } = await supabase
+        .from('captures')
+        .select(`*, user:profiles(*)`)
+        .order('created_at', { ascending: false });
+
+      if (error) return [];
+      return data as Capture[];
+    },
+
+    getVault: async (userId: string): Promise<Capture[]> => {
+      const { data, error } = await supabase
+        .from('captures')
+        .select(`*, user:profiles(*)`)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      const remoteData = (data || []) as Capture[];
+      const localData = localCaptures.filter(c => c.user_id === userId);
+
+      return [...localData, ...remoteData].sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    },
+
+    postCapture: async (newCapture: Capture): Promise<{ success: boolean; error?: string }> => {
+      try {
+        let { data: { user: authUser } } = await supabase.auth.getUser();
+
+        if (!authUser) {
+          console.warn("⚠️ No active session. Posting to Local Memory only.");
+          localCaptures.unshift({
+            ...newCapture,
+            created_at: new Date().toISOString()
+          });
+          return { success: true };
+        }
+
+        // Explicitly pick ONLY columns that exist in the DB schema
+        const payload = {
+          user_id: authUser.id,
+          front_image_url: newCapture.front_image_url,
+          back_image_url: newCapture.back_image_url,
+          location_name: newCapture.location_name,
+          location_lat: newCapture.location_coords?.latitude,
+          location_lng: newCapture.location_coords?.longitude,
+          music_track: newCapture.music_track,
+          music_start_time: newCapture.music_start_time,
+          caption: newCapture.caption,
+          privacy: newCapture.privacy || 'public'
+          // REMOVED manual created_at to let DB default now() handle it accurately
+        };
+
+        console.log("🚀 Posting Capture to Supabase:", payload);
+
+        // Insert Capture
+        const { error } = await supabase.from('captures').insert(payload);
+
+        if (error) {
+          console.error("❌ Supabase Insert Error:", error.message, error.details);
+          return { success: false, error: `${error.message}. ${error.details || ''}`.trim() };
+        }
+
+        console.log("✅ Capture Posted Successfully!");
+
+        // Update Profile Stats (last_posted_date) using the DB generated time if possible
+        const now = new Date().toISOString();
+        await supabase.from('profiles').update({
+          last_posted_date: now
+        }).eq('id', authUser.id);
+
+        return { success: true };
+      } catch (err: any) {
+        console.error("❌ Unexpected Post Error:", err);
+        return { success: false, error: err.message || "Unknown error occurred" };
+      }
+    },
+
     updateCapture: async (id: string, data: Partial<Capture>): Promise<boolean> => {
-      await delay(500);
-      const index = currentCaptures.findIndex(c => c.id === id);
-      if (index !== -1) {
-        currentCaptures[index] = { ...currentCaptures[index], ...data };
-        saveData(STORAGE_KEYS.CAPTURES, currentCaptures);
-        return true;
-      }
-      return false;
+      const { error } = await supabase.from('captures').update(data).eq('id', id);
+      return !error;
     },
+
     deleteCapture: async (id: string): Promise<boolean> => {
-      await delay(500);
-      currentCaptures = currentCaptures.filter(c => c.id !== id);
-      saveData(STORAGE_KEYS.CAPTURES, currentCaptures);
-      return true;
+      const { error } = await supabase.from('captures').delete().eq('id', id);
+      return !error;
     }
   },
 
   quests: {
     getQuests: async (category: string = 'All'): Promise<Quest[]> => {
-      await delay(600);
-      const now = new Date();
+      let query = supabase.from('quests').select(`*, host:profiles(*)`);
 
-      // Auto-cancel logic simulation
-      currentQuests.forEach(q => {
-        // If start time is past and status is still OPEN (not full/completed/cancelled)
-        const startTime = new Date(q.start_time);
+      if (category !== 'All') {
+        query = query.eq('category', category);
+      }
 
-        // Check if valid date and time has passed (Buffer of 2 hours)
-        const ONE_HOUR = 60 * 60 * 1000;
-        if (!isNaN(startTime.getTime()) && (startTime.getTime() + (2 * ONE_HOUR) < now.getTime()) && q.status === 'open') {
-          // In a real backend, this would happen via a cron job or scheduled task
-          q.status = QuestStatus.CANCELLED;
-          console.log(`Auto-cancelled quest: ${q.title}`);
-        }
-      });
-      saveData(STORAGE_KEYS.QUESTS, currentQuests); // Persist status updates
-
-      // Sort: Upcoming (non-cancelled) first, by time
-      const activeQuests = currentQuests.filter(q => q.status !== 'cancelled' && q.status !== 'completed' && q.status !== 'in_progress');
-      const sorted = activeQuests.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
-
-      if (category === 'All') return sorted;
-      return sorted.filter(q => q.category === category);
+      const { data, error } = await query.order('start_time', { ascending: true });
+      if (error) {
+        console.error("Quest Fetch Error", error);
+        return [];
+      }
+      return data as Quest[];
     },
+
     getMyQuests: async (userId: string): Promise<Quest[]> => {
-      await delay(600);
-      // Return ALL quests where user is host or participant, regardless of status
-      return currentQuests.filter(q =>
-        q.host_id === userId || q.participants?.some(p => p.id === userId)
-      ).sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()); // Newest first default
+      // Complex query needed for "My Quests" (Created OR Joined)
+      // Ignoring complicated join logic for now, implementing "Created By Me" first
+      const { data, error } = await supabase
+        .from('quests')
+        .select(`*, host:profiles(*)`)
+        .eq('created_by', userId);
+
+      return (data as Quest[]) || [];
     },
+
     joinQuest: async (questId: string, user: User): Promise<boolean> => {
-      await delay(800);
-      const index = currentQuests.findIndex(q => q.id === questId);
-      if (index !== -1) {
-        const quest = currentQuests[index];
-        // Check if already joined
-        if (quest.participants?.find(p => p.id === user.id)) return true;
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return false;
 
-        const updatedParticipants = [...(quest.participants || []), user];
-        const updatedQuest = {
-          ...quest,
-          participants: updatedParticipants,
-          current_participants: updatedParticipants.length,
-          status: updatedParticipants.length >= quest.max_participants ? 'full' : quest.status
-        };
-        // @ts-ignore
-        currentQuests[index] = updatedQuest;
-        saveData(STORAGE_KEYS.QUESTS, currentQuests);
-        return true;
-      }
-      return false;
+      const { error } = await supabase.from('user_quests').insert({
+        user_id: authUser.id,
+        quest_id: questId,
+        status: 'IN_PROGRESS'
+      });
+      return !error;
     },
+
     createQuest: async (data: Partial<Quest>): Promise<boolean> => {
-      await delay(1000);
-      const newQuest: Quest = {
-        id: `q-${Date.now()}`,
-        host_id: currentUser.id,
-        host: currentUser,
-        current_participants: 1,
-        max_participants: 5,
-        status: 'open',
-        type: 'Casual', // Default case, corrected by upper logic
-        category: 'Social',
-        title: 'New Quest',
-        // Default start time to 1 hour from now to be safe
-        start_time: new Date(Date.now() + 3600000).toISOString(),
-        description: '',
-        participants: [currentUser],
-        fee: 0,
-        is_public: true,
-        ...data
-      } as Quest;
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) {
+        console.error("No auth user for createQuest");
+        return false;
+      }
 
-      currentQuests.unshift(newQuest);
-      saveData(STORAGE_KEYS.QUESTS, currentQuests);
-      console.log('Quest created and saved', newQuest);
-      return true;
+      // Exclude UI-only fields
+      const { host, participants, ...dbData } = data as any;
+
+      const { error } = await supabase.from('quests').insert({
+        ...dbData,
+        created_by: authUser.id,
+        status: 'ACTIVE',
+        created_at: new Date().toISOString()
+      });
+
+      if (error) console.error(error);
+      return !error;
     },
+
     updateQuest: async (questId: string, data: Partial<Quest>): Promise<boolean> => {
-      await delay(800);
-      const index = currentQuests.findIndex(q => q.id === questId);
-      if (index !== -1) {
-        currentQuests[index] = { ...currentQuests[index], ...data };
-        saveData(STORAGE_KEYS.QUESTS, currentQuests);
-        return true;
-      }
-      return false;
+      const { error } = await supabase.from('quests').update(data).eq('id', questId);
+      return !error;
     },
+
     deleteQuest: async (questId: string): Promise<boolean> => {
-      await delay(500);
-      currentQuests = currentQuests.filter(q => q.id !== questId);
-      saveData(STORAGE_KEYS.QUESTS, currentQuests);
+      const { error } = await supabase.from('quests').delete().eq('id', questId);
+      return !error;
+    },
+
+    cancelQuest: async (questId: string, reason: string): Promise<boolean> => {
+      const { error } = await supabase.from('quests').update({ status: 'CANCELLED', description: `[CANCELLED: ${reason}]` }).eq('id', questId);
+      return !error;
+    },
+
+    kickParticipant: async (questId: string, userId: string): Promise<boolean> => {
+      // Need to delete from user_quests
+      const { error } = await supabase.from('user_quests').delete().match({ quest_id: questId, user_id: userId });
+      return !error;
+    },
+
+    toggleReadyStatus: async (questId: string, userId: string): Promise<boolean> => {
+      // Mock impl for now as schema support for 'ready' needs update
       return true;
     },
-    cancelQuest: async (questId: string, reason: string): Promise<boolean> => {
-      await delay(500);
-      const index = currentQuests.findIndex(q => q.id === questId);
-      if (index !== -1) {
-        currentQuests[index] = { ...currentQuests[index], status: QuestStatus.CANCELLED, description: `[CANCELLED: ${reason}] ${currentQuests[index].description}` };
-        saveData(STORAGE_KEYS.QUESTS, currentQuests);
-        return true;
-      }
-      return false;
-    },
-    kickParticipant: async (questId: string, userId: string): Promise<boolean> => {
-      await delay(500);
-      const index = currentQuests.findIndex(q => q.id === questId);
-      if (index !== -1) {
-        const quest = currentQuests[index];
-        const updatedParticipants = quest.participants?.filter(p => p.id !== userId) || [];
-        const updatedKicked = [...(quest.kicked_ids || []), userId];
-        const updatedReady = quest.ready_ids?.filter(id => id !== userId) || [];
 
-        currentQuests[index] = {
-          ...quest,
-          participants: updatedParticipants,
-          current_participants: updatedParticipants.length,
-          kicked_ids: updatedKicked,
-          ready_ids: updatedReady,
-          status: (quest.status === QuestStatus.FULL && updatedParticipants.length < quest.max_participants) ? QuestStatus.OPEN : quest.status
-        };
-        saveData(STORAGE_KEYS.QUESTS, currentQuests);
-        return true;
-      }
-      return false;
-    },
-    toggleReadyStatus: async (questId: string, userId: string): Promise<boolean> => {
-      await delay(300);
-      const index = currentQuests.findIndex(q => q.id === questId);
-      if (index !== -1) {
-        const quest = currentQuests[index];
-        const currentReady = quest.ready_ids || [];
-        const isReady = currentReady.includes(userId);
-
-        const newReady = isReady
-          ? currentReady.filter(id => id !== userId)
-          : [...currentReady, userId];
-
-        currentQuests[index] = { ...quest, ready_ids: newReady };
-        saveData(STORAGE_KEYS.QUESTS, currentQuests);
-        return true;
-      }
-      return false;
-    },
     proceedToQuest: async (questId: string): Promise<boolean> => {
-      await delay(800);
-      const index = currentQuests.findIndex(q => q.id === questId);
-      if (index !== -1) {
-        currentQuests[index] = { ...currentQuests[index], status: QuestStatus.IN_PROGRESS };
-        saveData(STORAGE_KEYS.QUESTS, currentQuests);
-        return true;
-      }
-      return false;
-    }
+      const { error } = await supabase.from('quests').update({ status: 'IN_PROGRESS' }).eq('id', questId);
+      return !error;
+    },
   },
 
   chat: {
+    // Kept as Mock for Phase 3
     getChats: async (): Promise<any[]> => {
-      await delay(500);
       return MOCK_CHATS;
     },
     getMessages: async (chatId: string): Promise<Message[]> => {
-      await delay(500);
       return MOCK_CHAT_MESSAGES[chatId] || [];
     },
     sendMessage: async (chatId: string, content: string, type: 'text' | 'image' | 'quest_invite' = 'text', additionalData?: any): Promise<Message> => {
-      await delay(300);
       const newMessage: Message = {
         id: Math.random().toString(),
-        sender_id: currentUser.id,
+        sender_id: 'me', // Generic 'me' for mock
         content,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         is_me: true,
         type,
         ...additionalData
       };
-      // In a real app we would push this to the store
       if (!MOCK_CHAT_MESSAGES[chatId]) MOCK_CHAT_MESSAGES[chatId] = [];
       MOCK_CHAT_MESSAGES[chatId].push(newMessage);
       return newMessage;

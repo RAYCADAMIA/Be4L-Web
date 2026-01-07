@@ -21,14 +21,15 @@ interface ProfileScreenProps {
     onOpenMyQuests?: () => void;
     onOpenUser?: (u: UserType) => void;
     onProfileUpdate?: (updatedUser: UserType) => void;
+    currentUserId?: string;
 }
 
 type ProfileView = 'MAIN' | 'ACCOUNT' | 'SETTINGS' | 'ABOUT' | 'ADD_FRIENDS' | 'FRIENDS_LIST' | 'FOLLOWING_LIST';
 
 // ... (existing imports and interface)
 
-const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, onOpenPostDetail, onOpenMyQuests, onOpenUser, onProfileUpdate }) => {
-    const isMe = user.id === MOCK_USER.id;
+const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, onOpenPostDetail, onOpenMyQuests, onOpenUser, onProfileUpdate, currentUserId }) => {
+    const isMe = user.id === currentUserId;
     const [view, setView] = useState<ProfileView>('MAIN');
     const [showMenu, setShowMenu] = useState(false);
     const [vault, setVault] = useState<any[]>([]);
@@ -662,7 +663,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                             <img src={item.back_image_url} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                             {/* Timestamp overlay */}
                             <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-                                <p className="text-[9px] font-bold text-white uppercase">Just Now</p>
+                                <p className="text-[9px] font-bold text-white uppercase">
+                                    {new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                </p>
                             </div>
                             {/* PIP */}
                             <div className="absolute top-2 left-2 w-8 h-10 border border-black/20 rounded overflow-hidden shadow-lg"><img src={item.front_image_url} className="w-full h-full object-cover" /></div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ToastProvider, useToast } from './components/Toast';
-import { Home, Compass, PlusSquare, Map as MapIcon, User, Search, Camera, Send, X, ArrowRight, Grid, Image as ImageIcon, Trophy, Swords, UserPlus, ChevronLeft, Phone, AtSign, FileText, Upload, Check, Minus, Plus, MessageCircle, Bell, Music, MapPin, Zap, RefreshCw, Flashlight, Mic, Tag, Calendar, DollarSign, Lock, Globe, Users, Clock, MapPinOff, MoreHorizontal, Share2, Smile, Reply, Edit2, Play, Pause, ExternalLink, Flag, Trash2, History as HistoryIcon, MoreVertical, Heart } from 'lucide-react';
+import { Home, Compass, PlusSquare, Map as MapIcon, User, Search, Camera, Send, X, ArrowRight, Grid, Image as ImageIcon, Trophy, Swords, UserPlus, ChevronLeft, Phone, AtSign, FileText, Upload, Check, Minus, Plus, MessageCircle, Bell, Music, MapPin, Zap, RefreshCw, Flashlight, Mic, Tag, Calendar, DollarSign, Lock, Globe, Users, Clock, MapPinOff, MoreHorizontal, Share2, Smile, Reply, Edit2, Play, Pause, ExternalLink, Flag, Trash2, History as HistoryIcon, MoreVertical, Heart, MessageSquare, Ticket, Activity } from 'lucide-react';
 import { User as UserType, Capture, Reaction, Quest, QuestStatus, QuestType, Competition } from './types';
 import { supabaseService } from './services/supabaseService';
 import { COLORS, MOCK_USER, OTHER_USERS, POSITIVE_QUOTES, MOCK_COMPETITIONS } from './constants';
@@ -25,6 +25,8 @@ import NotificationsScreen from './components/NotificationsScreen';
 import NotFoundScreen from './components/NotFoundScreen';
 import { dailyService } from './services/dailyService';
 import DualCameraView from './components/DualCameraView';
+import { generateRandomQuests } from './utils/questGenerator';
+import DailyQuestListModal from './components/DailyQuestListModal';
 
 // --- Constants ---
 
@@ -192,6 +194,8 @@ const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = ({ onCo
         return () => clearInterval(interval);
     }, [resendTimer]);
 
+    const [realUserId, setRealUserId] = useState<string | null>(null);
+
     const handleSendCode = async () => {
         if (!isPhoneValid) return;
         setIsLoading(true);
@@ -215,9 +219,10 @@ const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = ({ onCo
         const res = await supabaseService.auth.verifyOtp(phone, otp);
         setIsLoading(false);
         if (res.user) {
+            setRealUserId(res.user.id);
             setStep('SETUP');
         } else {
-            showToast("Authentication failed. Please try again.", 'error');
+            showToast(res.error || "Authentication failed. Try again.", 'error');
         }
     };
 
@@ -234,7 +239,7 @@ const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = ({ onCo
 
     const handleCompleteSetup = async (specificAvatarUrl?: string) => {
         setErrorMsg('');
-        if (!username.trim()) return;
+        if (!username.trim() || !realUserId) return;
         setIsLoading(true);
         const isAvailable = await supabaseService.auth.checkUsernameAvailability(username);
         if (!isAvailable) {
@@ -245,7 +250,7 @@ const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = ({ onCo
 
         const finalAvatarUrl = specificAvatarUrl || avatarPreview || `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'U')}&background=18181b&color=fff&bold=true`;
 
-        await supabaseService.auth.updateProfile(MOCK_USER.id, {
+        await supabaseService.auth.updateProfile(realUserId, {
             username,
             name,
             bio,
@@ -253,7 +258,7 @@ const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = ({ onCo
         });
         setIsLoading(false);
         onComplete({
-            id: MOCK_USER.id,
+            id: realUserId,
             username,
             name,
             bio,
@@ -317,16 +322,17 @@ const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = ({ onCo
             {step === 'FEATURES' && (
                 <div className="p-6 flex flex-col justify-between h-full safe-area-bottom">
                     <div className="mt-8 flex flex-col items-center w-full">
-                        <GlowText size="xl" className="text-primary mb-2">Be4L</GlowText>
-                        <p className="text-white/40 text-[9px] tracking-[0.2em] uppercase font-bold text-center w-full">Maximize life time.</p>
+                        <h1 className="text-5xl font-black italic text-primary mb-2 drop-shadow-[0_0_15px_rgba(204,255,0,0.5)]">Be4L</h1>
+                        <p className="text-white/40 text-[9px] tracking-[0.2em] uppercase font-bold text-center w-full">always for life</p>
                     </div>
 
                     <div className="flex-1 flex flex-col justify-center space-y-3 my-8 overflow-y-auto no-scrollbar">
                         {[
-                            { icon: <Grid size={20} className="text-primary" />, title: "POST LORE", desc: "Share real-world activities as they happen." },
-                            { icon: <Swords size={20} className="text-primary" />, title: "SIDE QUESTS", desc: "Find adventures, markets, and parties." },
-                            { icon: <Trophy size={20} className="text-primary" />, title: "COMPETITIONS", desc: "Prized tournaments and marathons." },
-                            { icon: <MapIcon size={20} className="text-primary" />, title: "BOOK ANYTHING", desc: "Courts, tickets, hotels, and more." },
+                            { icon: <Grid size={20} className="text-primary" />, title: "POST LORE", desc: "Share real-world activities as they happen and collect memories." },
+                            { icon: <Swords size={20} className="text-primary" />, title: "FIND AND JOIN SIDE QUESTS", desc: "Sports, adventures, flea markets, parties, etc." },
+                            { icon: <UserPlus size={20} className="text-primary" />, title: "ADD PEOPLE", desc: "Discover friends or make new friends." },
+                            { icon: <Trophy size={20} className="text-primary" />, title: "FIND AND JOIN COMPETITIONS", desc: "Discover tournaments, marathons, etc. — prized or just for fun." },
+                            { icon: <MapIcon size={20} className="text-primary" />, title: "BOOK ANYTHING", desc: "Book anything from courts and venues to tickets, hotels, and more." },
                         ].map((f, i) => (
                             <GlassCard key={i} className="p-4 flex items-center gap-4 border border-primary/10 hover:border-primary/40 group transition-all duration-300">
                                 <div className="p-3 bg-primary/10 rounded-2xl shrink-0 group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300">
@@ -460,6 +466,8 @@ const CameraFlow: React.FC<{ onClose: () => void, onPost?: () => void, onCapture
     const [caption, setCaption] = useState('');
     const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
     const [isCapturing, setIsCapturing] = useState(false);
+    const [isRecording, setIsRecording] = useState(false); // Video Recording State
+    const [recordingTime, setRecordingTime] = useState(0);
     const [captureStep, setCaptureStep] = useState<'IDLE' | 'MAIN_CAPTURED' | 'SWITCHING' | 'DONE'>('IDLE');
     const [switchingQuote, setSwitchingQuote] = useState('');
     const [flashOn, setFlashOn] = useState(false);
@@ -490,6 +498,9 @@ const CameraFlow: React.FC<{ onClose: () => void, onPost?: () => void, onCapture
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const chunksRef = useRef<Blob[]>([]);
+    const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Initialize Camera
     useEffect(() => {
@@ -509,7 +520,7 @@ const CameraFlow: React.FC<{ onClose: () => void, onPost?: () => void, onCapture
                         width: { ideal: 1280 },
                         height: { ideal: 720 }
                     },
-                    audio: false
+                    audio: true // Always request audio so we can record video if needed
                 });
 
                 if (mounted && videoRef.current) {
@@ -532,6 +543,7 @@ const CameraFlow: React.FC<{ onClose: () => void, onPost?: () => void, onCapture
                 streamRef.current.getTracks().forEach(track => track.stop());
             }
         };
+
     }, [facingMode, captureStep]);
 
     // Handle Flash Toggle
@@ -570,7 +582,76 @@ const CameraFlow: React.FC<{ onClose: () => void, onPost?: () => void, onCapture
         return canvas.toDataURL('image/jpeg', 0.8);
     };
 
-    const handleShutter = async () => {
+    const handleShutterPress = async () => {
+        if (isCapturing || isRecording) return;
+
+        // If in Video Mode, this is the start of a HOLD
+        longPressTimerRef.current = setTimeout(() => {
+            startRecording();
+        }, 300); // 300ms hold to start recording
+    };
+
+    const handleShutterRelease = () => {
+        if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+        }
+
+        if (isRecording) {
+            stopRecording();
+        } else {
+            // Tapped (released before hold threshold), treat as photo
+            handleTakePhoto();
+        }
+    };
+
+    const startRecording = () => {
+        if (!streamRef.current) return;
+        setIsRecording(true);
+        setRecordingTime(0);
+
+        const mediaRecorder = new MediaRecorder(streamRef.current);
+        mediaRecorderRef.current = mediaRecorder;
+        chunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) chunksRef.current.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+            const videoUrl = URL.createObjectURL(blob);
+            // Handling Video Review Flow would go here.
+            // For now, we'll just treat it similar to image flow or log it.
+            console.log("Video Captured:", videoUrl);
+            setImages({ main: videoUrl, sec: null }); // Hack: Putting video in main for preview
+            setCaptureStep('DONE');
+            setIsRecording(false);
+        };
+
+        mediaRecorder.start();
+
+        // Start Timer
+        const interval = setInterval(() => {
+            setRecordingTime(prev => prev + 1);
+        }, 1000);
+
+        // Auto-stop after 15s (Lore max?)
+        setTimeout(() => {
+            if (mediaRecorder.state === 'recording') stopRecording();
+            clearInterval(interval);
+        }, 15000);
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+            mediaRecorderRef.current.stop();
+        }
+        setIsRecording(false);
+    };
+
+
+    const handleTakePhoto = async () => {
         if (isCapturing) return;
         setIsCapturing(true);
 
@@ -739,8 +820,7 @@ const CameraFlow: React.FC<{ onClose: () => void, onPost?: () => void, onCapture
                 user_id: currentUser.id,
                 user: currentUser,
                 front_image_url: images.sec || '',
-                back_image_url: images.main || '', // Main is usually back in "environment" mode start, but user can swap.
-                // We'll simplify and say main=back visually.
+                back_image_url: images.main || '',
                 location_name: location || '',
                 location_coords: locationCoords || undefined,
                 music_track: musicTrack || undefined,
@@ -754,11 +834,19 @@ const CameraFlow: React.FC<{ onClose: () => void, onPost?: () => void, onCapture
                 reactions: []
             };
 
-            await supabaseService.captures.postCapture(newCapture);
-            if (onPost) onPost();
-            onClose();
+            const result = await supabaseService.captures.postCapture(newCapture);
+
+            if (result.success) {
+                showToast("Lore Posted!", 'success');
+                if (onPost) onPost();
+                onClose();
+            } else {
+                showToast(result.error || "Failed to post Lore. Check logs.", 'error');
+            }
         } catch (e) {
             console.error("Failed to post", e);
+            showToast("Unexpected error while posting.", 'error');
+        } finally {
             setIsSending(false);
         }
     };
@@ -806,32 +894,43 @@ const CameraFlow: React.FC<{ onClose: () => void, onPost?: () => void, onCapture
                 </div>
 
                 {/* Bottom Controls */}
-                <div className="absolute bottom-0 left-0 right-0 pb-12 pt-20 px-8 flex items-center justify-between z-20 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
-                    {/* Flash (Bottom Left) */}
-                    <button
-                        onClick={toggleFlash}
-                        className={`p-3 backdrop-blur-md rounded-full border transition-all pointer-events-auto ${flashOn ? 'bg-primary/20 border-primary text-primary' : 'bg-black/20 border-white/10 text-white hover:bg-white/10'}`}
-                    >
-                        <Zap size={24} className={flashOn ? "fill-current" : "opacity-80"} />
-                    </button>
+                <div className="absolute bottom-0 left-0 right-0 pb-12 pt-20 px-8 flex flex-col items-center justify-end z-20 bg-gradient-to-t from-black/80 to-transparent pointer-events-none gap-6">
 
-                    {/* Shutter (Bottom Center) */}
-                    <button
-                        onClick={handleShutter}
-                        disabled={isCapturing}
-                        className="w-20 h-20 rounded-full border-[5px] border-white flex items-center justify-center bg-white/10 active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] pointer-events-auto disabled:opacity-50"
-                    >
-                        <div className="w-16 h-16 bg-white rounded-full shadow-inner" />
-                    </button>
 
-                    {/* Flip (Bottom Right) */}
-                    <button
-                        onClick={toggleCamera}
-                        disabled={isCapturing}
-                        className="p-3 bg-black/20 backdrop-blur-md rounded-full text-white border border-white/10 hover:bg-white/10 transition-colors pointer-events-auto"
-                    >
-                        <RefreshCw size={24} className="opacity-80" />
-                    </button>
+
+                    <div className="w-full flex items-center justify-between">
+                        {/* Flash (Bottom Left) */}
+                        <button
+                            onClick={toggleFlash}
+                            className={`p-3 backdrop-blur-md rounded-full border transition-all pointer-events-auto ${flashOn ? 'bg-primary/20 border-primary text-primary' : 'bg-black/20 border-white/10 text-white hover:bg-white/10'}`}
+                        >
+                            <Zap size={24} className={flashOn ? "fill-current" : "opacity-80"} />
+                        </button>
+
+                        {/* Shutter (Bottom Center) */}
+                        <button
+                            onMouseDown={handleShutterPress}
+                            onMouseUp={handleShutterRelease}
+                            onTouchStart={handleShutterPress}
+                            onTouchEnd={handleShutterRelease}
+                            disabled={isCapturing}
+                            className={`w-20 h-20 rounded-full border-[5px] flex items-center justify-center active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] pointer-events-auto disabled:opacity-50 ${isRecording ? 'border-red-500 bg-red-500/20' : 'border-white bg-white/10'}`}
+                        >
+                            <div className={`rounded-full shadow-inner transition-all duration-300 ${isRecording ? 'w-8 h-8 bg-red-500 rounded-sm' : 'w-16 h-16 bg-white'}`} />
+
+                            {/* Recording Timer Overlay - REMOVED per user request */}
+                            {isRecording && null}
+                        </button>
+
+                        {/* Flip (Bottom Right) */}
+                        <button
+                            onClick={toggleCamera}
+                            disabled={isCapturing}
+                            className="p-3 bg-black/20 backdrop-blur-md rounded-full text-white border border-white/10 hover:bg-white/10 transition-colors pointer-events-auto"
+                        >
+                            <RefreshCw size={24} className="opacity-80" />
+                        </button>
+                    </div>
                 </div>
             </div>
         )
@@ -1008,9 +1107,8 @@ const CameraFlow: React.FC<{ onClose: () => void, onPost?: () => void, onCapture
 
 
 
-import { generateRandomQuests } from './utils/questGenerator';
 
-const HomeFeed: React.FC<{
+const PulseFeed: React.FC<{
     onOpenProfile: () => void,
     onOpenPostDetail: (c: Capture) => void,
     onUserClick: (u: UserType) => void,
@@ -1018,8 +1116,9 @@ const HomeFeed: React.FC<{
     currentUser: UserType,
     onNavigate: (tab: 'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS') => void,
     onLaunchCamera: () => void,
-    hasUserPostedToday: boolean
-}> = ({ onOpenProfile, onOpenPostDetail, onUserClick, refreshTrigger, currentUser, onNavigate, onLaunchCamera, hasUserPostedToday }) => {
+    hasUserPostedToday: boolean,
+    onOpenQuestList: () => void
+}> = ({ onOpenProfile, onOpenPostDetail, onUserClick, refreshTrigger, currentUser, onNavigate, onLaunchCamera, hasUserPostedToday, onOpenQuestList }) => {
     const [captures, setCaptures] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -1057,11 +1156,26 @@ const HomeFeed: React.FC<{
 
     useEffect(() => {
         setLoading(true);
-        supabaseService.captures.getFeed().then(data => {
+        const fetchFeed = async () => {
+            const data = await supabaseService.captures.getFeed();
             setCaptures(data);
             setLoading(false);
-        });
+        };
+        fetchFeed();
     }, [refreshTrigger, currentUser.last_posted_date]); // Re-check if user posts
+
+    const handleTimerZero = () => {
+        // Reset the pulse feed (remove all posts and refresh)
+        setCaptures([]);
+        setLoading(true);
+
+        // Wait briefly for visual reset then re-fetch (simulating new window)
+        setTimeout(async () => {
+            const data = await supabaseService.captures.getFeed();
+            setCaptures(data);
+            setLoading(false);
+        }, 1500);
+    };
 
     return (
         <div className="relative flex-1 h-full w-full flex flex-col overflow-hidden">
@@ -1073,6 +1187,8 @@ const HomeFeed: React.FC<{
                 onLogoClick={handleLogoClick}
                 onSearchClick={() => onNavigate('SEARCH')}
                 onNotificationsClick={() => onNavigate('NOTIFICATIONS')}
+                onQuestListClick={onOpenQuestList}
+                onTimerZero={handleTimerZero}
             />
 
             {/* Scrollable Content */}
@@ -1081,7 +1197,10 @@ const HomeFeed: React.FC<{
                 onScroll={handleScroll}
                 className="flex-1 h-full overflow-y-auto pb-24 pt-24 px-4 no-scrollbar flex flex-col"
             >
-                <HeartbeatTransition loading={loading} label="Syncing Lore...">
+                {/* Pulse Feed Only - Lore removed here */}
+                {/* REMOVED: Pulse Feed Pill per user request */}
+
+                <HeartbeatTransition loading={loading} label="Syncing Pulse...">
                     <div className="flex-1 flex flex-col min-h-full">
                         {captures.length === 0 ? (
                             <FeedPlaceholder
@@ -1122,8 +1241,10 @@ const QuestsScreen: React.FC<{
     onOpenMyQuests: () => void,
     onOpenProfile: () => void,
     currentUser: UserType,
-    onNavigate: (tab: 'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS') => void
-}> = ({ onOpenQuest, onOpenCompetition, onOpenMyQuests, onOpenProfile, currentUser, onNavigate }) => {
+    onNavigate: (tab: 'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS') => void,
+    onReset?: () => void,
+    onOpenQuestList: () => void
+}> = ({ onOpenQuest, onOpenCompetition, onOpenMyQuests, onOpenProfile, currentUser, onNavigate, onReset, onOpenQuestList }) => {
     const [activeTab, setActiveTab] = useState<'SIDE_QUESTS' | 'COMPETITIONS'>('SIDE_QUESTS');
     const [activeCat, setActiveCat] = useState('All');
     const [quests, setQuests] = useState<Quest[]>([]);
@@ -1210,6 +1331,8 @@ const QuestsScreen: React.FC<{
                 onLogoClick={handleLogoClick}
                 onSearchClick={() => onNavigate('SEARCH')}
                 onNotificationsClick={() => onNavigate('NOTIFICATIONS')}
+                onQuestListClick={onOpenQuestList}
+                onReset={onReset}
             />
 
             <div
@@ -1380,14 +1503,23 @@ function MainContent() {
     // Initialize currentUser with null or empty, to be set by SplashScreen or Auth
     const [currentUser, setCurrentUser] = useState<UserType>(MOCK_USER);
 
-    const fetchUser = async () => {
+    const fetchUser = async (isInitial = false) => {
         const user = await supabaseService.auth.getCurrentUser();
-        setCurrentUser(user);
+        // If we have a real user (not just the mock fallback), mark as authenticated
+        if (user && user.username) {
+            setCurrentUser(user);
+            setIsAuthenticated(true);
+        } else if (isInitial) {
+            // Keep MOCK_USER as fallback for non-auth users but don't set isAuthenticated
+            // so they are forced to the SplashScreen if they try to interact
+            setCurrentUser(MOCK_USER);
+            setIsAuthenticated(false);
+        }
     };
 
     // Initial Data Fetch & Streak Check
     useEffect(() => {
-        fetchUser();
+        fetchUser(true);
     }, []);
 
     const [currentTab, setCurrentTab] = useState<'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS' | 'PROFILE'>('HOME');
@@ -1410,8 +1542,12 @@ function MainContent() {
 
     const [activeChat, setActiveChat] = useState<{ id: string, name: string } | null>(null);
     const [previousTab, setPreviousTab] = useState<'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS' | 'PROFILE'>('HOME');
+    const [showQuestList, setShowQuestList] = useState(false);
 
-    // Lock Logic
+    const handleFeedReset = () => {
+        setRefreshFeed(prev => prev + 1);
+        showToast("New Pulse Window Started!", 'success');
+    };
     const windowStart = dailyService.getCurrentWindowStart();
     const hasUserPostedToday = currentUser.last_posted_date && new Date(currentUser.last_posted_date).getTime() >= windowStart.getTime();
 
@@ -1453,7 +1589,7 @@ function MainContent() {
 
     const renderScreen = () => {
         switch (currentTab) {
-            case 'HOME': return <HomeFeed onOpenProfile={handleOpenProfile} onOpenPostDetail={setSelectedPost} onUserClick={handleUserClick} refreshTrigger={refreshFeed} currentUser={currentUser} onNavigate={handleNav} onLaunchCamera={() => setActiveFlow('CAMERA')} hasUserPostedToday={hasUserPostedToday} />;
+            case 'HOME': return <PulseFeed onOpenProfile={handleOpenProfile} onOpenPostDetail={setSelectedPost} onUserClick={handleUserClick} refreshTrigger={refreshFeed} currentUser={currentUser} onNavigate={handleNav} onLaunchCamera={() => setActiveFlow('CAMERA')} hasUserPostedToday={hasUserPostedToday} onOpenQuestList={() => setShowQuestList(true)} onReset={handleFeedReset} />;
             case 'QUESTS': return (
                 <QuestsScreen
                     onOpenQuest={setSelectedQuest}
@@ -1462,6 +1598,8 @@ function MainContent() {
                     onOpenProfile={handleOpenProfile}
                     currentUser={currentUser}
                     onNavigate={handleNav}
+                    onReset={handleFeedReset}
+                    onOpenQuestList={() => setShowQuestList(true)}
                 />
             );
             case 'CHATS':
@@ -1498,6 +1636,7 @@ function MainContent() {
                 viewingUser ? (
                     <ProfileScreen
                         user={viewingUser}
+                        currentUserId={currentUser.id}
                         onBack={() => {
                             setViewingUser(null);
                             setCurrentTab(previousTab);
@@ -1579,6 +1718,8 @@ function MainContent() {
                             onClose={() => setActiveFlow('NONE')}
                             onPost={() => {
                                 setRefreshFeed(prev => prev + 1);
+                                // IMMEDIATE UNLOCK: Manually update state so the feed unlocks instantly
+                                setCurrentUser(prev => ({ ...prev, last_posted_date: new Date().toISOString() }));
                                 fetchUser();
                             }}
                             currentUser={currentUser}
@@ -1604,8 +1745,8 @@ function MainContent() {
                     {/* Bottom Navigation */}
                     <div className="absolute bottom-0 w-full bg-black/80 backdrop-blur-md border-t border-white/5 px-6 py-2 pb-6 flex justify-between items-center z-50">
                         <button onClick={() => handleNav('HOME')} className={`flex flex-col items-center gap-1 transition-colors ${currentTab === 'HOME' && !viewingUser ? 'text-primary' : 'text-gray-500'}`}>
-                            <Home size={22} strokeWidth={currentTab === 'HOME' && !viewingUser ? 2.5 : 2} />
-                            <span className="text-[10px] font-bold">Home</span>
+                            <Activity size={22} strokeWidth={currentTab === 'HOME' && !viewingUser ? 2.5 : 2} />
+                            <span className="text-[10px] font-bold">Pulse</span>
                         </button>
 
                         <button onClick={() => handleNav('QUESTS')} className={`flex flex-col items-center gap-1 transition-colors ${currentTab === 'QUESTS' && !viewingUser ? 'text-primary' : 'text-gray-500'}`}>
@@ -1618,17 +1759,19 @@ function MainContent() {
                         </button>
 
                         <button onClick={() => handleNav('CHATS')} className={`flex flex-col items-center gap-1 transition-colors ${currentTab === 'CHATS' && !viewingUser ? 'text-primary' : 'text-gray-500'}`}>
-                            <MessageCircle size={22} strokeWidth={currentTab === 'CHATS' && !viewingUser ? 2.5 : 2} />
-                            <span className="text-[10px] font-bold">Chats</span>
+                            <MessageSquare size={22} strokeWidth={currentTab === 'CHATS' && !viewingUser ? 2.5 : 2} />
+                            <span className="text-[10px] font-bold">Echo</span>
                         </button>
 
                         <button onClick={() => handleNav('BOOK')} className={`flex flex-col items-center gap-1 transition-colors ${currentTab === 'BOOK' && !viewingUser ? 'text-primary' : 'text-gray-500'}`}>
-                            <MapIcon size={22} strokeWidth={currentTab === 'BOOK' && !viewingUser ? 2.5 : 2} />
-                            <span className="text-[10px] font-bold">Book</span>
+                            <Ticket size={22} strokeWidth={currentTab === 'BOOK' && !viewingUser ? 2.5 : 2} />
+                            <span className="text-[10px] font-bold">Dibs</span>
                         </button>
                     </div>
                 </>
             )}
+
+            {showQuestList && <DailyQuestListModal onClose={() => setShowQuestList(false)} />}
         </AestheticAppBackground>
     );
 }
