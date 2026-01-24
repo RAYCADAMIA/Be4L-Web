@@ -163,7 +163,7 @@ const PostDetailScreen: React.FC<{
         <div className="absolute inset-0 z-[60] bg-black flex flex-col animate-in slide-in-from-bottom duration-300 safe-area-bottom">
 
             {/* 1. Header (Fixed Top) */}
-            <div className="flex justify-between items-start px-4 pt-12 pb-2 bg-black z-30 border-b border-white/5 relative">
+            <div className="flex justify-between items-start px-4 pt-[15px] pb-2 bg-black z-30 border-b border-white/5 relative">
                 <button onClick={onClose} className="p-2 rounded-full text-white hover:bg-white/10 transition-colors">
                     <ChevronLeft size={28} />
                 </button>
@@ -190,13 +190,13 @@ const PostDetailScreen: React.FC<{
             </div>
 
             {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto pb-24">
+            <div className="flex-1 overflow-y-auto pb-14">
 
                 {/* 2. Image Area (Centralized DualCameraView) */}
                 <div className="px-4 mt-4">
                     <DualCameraView
-                        frontImage={capture.front_image_url}
-                        backImage={capture.back_image_url}
+                        frontImage={capture.front_media_url || capture.front_image_url}
+                        backImage={capture.back_media_url || capture.back_image_url}
                         musicTrack={capture.music_track}
                         locationName={capture.location_name}
                         isPlaying={isPlaying}
@@ -204,6 +204,7 @@ const PostDetailScreen: React.FC<{
                         onOpenMap={() => setShowMap(true)}
                         isLocked={isLocked && !isOwner}
                         onUnlock={onUnlock}
+                        mediaType={capture.media_type}
                     />
                 </div>
 
@@ -285,7 +286,7 @@ const PostDetailScreen: React.FC<{
             </div>
 
             {/* Input Bar */}
-            <div className="absolute bottom-0 w-full bg-black/90 backdrop-blur-md border-t border-white/10 p-4 pb-8 safe-area-bottom">
+            <div className="absolute bottom-0 w-full bg-black/90 backdrop-blur-md border-t border-white/10 p-4 pb-5 safe-area-bottom">
                 <div className="flex items-center gap-3">
                     <img src={currentUser.avatar_url} className="w-8 h-8 rounded-full border border-white/10" />
                     <div className="flex-1 relative">

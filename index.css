@@ -4,14 +4,39 @@
 
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  /* Theme Variables - Dark Mode (Default) */
+  --bg-primary: #121417;
+  /* Greyish Black */
+  --bg-surface: #1C1F26;
+  --bg-card: #252A33;
+  --text-primary: #FFFFFF;
+  --text-secondary: #94A3B8;
+  --primary: #CCFF00;
+  --primary-glow: rgba(204, 255, 0, 0.3);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --input-bg: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme='light'] {
+  --bg-primary: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-card: #F1F5F9;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --primary: #CCFF00;
+  /* Reverting to signature lime */
+  --primary-glow: rgba(204, 255, 0, 0.4);
+  --border-color: rgba(0, 0, 0, 0.1);
+  --input-bg: rgba(0, 0, 0, 0.05);
 }
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #020408;
-  /* Deeper black for better neon contrast */
-  color: white;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1,
@@ -68,7 +93,7 @@ select {
   }
 }
 
-@keyframes aurora-pulse {
+@keyframes aurora-lore {
 
   0%,
   100% {
@@ -110,17 +135,17 @@ select {
   animation: aurora-flow 40s infinite linear reverse;
 }
 
-.animate-aurora-pulse {
-  animation: aurora-pulse 10s infinite ease-in-out;
+.animate-aurora-lore {
+  animation: aurora-lore 10s infinite ease-in-out;
 }
 
 .neon-border {
-  border: 1px solid rgba(204, 255, 0, 0.3);
-  box-shadow: 0 0 15px rgba(204, 255, 0, 0.2);
+  border: 1px solid rgba(204, 255, 0, 0.2);
+  box-shadow: 0 0 10px rgba(204, 255, 0, 0.1);
 }
 
 .neon-text {
-  text-shadow: 0 0 10px rgba(204, 255, 0, 0.5);
+  text-shadow: 0 0 15px rgba(204, 255, 0, 0.3);
 }
 
 @keyframes heartbeat {
@@ -183,7 +208,7 @@ select {
   }
 }
 
-.animate-ekg-pulse {
+.animate-ekg-lore {
   stroke-dasharray: 100 900;
   animation: ekg-long 2s linear infinite;
 }
@@ -193,7 +218,7 @@ select {
   animation: ekg-long 8s linear forwards;
 }
 
-.animate-flatline-pulse {
+.animate-flatline-lore {
   stroke-dasharray: 1000;
   stroke-dashoffset: 0;
   stroke: #ff3b30;

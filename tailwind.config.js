@@ -7,17 +7,19 @@ export default {
     theme: {
         extend: {
             colors: {
-                primary: '#CCFF00', // Electric Lime
-                surface: '#121212', // Darker surface matching the new bg logic mostly
-                card: '#1A1A1A',
-                'deep-black': '#050505',
+                primary: 'var(--primary)',
+                surface: 'var(--bg-surface)',
+                card: 'var(--bg-card)',
+                'deep-black': 'var(--bg-primary)',
+                'primary-text': 'var(--text-primary)',
+                'secondary-text': 'var(--text-secondary)',
             },
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
                 display: ['Montserrat', 'sans-serif'],
             },
             animation: {
-                'pulse-slow': 'pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'lore-slow': 'pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                 'shine': 'shine 1.5s ease-in-out infinite',
                 'progress': 'progress 2s ease-in-out infinite',
             },

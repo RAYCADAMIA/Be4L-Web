@@ -1,52 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Check, Trash2, CheckSquare } from 'lucide-react';
 import { GlassCard, GlowText, GradientButton } from './ui/AestheticComponents';
-
-interface DailyTask {
-    id: string;
-    text: string;
-    completed: boolean;
-}
+import { dailyService } from '../services/dailyService';
+import { DailyTask } from '../types';
 
 interface DailyQuestListModalProps {
     onClose: () => void;
 }
 
 const DailyQuestListModal: React.FC<DailyQuestListModalProps> = ({ onClose }) => {
-    // Load from local storage or default to empty
-    const [tasks, setTasks] = useState<DailyTask[]>(() => {
-        const saved = localStorage.getItem('be4l_daily_quests');
-        return saved ? JSON.parse(saved) : [
-            { id: '1', text: 'Drink 2L Water', completed: false },
-            { id: '2', text: 'Touch Grass', completed: true },
-        ];
-    });
-
+    const [tasks, setTasks] = useState<DailyTask[]>(() => dailyService.getTasks());
     const [newItem, setNewItem] = useState('');
 
-    useEffect(() => {
-        localStorage.setItem('be4l_daily_quests', JSON.stringify(tasks));
-    }, [tasks]);
+    const refreshTasks = () => {
+        setTasks(dailyService.getTasks());
+    };
 
     const addTask = () => {
         if (!newItem.trim()) return;
-        const task: DailyTask = {
-            id: Date.now().toString(),
-            text: newItem,
-            completed: false
-        };
-        setTasks(prev => [task, ...prev]);
+        dailyService.addTask(newItem);
         setNewItem('');
+        refreshTasks();
     };
 
     const toggleTask = (id: string) => {
-        setTasks(prev => prev.map(t =>
-            t.id === id ? { ...t, completed: !t.completed } : t
-        ));
+        dailyService.toggleTask(id);
+        refreshTasks();
     };
 
     const deleteTask = (id: string) => {
-        setTasks(prev => prev.filter(t => t.id !== id));
+        dailyService.deleteTask(id);
+        refreshTasks();
     };
 
     // Calculate progress
@@ -54,8 +38,8 @@ const DailyQuestListModal: React.FC<DailyQuestListModalProps> = ({ onClose }) =>
     const progress = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
 
     return (
-        <div className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200" onClick={onClose}>
-            <div className="w-full max-w-sm bg-[#121212] border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[80] bg-deep-black/60 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200" onClick={onClose}>
+            <div className="w-full max-w-sm bg-deep-black border border-primary-text/[0.04] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
 
                 {/* Header */}
                 <div className="p-6 pb-2 border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
@@ -65,8 +49,8 @@ const DailyQuestListModal: React.FC<DailyQuestListModalProps> = ({ onClose }) =>
                                 <CheckSquare size={20} className="text-primary" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-black italic text-white uppercase tracking-wider">Daily Log</h2>
-                                <p className="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Your Personal Side Quests</p>
+                                <h2 className="text-lg font-black italic text-primary-text uppercase tracking-wider">Side Quest To Do</h2>
+                                <p className="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Personal Objectives</p>
                             </div>
                         </div>
                         <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
@@ -98,7 +82,7 @@ const DailyQuestListModal: React.FC<DailyQuestListModalProps> = ({ onClose }) =>
                             onChange={(e) => setNewItem(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && addTask()}
                             placeholder="Add new objective..."
-                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary/50 outline-none transition-all placeholder-gray-600 font-medium"
+                            className="flex-1 bg-white/5 border border-primary-text/[0.05] rounded-xl px-4 py-3 text-sm text-primary-text focus:border-primary/50 outline-none transition-all placeholder-gray-600 font-medium"
                         />
                         <button
                             onClick={addTask}
@@ -111,7 +95,7 @@ const DailyQuestListModal: React.FC<DailyQuestListModalProps> = ({ onClose }) =>
 
                     {tasks.length === 0 && (
                         <div className="text-center py-8 text-gray-600">
-                            <p className="text-xs italic">No active quests for today.</p>
+                            <p className="text-xs italic">No active side quests.</p>
                         </div>
                     )}
 
@@ -125,12 +109,12 @@ const DailyQuestListModal: React.FC<DailyQuestListModalProps> = ({ onClose }) =>
                                 <Check size={14} className={`text-black transition-transform duration-300 ${task.completed ? 'scale-100' : 'scale-0'}`} strokeWidth={4} />
                             </div>
 
-                            <span className={`flex-1 text-sm font-bold transition-all duration-300 ${task.completed ? 'text-gray-500 line-through' : 'text-white'}`}>
+                            <span className={`flex-1 text-sm font-bold transition-all duration-300 ${task.completed ? 'text-gray-500 line-through' : 'text-primary-text'}`}>
                                 {task.text}
                             </span>
 
                             <button
-                                onClick={(e) => { e.stopPropagation(); deleteTask(task.id); }}
+                                onClick={(e) => { e.stopPropagation(); deleteTask(task.id); refreshTasks(); }}
                                 className="p-2 text-gray-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                             >
                                 <Trash2 size={16} />

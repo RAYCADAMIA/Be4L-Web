@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ToastProvider, useToast } from './components/Toast';
-import { Home, Compass, PlusSquare, Map as MapIcon, User, Search, Camera, Send, X, ArrowRight, Grid, Image as ImageIcon, Trophy, Swords, UserPlus, ChevronLeft, Phone, AtSign, FileText, Upload, Check, Minus, Plus, MessageCircle, Bell, Music, MapPin, Zap, RefreshCw, Flashlight, Mic, Tag, Calendar, DollarSign, Lock, Globe, Users, Clock, MapPinOff, MoreHorizontal, Share2, Smile, Reply, Edit2, Play, Pause, ExternalLink, Flag, Trash2, History as HistoryIcon, MoreVertical, Heart, MessageSquare, Ticket, Activity } from 'lucide-react';
+import { Home, Compass, PlusSquare, Map as MapIcon, User, Search, Camera, Send, X, ArrowRight, Grid, Image as ImageIcon, Trophy, Swords, UserPlus, ChevronLeft, ChevronDown, ChevronUp, Phone, AtSign, FileText, Upload, Check, Minus, Plus, MessageCircle, Bell, Music, MapPin, Zap, RefreshCw, Flashlight, Mic, Tag, Calendar, DollarSign, Lock, Globe, Users, Clock, MapPinOff, MoreHorizontal, Share2, Smile, Reply, Edit2, Play, Pause, ExternalLink, Flag, Trash2, History as HistoryIcon, MoreVertical, Heart, MessageSquare, Ticket, Activity } from 'lucide-react';
 import { User as UserType, Capture, Reaction, Quest, QuestStatus, QuestType, Competition } from './types';
 import { supabaseService } from './services/supabaseService';
 import { COLORS, MOCK_USER, OTHER_USERS, POSITIVE_QUOTES, MOCK_COMPETITIONS } from './constants';
@@ -11,22 +12,26 @@ import CompetitionCard from './components/CompetitionCard';
 import StreakBadge from './components/StreakBadge';
 import QuestDetailsScreen from './components/QuestDetailsScreen';
 import CompetitionDetailsScreen from './components/CompetitionDetailsScreen';
-import MyQuestsScreen from './components/MyQuestsScreen';
 import CreateQuestScreen from './components/CreateQuestScreen';
+import QuestMap from './components/Quest/QuestMap';
+import QuestGeneratorUI from './components/Quest/QuestGeneratorUI';
+import QuestsScreen from './components/QuestsScreen';
 import BookScreen from './components/BookScreen';
 import PostDetailScreen from './components/PostDetailScreen';
 import ChatListScreen from './components/Chat/ChatListScreen';
 import ChatDetailScreen from './components/Chat/ChatDetailScreen';
 import ProfileScreen from './components/ProfileScreen';
 import { audioService } from './services/audioService';
-import { AestheticAppBackground, GradientButton, FeedPlaceholder, GlassCard, GlowText, EKGLoader, HeartbeatTransition } from './components/ui/AestheticComponents';
+import { AestheticAppBackground, GradientButton, FeedPlaceholder, GlassCard, GlowText, EKGLoader, HeartbeatTransition, DailyCountdown, MissionTimeline, FloatingTabs } from './components/ui/AestheticComponents';
 import SearchScreen from './components/SearchScreen';
 import NotificationsScreen from './components/NotificationsScreen';
 import NotFoundScreen from './components/NotFoundScreen';
 import { dailyService } from './services/dailyService';
 import DualCameraView from './components/DualCameraView';
+import CameraFlow from './components/CameraFlow';
 import { generateRandomQuests } from './utils/questGenerator';
 import DailyQuestListModal from './components/DailyQuestListModal';
+import LandingPage from './components/LandingPage';
 
 // --- Constants ---
 
@@ -288,8 +293,8 @@ const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = ({ onCo
             <div className={`absolute inset-0 flex flex-col items-center justify-center p-6 bg-transparent z-[100] transition-opacity duration-1000 ease-in-out ${splashFadingOut ? 'opacity-0' : 'opacity-100'} animate-in fade-in duration-1000`}>
                 <div className={`flex flex-col items-center justify-center w-full max-w-xs ${!isFlatline ? 'animate-heartbeat' : ''}`}>
                     <div className={`absolute w-48 h-48 bg-primary/10 blur-[80px] rounded-full pointer-events-none transition-opacity duration-1000 ${isFlatline ? 'opacity-0' : 'opacity-100'}`} />
-                    <div className={`relative flex items-center justify-center p-4 bg-black/40 backdrop-blur-3xl rounded-[24px] border transition-all duration-1000 ${isFlatline ? 'border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.1)]' : 'border-primary/10 shadow-2xl'} mb-12`}>
-                        <h1 className={`text-4xl font-black italic tracking-tighter transition-all duration-1000 drop-shadow-[0_0_15px_rgba(204,255,0,0.5)] ${isFlatline ? 'text-gray-600 opacity-50' : 'text-primary neon-text'}`}>
+                    <div className={`relative flex items-center justify-center px-8 py-4 bg-black/40 backdrop-blur-3xl rounded-3xl transition-all duration-1000 border ${isFlatline ? 'border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.1)]' : 'border-white/5 shadow-2xl'} mb-12`}>
+                        <h1 className={`text-5xl font-black italic tracking-tighter transition-all duration-1000 ${isFlatline ? 'text-gray-600 opacity-50' : 'text-primary'}`} style={{ textShadow: isFlatline ? 'none' : '0 0 20px rgba(204, 255, 0, 0.3)' }}>
                             Be4L
                         </h1>
                     </div>
@@ -308,7 +313,7 @@ const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = ({ onCo
                                 stroke={isFlatline ? "#ef4444" : "#CCFF00"}
                                 strokeWidth="3"
                                 strokeLinecap="round"
-                                className={isFlatline ? "animate-flatline-pulse" : "animate-ekg-sync"}
+                                className={isFlatline ? "animate-flatline-lore" : "animate-ekg-sync"}
                             />
                         </svg>
                     </div>
@@ -322,7 +327,7 @@ const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = ({ onCo
             {step === 'FEATURES' && (
                 <div className="p-6 flex flex-col justify-between h-full safe-area-bottom">
                     <div className="mt-8 flex flex-col items-center w-full">
-                        <h1 className="text-5xl font-black italic text-primary mb-2 drop-shadow-[0_0_15px_rgba(204,255,0,0.5)]">Be4L</h1>
+                        <h1 className="text-5xl font-black italic text-primary mb-2" style={{ textShadow: '0 0 20px rgba(204, 255, 0, 0.3)' }}>Be4L</h1>
                         <p className="text-white/40 text-[9px] tracking-[0.2em] uppercase font-bold text-center w-full">always for life</p>
                     </div>
 
@@ -346,10 +351,16 @@ const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = ({ onCo
                         ))}
                     </div>
 
-                    <div className="mt-6 mb-8">
+                    <div className="mt-6 mb-8 flex flex-col gap-3">
                         <GradientButton onClick={() => setStep('PHONE')} fullWidth>
                             Get Started
                         </GradientButton>
+                        <button
+                            onClick={() => onComplete(MOCK_USER)}
+                            className="w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 hover:text-white/60 transition-colors"
+                        >
+                            Skip for now (Dev Mode)
+                        </button>
                     </div>
                 </div>
             )}
@@ -404,10 +415,16 @@ const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = ({ onCo
                             {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Run it back."}
                         </button>
                     </div>
-                    <div className="mt-6 mb-8">
+                    <div className="mt-6 mb-8 flex flex-col gap-3">
                         <GradientButton onClick={handleVerify} disabled={isLoading || !isOtpValid} fullWidth>
                             {isLoading ? 'Verifying...' : 'Verify OTP'}
                         </GradientButton>
+                        <button
+                            onClick={() => onComplete(MOCK_USER)}
+                            className="w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] text-white/30 hover:text-white/60 transition-colors"
+                        >
+                            Skip for now (Dev Mode)
+                        </button>
                     </div>
                 </div>
             )}
@@ -461,654 +478,17 @@ const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = ({ onCo
     );
 };
 
-const CameraFlow: React.FC<{ onClose: () => void, onPost?: () => void, onCapture?: (url: string) => void, currentUser: UserType }> = ({ onClose, onPost, onCapture, currentUser }) => {
-    const [images, setImages] = useState<{ main: string | null, sec: string | null }>({ main: null, sec: null });
-    const [caption, setCaption] = useState('');
-    const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
-    const [isCapturing, setIsCapturing] = useState(false);
-    const [isRecording, setIsRecording] = useState(false); // Video Recording State
-    const [recordingTime, setRecordingTime] = useState(0);
-    const [captureStep, setCaptureStep] = useState<'IDLE' | 'MAIN_CAPTURED' | 'SWITCHING' | 'DONE'>('IDLE');
-    const [switchingQuote, setSwitchingQuote] = useState('');
-    const [flashOn, setFlashOn] = useState(false);
-    const { showToast } = useToast();
+// CameraFlow moved to components/CameraFlow.tsx
 
-    // Preview Logic State
-    const [isSwapped, setIsSwapped] = useState(false);
-    const [showTagModal, setShowTagModal] = useState(false);
 
-    // Metadata State
-    const [taggedUsers, setTaggedUsers] = useState<UserType[]>([]);
-    const [location, setLocation] = useState<string | null>(null);
-    const [locationCoords, setLocationCoords] = useState<{ latitude: number, longitude: number } | null>(null);
-    const [musicTrack, setMusicTrack] = useState<string | null>(null);
-    const [isDetectingMusic, setIsDetectingMusic] = useState(false);
-    const [isDetectingLoc, setIsDetectingLoc] = useState(false);
 
-    // Capture detected time
-    const [musicStartTime, setMusicStartTime] = useState<number>(0);
 
-    // Toggles
-    const [isLocEnabled, setIsLocEnabled] = useState(false);
-    const [isMusicEnabled, setIsMusicEnabled] = useState(false);
 
-    // Submission State
-    const [isSending, setIsSending] = useState(false);
 
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const streamRef = useRef<MediaStream | null>(null);
-    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-    const chunksRef = useRef<Blob[]>([]);
-    const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Initialize Camera
-    useEffect(() => {
-        let mounted = true;
 
-        const startCamera = async () => {
-            // Reset flash state when camera starts/switches
-            setFlashOn(false);
 
-            try {
-                if (streamRef.current) {
-                    streamRef.current.getTracks().forEach(track => track.stop());
-                }
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: facingMode,
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: true // Always request audio so we can record video if needed
-                });
-
-                if (mounted && videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                    streamRef.current = stream;
-                }
-            } catch (err) {
-                console.error("Camera error:", err);
-                // alert("Could not access camera. Please allow permissions.");
-            }
-        };
-
-        if (captureStep !== 'DONE') {
-            startCamera();
-        }
-
-        return () => {
-            mounted = false;
-            if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
-            }
-        };
-
-    }, [facingMode, captureStep]);
-
-    // Handle Flash Toggle
-    const toggleFlash = async () => {
-        if (!streamRef.current) return;
-        const track = streamRef.current.getVideoTracks()[0];
-        const newFlashState = !flashOn;
-        setFlashOn(newFlashState);
-        try {
-            await track.applyConstraints({
-                advanced: [{ torch: newFlashState }] as any
-            });
-        } catch (e) {
-            console.log("Flash not supported on this device/camera");
-        }
-    };
-
-    // Handle Sequential Capture Logic
-    const captureFrame = () => {
-        if (!videoRef.current || !canvasRef.current) return null;
-
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        // Mirror if front camera
-        if (facingMode === 'user') {
-            ctx?.translate(canvas.width, 0);
-            ctx?.scale(-1, 1);
-        }
-
-        ctx?.drawImage(video, 0, 0);
-        return canvas.toDataURL('image/jpeg', 0.8);
-    };
-
-    const handleShutterPress = async () => {
-        if (isCapturing || isRecording) return;
-
-        // If in Video Mode, this is the start of a HOLD
-        longPressTimerRef.current = setTimeout(() => {
-            startRecording();
-        }, 300); // 300ms hold to start recording
-    };
-
-    const handleShutterRelease = () => {
-        if (longPressTimerRef.current) {
-            clearTimeout(longPressTimerRef.current);
-            longPressTimerRef.current = null;
-        }
-
-        if (isRecording) {
-            stopRecording();
-        } else {
-            // Tapped (released before hold threshold), treat as photo
-            handleTakePhoto();
-        }
-    };
-
-    const startRecording = () => {
-        if (!streamRef.current) return;
-        setIsRecording(true);
-        setRecordingTime(0);
-
-        const mediaRecorder = new MediaRecorder(streamRef.current);
-        mediaRecorderRef.current = mediaRecorder;
-        chunksRef.current = [];
-
-        mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) chunksRef.current.push(e.data);
-        };
-
-        mediaRecorder.onstop = () => {
-            const blob = new Blob(chunksRef.current, { type: 'video/webm' });
-            const videoUrl = URL.createObjectURL(blob);
-            // Handling Video Review Flow would go here.
-            // For now, we'll just treat it similar to image flow or log it.
-            console.log("Video Captured:", videoUrl);
-            setImages({ main: videoUrl, sec: null }); // Hack: Putting video in main for preview
-            setCaptureStep('DONE');
-            setIsRecording(false);
-        };
-
-        mediaRecorder.start();
-
-        // Start Timer
-        const interval = setInterval(() => {
-            setRecordingTime(prev => prev + 1);
-        }, 1000);
-
-        // Auto-stop after 15s (Lore max?)
-        setTimeout(() => {
-            if (mediaRecorder.state === 'recording') stopRecording();
-            clearInterval(interval);
-        }, 15000);
-    };
-
-    const stopRecording = () => {
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-            mediaRecorderRef.current.stop();
-        }
-        setIsRecording(false);
-    };
-
-
-    const handleTakePhoto = async () => {
-        if (isCapturing) return;
-        setIsCapturing(true);
-
-        // 1. Capture Main Image
-        const img1 = captureFrame();
-        if (!img1) return;
-
-        setCaptureStep('MAIN_CAPTURED');
-
-        // Pick random quote
-        setSwitchingQuote(POSITIVE_QUOTES[Math.floor(Math.random() * POSITIVE_QUOTES.length)]);
-
-        // 2. Prepare for Second Capture (Switch Camera)
-        const nextMode = facingMode === 'environment' ? 'user' : 'environment';
-        setFacingMode(nextMode);
-        setCaptureStep('SWITCHING');
-
-        // Allow time for camera to switch and exposure to settle
-        setTimeout(() => {
-            // 3. Capture Second Image
-            const img2 = captureFrame();
-
-            // 4. Finalize
-            setImages({
-                main: img1, // First capture is always main (big)
-                sec: img2   // Second capture is pip
-            });
-            setCaptureStep('DONE');
-            setIsCapturing(false);
-        }, 3000);
-    };
-
-    const toggleCamera = () => {
-        if (!isCapturing && captureStep === 'IDLE') {
-            setFacingMode(prev => prev === 'environment' ? 'user' : 'environment');
-        }
-    };
-
-    // --- Preview / Editing Logic ---
-
-    // ... removed handleSwapImages local ...
-
-    const toggleLocation = () => {
-        const next = !isLocEnabled;
-        setIsLocEnabled(next);
-        if (next) {
-            detectLocation();
-        } else {
-            setLocation(null);
-            setLocationCoords(null);
-        }
-    };
-
-    const [spotifyConnected, setSpotifyConnected] = useState(false);
-    const [showSpotifyModal, setShowSpotifyModal] = useState(false);
-
-    // ... existing ...
-
-    const toggleMusic = () => {
-        if (!isMusicEnabled) {
-            // Turning ON
-            if (!spotifyConnected) {
-                setShowSpotifyModal(true);
-            } else {
-                setIsMusicEnabled(true);
-                detectMusic();
-            }
-        } else {
-            // Turning OFF
-            setIsMusicEnabled(false);
-            setMusicTrack(null);
-            setMusicStartTime(0);
-        }
-    };
-
-    const detectLocation = () => {
-        setIsDetectingLoc(true);
-
-        if (!navigator.geolocation) {
-            showToast("Geolocation is not supported by your browser", 'error');
-            setIsDetectingLoc(false);
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords;
-                setLocationCoords({ latitude, longitude });
-
-                try {
-                    // Reverse Geocoding via OSM Nominatim (Free, no key required for low usage)
-                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-                    const data = await response.json();
-
-                    // Extract a nice short name
-                    const city = data.address.city || data.address.town || data.address.village || data.address.suburb;
-                    const area = data.address.neighbourhood || data.address.road;
-                    const shortName = city ? (area ? `${area}, ${city}` : city) : "Pinned Location";
-
-                    setLocation(shortName);
-                } catch (e) {
-                    console.error("Geocoding failed", e);
-                    setLocation(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
-                } finally {
-                    setIsDetectingLoc(false);
-                }
-            },
-            (error) => {
-                console.error("Error detecting location", error);
-                showToast("Unable to retrieve location. Check permissions.", 'error');
-                setIsDetectingLoc(false);
-
-                // Fallback Mock (so user sees something during demo if they deny)
-                setLocation("Downtown Metro (Mock)");
-            }
-        );
-    };
-
-    const detectMusic = () => {
-        setIsDetectingMusic(true);
-        // Simulate checking Spotify
-        setTimeout(() => {
-            // Random chance to have no music playing (20% chance)
-            const isPlaying = Math.random() > 0.2;
-
-            if (isPlaying) {
-                const SONGS = ["Espresso - Sabrina", "BIRDS OF A FEATHER - Billie", "Not Like Us - Kendrick", "Good Luck, Babe - Chappell"];
-                setMusicTrack(SONGS[Math.floor(Math.random() * SONGS.length)]);
-                // Simulate capturing the CURRENT timestamp of the song
-                // When we play it back later, we will play 30s starting from this point
-                setMusicStartTime(Math.floor(Math.random() * 60) + 30);
-            } else {
-                setMusicTrack(null);
-                setMusicStartTime(0);
-                setIsMusicEnabled(false); // Turn off if nothing playing
-                showToast("No song currently playing on Spotify.", 'info');
-            }
-            setIsDetectingMusic(false);
-        }, 1500);
-    };
-
-    const toggleTag = (u: UserType) => {
-        if (taggedUsers.find(x => x.id === u.id)) {
-            setTaggedUsers(prev => prev.filter(x => x.id !== u.id));
-        } else {
-            setTaggedUsers(prev => [...prev, u]);
-        }
-    };
-
-    const handleSend = async () => {
-        if (isSending) return; // Prevent duplicates
-        setIsSending(true);
-
-        // If in Chat/Usage mode (returning image only)
-        if (onCapture) {
-            // Return the main image (or the one user decided is main)
-            // Just sending one image for chat for now
-            onCapture(images.main || '');
-            onClose();
-            return;
-        }
-
-        try {
-            const newCapture: Capture = {
-                id: `c-${Date.now()}`,
-                user_id: currentUser.id,
-                user: currentUser,
-                front_image_url: images.sec || '',
-                back_image_url: images.main || '',
-                location_name: location || '',
-                location_coords: locationCoords || undefined,
-                music_track: musicTrack || undefined,
-                music_start_time: musicStartTime,
-                caption: caption,
-                created_at: new Date().toISOString(),
-                tagged_users: taggedUsers,
-                privacy: 'public',
-                reaction_count: 0,
-                comment_count: 0,
-                reactions: []
-            };
-
-            const result = await supabaseService.captures.postCapture(newCapture);
-
-            if (result.success) {
-                showToast("Lore Posted!", 'success');
-                if (onPost) onPost();
-                onClose();
-            } else {
-                showToast(result.error || "Failed to post Lore. Check logs.", 'error');
-            }
-        } catch (e) {
-            console.error("Failed to post", e);
-            showToast("Unexpected error while posting.", 'error');
-        } finally {
-            setIsSending(false);
-        }
-    };
-
-    // --- RENDER CAPTURE PHASE ---
-    if (captureStep !== 'DONE') {
-        return (
-            <div className="absolute inset-0 z-[60] bg-black flex flex-col safe-area-bottom">
-                {/* Be4L Logo Overlay */}
-                <div className="absolute top-6 left-1/2 -translate-x-1/2 z-40 text-primary font-black italic tracking-tighter text-xl pointer-events-none drop-shadow-md">
-                    Be4L
-                </div>
-
-                {/* Main Camera Feed */}
-                <div
-                    className="absolute inset-0 bg-gray-900"
-                    onClick={toggleCamera} // Tap to Flip
-                >
-                    <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className={`w-full h-full object-cover transition-opacity duration-300 ${captureStep === 'SWITCHING' ? 'opacity-0' : 'opacity-100'} ${facingMode === 'user' ? 'scale-x-[-1]' : ''}`}
-                    />
-                    <canvas ref={canvasRef} className="hidden" />
-
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40 pointer-events-none" />
-
-                    {/* Capture Progress Overlay */}
-                    {isCapturing && (
-                        <div className="absolute inset-0 flex items-center justify-center z-30 bg-black">
-                            <p className="text-white font-bold text-[13px] uppercase tracking-[0.2em] text-center px-4 animate-in fade-in duration-500">
-                                {captureStep === 'SWITCHING' ? switchingQuote : 'CAPTURING...'}
-                            </p>
-                        </div>
-                    )}
-                </div>
-
-                {/* Top Controls - Left Only */}
-                <div className="absolute top-6 left-4 z-20">
-                    <button onClick={onClose} className="p-3 bg-black/20 backdrop-blur-md rounded-full text-white border border-white/10 hover:bg-white/10 transition-colors">
-                        <X size={24} />
-                    </button>
-                </div>
-
-                {/* Bottom Controls */}
-                <div className="absolute bottom-0 left-0 right-0 pb-12 pt-20 px-8 flex flex-col items-center justify-end z-20 bg-gradient-to-t from-black/80 to-transparent pointer-events-none gap-6">
-
-
-
-                    <div className="w-full flex items-center justify-between">
-                        {/* Flash (Bottom Left) */}
-                        <button
-                            onClick={toggleFlash}
-                            className={`p-3 backdrop-blur-md rounded-full border transition-all pointer-events-auto ${flashOn ? 'bg-primary/20 border-primary text-primary' : 'bg-black/20 border-white/10 text-white hover:bg-white/10'}`}
-                        >
-                            <Zap size={24} className={flashOn ? "fill-current" : "opacity-80"} />
-                        </button>
-
-                        {/* Shutter (Bottom Center) */}
-                        <button
-                            onMouseDown={handleShutterPress}
-                            onMouseUp={handleShutterRelease}
-                            onTouchStart={handleShutterPress}
-                            onTouchEnd={handleShutterRelease}
-                            disabled={isCapturing}
-                            className={`w-20 h-20 rounded-full border-[5px] flex items-center justify-center active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] pointer-events-auto disabled:opacity-50 ${isRecording ? 'border-red-500 bg-red-500/20' : 'border-white bg-white/10'}`}
-                        >
-                            <div className={`rounded-full shadow-inner transition-all duration-300 ${isRecording ? 'w-8 h-8 bg-red-500 rounded-sm' : 'w-16 h-16 bg-white'}`} />
-
-                            {/* Recording Timer Overlay - REMOVED per user request */}
-                            {isRecording && null}
-                        </button>
-
-                        {/* Flip (Bottom Right) */}
-                        <button
-                            onClick={toggleCamera}
-                            disabled={isCapturing}
-                            className="p-3 bg-black/20 backdrop-blur-md rounded-full text-white border border-white/10 hover:bg-white/10 transition-colors pointer-events-auto"
-                        >
-                            <RefreshCw size={24} className="opacity-80" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
-    // --- RENDER PREVIEW / EDIT PHASE ---
-    return (
-        <div className="absolute inset-0 z-[60] bg-black flex flex-col safe-area-bottom">
-            {/* Be4L Logo Overlay (Always Visible) */}
-            <div className="absolute top-6 left-1/2 -translate-x-1/2 z-40 text-primary font-black italic tracking-tighter text-xl pointer-events-none drop-shadow-md">
-                Be4L
-            </div>
-
-            {/* Header (Always Visible) */}
-            <div className="px-4 py-4 flex justify-between items-center z-10">
-                <button onClick={() => { setCaptureStep('IDLE'); setIsCapturing(false); }} className="p-2 bg-black/50 rounded-full"><ChevronLeft className="text-white" /></button>
-                <button onClick={onClose} className="p-2 bg-black/50 rounded-full"><X className="text-white" /></button>
-            </div>
-
-            {/* Main Image Area */}
-            {/* Main Image Area (Using DualCameraView) */}
-            <div className="flex-1 px-4">
-                <DualCameraView
-                    frontImage={images.sec || ''}
-                    backImage={images.main || ''}
-                    musicTrack={isMusicEnabled ? (isDetectingMusic ? "Detecting..." : musicTrack || "Music") : undefined}
-                    locationName={isLocEnabled ? (isDetectingLoc ? "Detecting..." : location || "Location") : undefined}
-                    isSwapped={isSwapped}
-                    onSwap={setIsSwapped}
-                    aspectRatio="h-full"
-                    rounded="rounded-3xl"
-                />
-            </div>
-
-            {/* Bottom Controls (Always Visible) */}
-            <div className="px-4 py-6">
-
-                {/* Metadata Chips - Minimalist Row */}
-                <div className="relative flex justify-center gap-2 mb-6 h-8">
-
-                    {/* Transparent Backdrop for Click-Outside to Dismiss Tag Modal */}
-                    {showTagModal && (
-                        <div
-                            className="fixed inset-0 z-40"
-                            onClick={() => setShowTagModal(false)}
-                        />
-                    )}
-
-                    {/* Tag Button */}
-                    <button
-                        onClick={() => setShowTagModal(!showTagModal)}
-                        className={`flex items-center gap-1 px-3 rounded-full text-[10px] font-bold border transition-all h-full ${taggedUsers.length > 0 ? 'bg-primary/20 border-primary text-primary' : 'bg-surface border-white/10 text-gray-500 hover:text-white'}`}
-                    >
-                        <Tag size={12} />
-                        {taggedUsers.length > 0 && <span>{taggedUsers.length}</span>}
-                    </button>
-
-                    {/* Compact Tag Popup - Positioned absolutely above the row */}
-                    {showTagModal && (
-                        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-card border border-white/10 rounded-xl p-2 w-48 shadow-xl z-50 animate-in fade-in slide-in-from-bottom-2">
-                            <div className="flex justify-end items-center mb-1 pb-1 border-b border-white/10 px-1">
-                                <button onClick={() => setShowTagModal(false)}><X size={10} className="text-white" /></button>
-                            </div>
-                            <div className="max-h-32 overflow-y-auto no-scrollbar space-y-1">
-                                {OTHER_USERS.map(user => {
-                                    const isSelected = !!taggedUsers.find(u => u.id === user.id);
-                                    return (
-                                        <div key={user.id} onClick={() => toggleTag(user)} className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 cursor-pointer">
-                                            <div className="flex items-center gap-2">
-                                                <img src={user.avatar_url} className="w-5 h-5 rounded-full" />
-                                                <span className="text-white text-[10px] font-bold">{user.username}</span>
-                                            </div>
-                                            {isSelected && <Check size={10} className="text-primary" strokeWidth={3} />}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Location Toggle */}
-                    <button
-                        onClick={toggleLocation}
-                        className={`flex items-center gap-1.5 px-3 rounded-full text-[10px] font-bold border transition-all h-full ${isLocEnabled ? 'bg-primary/20 border-primary text-primary' : 'bg-surface border-white/10 text-gray-500'}`}
-                    >
-                        {isLocEnabled ? <MapPin size={12} /> : <MapPinOff size={12} />}
-                        {isLocEnabled && <span className="max-w-[80px] truncate">{isDetectingLoc ? "..." : location || "Loc"}</span>}
-                    </button>
-
-                    {/* Music Toggle */}
-                    <button
-                        onClick={toggleMusic}
-                        className={`flex items-center gap-1.5 px-3 rounded-full text-[10px] font-bold border transition-all h-full relative overflow-hidden ${isMusicEnabled ? 'bg-primary/20 border-primary text-primary' : 'bg-surface border-white/10 text-gray-500'}`}
-                    >
-                        <div className="relative">
-                            <Music size={12} />
-                            {!isMusicEnabled && <div className="absolute inset-0 border-t border-current rotate-45 top-[5px] scale-125" />}
-                        </div>
-                        {isMusicEnabled && <span className="max-w-[80px] truncate">{isDetectingMusic ? "..." : musicTrack || "Music"}</span>}
-                    </button>
-                </div>
-
-                {/* Input & Send */}
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 shrink-0">
-                        <img src={currentUser.avatar_url} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-1 relative">
-                        <input
-                            type="text"
-                            value={caption}
-                            onChange={(e) => setCaption(e.target.value.slice(0, 100))}
-                            placeholder="Add a caption..."
-                            className="w-full bg-transparent text-white font-medium placeholder-gray-500 outline-none pr-8 text-sm"
-                        />
-                        <span className={`absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-bold ${caption.length >= 100 ? 'text-red-500' : 'text-gray-600'}`}>
-                            {100 - caption.length}
-                        </span>
-                    </div>
-                    <button
-                        onClick={handleSend}
-                        disabled={isSending}
-                        className={`px-6 py-2 font-black rounded-full uppercase text-xs tracking-wider transition-colors ${isSending ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-white text-black hover:bg-primary'}`}
-                    >
-                        {isSending ? 'Posting Lore...' : 'Post Lore'}
-                    </button>
-                </div>
-            </div>
-
-            {/* Spotify Connect Modal */}
-            {showSpotifyModal && (
-                <div className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200" onClick={() => setShowSpotifyModal(false)}>
-                    <div className="bg-card w-full max-w-sm rounded-3xl border border-white/10 p-8 flex flex-col items-center relative text-center" onClick={e => e.stopPropagation()}>
-                        <div className="w-16 h-16 rounded-full bg-[#1DB954]/10 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(29,185,84,0.2)]">
-                            <Music size={32} className="text-[#1DB954]" />
-                        </div>
-
-                        <h3 className="text-2xl font-black italic text-white uppercase mb-2">Connect Music</h3>
-                        <p className="text-gray-400 text-sm mb-8 leading-relaxed">
-                            Link your Spotify account to automatically share your vibe with every capture.
-                        </p>
-
-                        <div className="flex gap-3 w-full">
-                            <button
-                                onClick={() => setShowSpotifyModal(false)}
-                                className="flex-1 py-4 bg-surface text-gray-400 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-white/10 hover:text-white transition-all"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setSpotifyConnected(true);
-                                    setIsMusicEnabled(true);
-                                    setShowSpotifyModal(false);
-                                    detectMusic();
-                                    showToast("Spotify Connected!", 'success');
-                                }}
-                                className="flex-1 py-4 bg-[#1DB954] text-black rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#1ed760] transition-colors shadow-[0_0_20px_rgba(29,185,84,0.3)]"
-                            >
-                                Connect
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
-
-
-
-
-
-
-
-
-
-const PulseFeed: React.FC<{
+const LoreFeed: React.FC<{
     onOpenProfile: () => void,
     onOpenPostDetail: (c: Capture) => void,
     onUserClick: (u: UserType) => void,
@@ -1117,24 +497,79 @@ const PulseFeed: React.FC<{
     onNavigate: (tab: 'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS') => void,
     onLaunchCamera: () => void,
     hasUserPostedToday: boolean,
-    onOpenQuestList: () => void
-}> = ({ onOpenProfile, onOpenPostDetail, onUserClick, refreshTrigger, currentUser, onNavigate, onLaunchCamera, hasUserPostedToday, onOpenQuestList }) => {
+    onOpenQuestList: () => void,
+    onReset?: () => void,
+    forceLoading?: boolean
+}> = ({ onOpenProfile, onOpenPostDetail, onUserClick, refreshTrigger, currentUser, onNavigate, onLaunchCamera, hasUserPostedToday, onOpenQuestList, onReset, forceLoading }) => {
+    const [activeFeed, setActiveFeed] = useState<'discover' | 'friends'>('discover');
     const [captures, setCaptures] = useState<any[]>([]);
+    const [recallCaptures, setRecallCaptures] = useState<Capture[]>([]);
     const [loading, setLoading] = useState(true);
-
-    // Scroll Logic
-    const [showTopBar, setShowTopBar] = useState(true);
+    const [isPreparing, setIsPreparing] = useState(false);
+    // Scroll Logic for Sync Top Bar
+    const [topBarY, setTopBarY] = useState(0);
     const lastScrollY = useRef(0);
     const containerRef = useRef<HTMLDivElement>(null);
     const lastClickTimeRef = useRef(0);
 
+    const [showGrid, setShowGrid] = useState(false);
+    const [pullDistance, setPullDistance] = useState(0);
+    const touchY = useRef(0);
+    const touchStartX = useRef(0);
+    const touchStartY = useRef(0);
+
+    const handlePointerDown = (e: React.PointerEvent) => {
+        touchStartX.current = e.clientX;
+        touchStartY.current = e.clientY;
+        if (containerRef.current?.scrollTop === 0) {
+            touchY.current = e.clientY;
+        } else {
+            touchY.current = 0;
+        }
+    };
+
+    const handlePointerMove = (e: React.PointerEvent) => {
+        if (touchY.current === 0) return;
+        const deltaY = e.clientY - touchY.current;
+
+        if (!showGrid && (containerRef.current?.scrollTop || 0) <= 0) {
+            setPullDistance(Math.max(0, deltaY));
+        }
+    };
+
+    const handleWheel = (e: React.WheelEvent) => {
+        if (containerRef.current?.scrollTop === 0 && e.deltaY < -50 && !showGrid) {
+            setShowGrid(true);
+            if (window.navigator.vibrate) window.navigator.vibrate(10);
+        }
+    };
+
+    const handlePointerUp = (e: React.PointerEvent) => {
+        if (pullDistance > 220) {
+            setShowGrid(true);
+            if (window.navigator.vibrate) window.navigator.vibrate(15);
+        }
+        setPullDistance(0);
+        touchY.current = 0;
+
+        const deltaX = e.clientX - touchStartX.current;
+        const deltaY = e.clientY - touchStartY.current;
+
+        // Horizontal swipe: move distance > 50 and must be more horizontal than vertical
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+            if (deltaX > 50 && activeFeed === 'friends') {
+                handleFeedSwitch('discover');
+            } else if (deltaX < -50 && activeFeed === 'discover') {
+                handleFeedSwitch('friends');
+            }
+        }
+    };
+
     const handleLogoClick = () => {
         const now = Date.now();
         if (now - lastClickTimeRef.current < 300) {
-            // Double Click -> Go Home (or if specific behavior needed)
             onNavigate('HOME');
         } else {
-            // Single Click -> Scroll to Top
             containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
         }
         lastClickTimeRef.current = now;
@@ -1142,327 +577,351 @@ const PulseFeed: React.FC<{
 
     const handleScroll = () => {
         const currentScrollY = containerRef.current?.scrollTop || 0;
-        if (currentScrollY < 10) {
-            setShowTopBar(true);
-        } else if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
-            // Scrolling Down
-            setShowTopBar(false);
-        } else if (currentScrollY < lastScrollY.current) {
-            // Scrolling Up
-            setShowTopBar(true);
+        const delta = currentScrollY - lastScrollY.current;
+
+        if (currentScrollY > 10) {
+            setTopBarY(prev => {
+                const newY = prev - delta;
+                return Math.max(-80, Math.min(0, newY)); // Cap at top bar height (~80px)
+            });
+        } else {
+            setTopBarY(0);
         }
+
         lastScrollY.current = currentScrollY;
     };
 
+    const fetchFeedData = async () => {
+        setLoading(true);
+        try {
+            const feedData = await supabaseService.captures.getFeed(activeFeed, currentUser.id);
+            setCaptures(feedData);
+
+            const recallData = await supabaseService.captures.getRecallCaptures(currentUser.id);
+            setRecallCaptures(recallData);
+        } catch (e) { console.error(e); }
+        setLoading(false);
+    };
+
     useEffect(() => {
-        setLoading(true);
-        const fetchFeed = async () => {
-            const data = await supabaseService.captures.getFeed();
-            setCaptures(data);
-            setLoading(false);
-        };
-        fetchFeed();
-    }, [refreshTrigger, currentUser.last_posted_date]); // Re-check if user posts
+        fetchFeedData();
+    }, [refreshTrigger, currentUser.last_posted_date, activeFeed]);
 
-    const handleTimerZero = () => {
-        // Reset the pulse feed (remove all posts and refresh)
-        setCaptures([]);
-        setLoading(true);
+    const isLoading = loading || forceLoading;
 
-        // Wait briefly for visual reset then re-fetch (simulating new window)
-        setTimeout(async () => {
-            const data = await supabaseService.captures.getFeed();
-            setCaptures(data);
-            setLoading(false);
-        }, 1500);
+    const handleFeedSwitch = (type: 'discover' | 'friends') => {
+        if (activeFeed === type) return;
+        setActiveFeed(type);
+        // Haptic
+        if (window.navigator.vibrate) window.navigator.vibrate(5);
     };
 
     return (
-        <div className="relative flex-1 h-full w-full flex flex-col overflow-hidden">
+        <div className="relative flex-1 h-full w-full flex flex-col overflow-hidden bg-deep-black">
             {/* Top Bar - Absolute Overlay */}
             <TopBar
-                visible={showTopBar}
+                translateY={topBarY}
                 onOpenProfile={onOpenProfile}
                 user={currentUser}
                 onLogoClick={handleLogoClick}
                 onSearchClick={() => onNavigate('SEARCH')}
                 onNotificationsClick={() => onNavigate('NOTIFICATIONS')}
                 onQuestListClick={onOpenQuestList}
-                onTimerZero={handleTimerZero}
+                onTimerZero={onReset}
+                hasUserPostedToday={hasUserPostedToday}
             />
 
-            {/* Scrollable Content */}
-            <div
-                ref={containerRef}
-                onScroll={handleScroll}
-                className="flex-1 h-full overflow-y-auto pb-24 pt-24 px-4 no-scrollbar flex flex-col"
-            >
-                {/* Pulse Feed Only - Lore removed here */}
-                {/* REMOVED: Pulse Feed Pill per user request */}
+            {/* SECONDARY HEADER - TABS (Fixed behavior under TopBar) */}
+            {!showGrid && (
+                <motion.div
+                    animate={{ y: topBarY }}
+                    transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                    className="absolute top-[80px] left-0 right-0 z-40 flex items-center justify-center pt-2 pointer-events-none"
+                >
+                    <FloatingTabs
+                        activeTab={activeFeed}
+                        onChange={(val) => handleFeedSwitch(val as 'discover' | 'friends')}
+                        tabs={[
+                            { label: 'Discover', value: 'discover' },
+                            { label: 'Friends', value: 'friends' }
+                        ]}
+                    />
+                </motion.div>
+            )}
 
-                <HeartbeatTransition loading={loading} label="Syncing Pulse...">
-                    <div className="flex-1 flex flex-col min-h-full">
-                        {captures.length === 0 ? (
-                            <FeedPlaceholder
-                                title="Be the First"
-                                description="No Lore has been shared yet. Start the chain!"
-                                icon={<Camera size={40} />}
-                                buttonLabel="Post Lore"
-                                onAction={onLaunchCamera}
-                            />
-                        ) : (
-                            <div className="space-y-4">
-                                {captures.map(c => (
-                                    <DualCameraPost
-                                        key={c.id}
-                                        capture={c}
-                                        onOpenDetail={onOpenPostDetail}
-                                        onUserClick={onUserClick}
-                                        currentUser={currentUser}
-                                        isLocked={!hasUserPostedToday}
-                                        onUnlock={onLaunchCamera}
+            {/* Overscroll Indicators Overlay - Fixed position outside screen transition */}
+            <AnimatePresence>
+                {pullDistance > 20 && !showGrid && (
+                    <motion.div
+                        key="pull-indicator-feed"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{
+                            opacity: 1,
+                            scale: 1,
+                            y: Math.min(pullDistance * 0.25, 40) // Responsive y-offset
+                        }}
+                        exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                        className="absolute top-[140px] left-0 right-0 z-[60] flex flex-col items-center pointer-events-none"
+                    >
+                        <div className="bg-black/90 backdrop-blur-2xl px-6 py-3 rounded-full border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.6)] flex items-center gap-3">
+                            <motion.div
+                                animate={{ y: pullDistance > 220 ? 4 : 0 }}
+                                transition={{ repeat: Infinity, duration: 0.8, repeatType: 'reverse' }}
+                            >
+                                <ChevronDown size={14} className={pullDistance > 220 ? 'text-primary' : 'text-white/40'} />
+                            </motion.div>
+                            <span className={`text-[10px] font-black uppercase tracking-[0.4em] transition-colors duration-300 ${pullDistance > 220 ? 'text-primary' : 'text-white/40'}`}>
+                                {pullDistance > 220 ? 'Release for Recall' : 'Pull for Recall'}
+                            </span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {!showGrid ? (
+                    <motion.div
+                        key="lore-feed"
+                        initial={{ opacity: 0, y: window.innerHeight }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: window.innerHeight }}
+                        transition={{ type: 'spring', damping: 28, stiffness: 220 }}
+                        ref={containerRef}
+                        onScroll={handleScroll}
+                        onPointerDown={handlePointerDown}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={handlePointerUp}
+                        onWheel={handleWheel}
+                        className="flex-1 h-full overflow-y-auto pb-14 pt-[150px] px-4 no-scrollbar flex flex-col lore-feed-container"
+                    >
+                        <HeartbeatTransition loading={isLoading}>
+                            <div className="flex-1 flex flex-col min-h-full">
+                                {captures.length === 0 ? (
+                                    <FeedPlaceholder
+                                        title="Be the First"
+                                        description="No Lore has been shared yet. Start the chain!"
+                                        icon={<Camera size={40} />}
+                                        buttonLabel="Post Lore"
+                                        onAction={onLaunchCamera}
                                     />
-                                ))}
+                                ) : (
+                                    <div className="space-y-4">
+                                        {captures.map(c => (
+                                            <DualCameraPost
+                                                key={c.id}
+                                                capture={c}
+                                                onOpenDetail={onOpenPostDetail}
+                                                onUserClick={onUserClick}
+                                                currentUser={currentUser}
+                                                isLocked={!hasUserPostedToday}
+                                                onUnlock={onLaunchCamera}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                </HeartbeatTransition>
-            </div>
+                        </HeartbeatTransition>
+                    </motion.div>
+                ) : (
+                    <RecallGridView
+                        key="recall-view-container" // Key for proper AnimatePresence handling
+                        captures={recallCaptures}
+                        onOpenDetail={onOpenPostDetail}
+                        onClose={() => setShowGrid(false)}
+                    />
+                )}
+            </AnimatePresence>
         </div>
+    );
+};
+
+const RecallGridView: React.FC<{
+    captures: Capture[],
+    onOpenDetail: (c: Capture) => void,
+    onClose: () => void
+}> = ({ captures, onOpenDetail, onClose }) => {
+    const [pullDist, setPullDist] = useState(0);
+    const touchY = useRef(0);
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    const handlePointerDown = (e: React.PointerEvent) => {
+        touchY.current = e.clientY;
+    };
+
+    const handlePointerMove = (e: React.PointerEvent) => {
+        if (touchY.current === 0) return;
+        const deltaY = e.clientY - touchY.current;
+
+        const isAtTop = scrollRef.current ? scrollRef.current.scrollTop <= 0 : true;
+        const isAtBottom = scrollRef.current
+            ? Math.ceil(scrollRef.current.scrollTop + scrollRef.current.clientHeight) >= scrollRef.current.scrollHeight - 10
+            : true;
+
+        if (isAtTop && deltaY > 0) {
+            setPullDist(deltaY);
+        } else if (isAtBottom && deltaY < 0) {
+            setPullDist(deltaY);
+        } else {
+            setPullDist(0);
+        }
+    };
+
+    const handlePointerUp = (e: React.PointerEvent) => {
+        if ((pullDist > 220 && (scrollRef.current?.scrollTop || 0) <= 0) ||
+            (pullDist < -220 && Math.ceil((scrollRef.current?.scrollTop || 0) + (scrollRef.current?.clientHeight || 0)) >= (scrollRef.current?.scrollHeight || 0) - 10)) {
+            onClose();
+            if (window.navigator.vibrate) window.navigator.vibrate(15);
+        }
+        touchY.current = 0;
+        setPullDist(0);
+    };
+
+    const handleWheel = (e: React.WheelEvent) => {
+        if (!scrollRef.current) return;
+        const isAtTop = scrollRef.current.scrollTop <= 0;
+        const isAtBottom = Math.ceil(scrollRef.current.scrollTop + scrollRef.current.clientHeight) >= scrollRef.current.scrollHeight - 10;
+
+        if ((isAtTop && e.deltaY < -80) || (isAtBottom && e.deltaY > 80)) {
+            onClose();
+            if (window.navigator.vibrate) window.navigator.vibrate(10);
+        }
+    };
+
+    return (
+        <motion.div
+            key="recall-view"
+            initial={{ opacity: 0, y: -window.innerHeight }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -window.innerHeight }}
+            transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 1 }}
+            ref={scrollRef}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onWheel={handleWheel}
+            className="absolute inset-0 z-[55] bg-deep-black flex flex-col pt-6 no-scrollbar overflow-y-auto select-none"
+        >
+            <AnimatePresence>
+                {Math.abs(pullDist) > 30 && (
+                    <motion.div
+                        key="pull-indicator-recall"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{
+                            opacity: 1,
+                            scale: 1,
+                            y: pullDist > 0 ? Math.min(pullDist * 0.25, 40) : Math.max(pullDist * 0.25, -40)
+                        }}
+                        exit={{ opacity: 0, scale: 0.8, y: pullDist > 0 ? -20 : 20 }}
+                        className={`absolute left-0 right-0 z-[60] flex justify-center pointer-events-none ${pullDist > 0 ? 'top-14' : 'bottom-24'}`}
+                    >
+                        <div className="bg-black/90 backdrop-blur-2xl px-6 py-3 rounded-full border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.6)] flex items-center gap-3">
+                            {pullDist > 0 ? (
+                                <ChevronDown size={14} className={pullDist > 220 ? 'text-primary' : 'text-white/40'} />
+                            ) : (
+                                <ChevronUp size={14} className={pullDist < -220 ? 'text-primary' : 'text-white/40'} />
+                            )}
+                            <span className={`text-[10px] font-black uppercase tracking-[0.4em] transition-colors ${Math.abs(pullDist) > 220 ? 'text-primary' : 'text-white/40'}`}>
+                                {Math.abs(pullDist) > 220 ? 'Release for Feed' : pullDist > 0 ? 'Pull for Feed' : 'Push for Feed'}
+                            </span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Recall Header */}
+            <div className="px-5 mb-6 flex items-center justify-between">
+                <button
+                    onClick={onClose}
+                    className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 active:text-white transition-colors"
+                >
+                    <ChevronLeft size={20} />
+                </button>
+
+                <div className="flex flex-col items-center">
+                    <h2 className="text-lg font-black italic text-white/90 uppercase tracking-[0.2em]">Recall</h2>
+                    <div className="flex items-center gap-1.5 opacity-60">
+                        <span className="text-[8px] font-black text-primary uppercase tracking-widest">{captures.length} Lore</span>
+                        <div className="w-0.5 h-0.5 rounded-full bg-white/40" />
+                        <span className="text-[8px] font-black text-white/60 uppercase tracking-widest">Today</span>
+                    </div>
+                </div>
+
+                <div className="w-10" />
+            </div>
+
+            {/* Recall Grid */}
+            <div className="px-1 flex-1">
+                {captures.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-2 px-2 pb-10">
+                        {captures.sort((a, b) => new Date(a.captured_at || a.created_at).getTime() - new Date(b.captured_at || b.created_at).getTime()).map((c, i) => (
+                            <motion.button
+                                key={c.id}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: i * 0.03, type: 'spring', stiffness: 300, damping: 25 }}
+                                onClick={() => onOpenDetail(c)}
+                                className="aspect-[3/4] bg-white/5 relative overflow-hidden group active:scale-95 transition-transform rounded-xl border border-white/5"
+                            >
+                                {c.media_type === 'video' ? (
+                                    <video
+                                        src={c.back_media_url || c.back_image_url}
+                                        autoPlay
+                                        loop
+                                        muted
+                                        playsInline
+                                        className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105"
+                                    />
+                                ) : (
+                                    <img
+                                        src={c.back_media_url || c.back_image_url}
+                                        className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110"
+                                        alt="Recall Moment"
+                                    />
+                                )}
+
+                                {/* Dual Cam PIP Overlay */}
+                                <div className="absolute top-2 left-2 w-[30%] aspect-[3/4] rounded-lg border border-white/20 bg-black/40 backdrop-blur-sm overflow-hidden shadow-xl z-20 group-hover:scale-105 transition-transform duration-500">
+                                    {c.front_media_url?.includes('.mp4') || c.front_media_url?.startsWith('blob:') ? (
+                                        <video src={c.front_media_url} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                                    ) : (
+                                        <img src={c.front_media_url || c.front_image_url} className="w-full h-full object-cover" />
+                                    )}
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                                <div className="absolute bottom-2 left-2 flex items-center gap-1">
+                                    {c.media_type === 'video' && <Play size={10} className="text-white/60 fill-current" />}
+                                    <span className="text-[9px] font-black text-white italic tracking-tight uppercase">
+                                        {new Date(c.captured_at || c.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                                    </span>
+                                </div>
+                            </motion.button>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-40 text-center px-12">
+                        <div className="w-20 h-20 bg-white/[0.03] border border-white/[0.05] rounded-3xl flex items-center justify-center mb-6">
+                            <HistoryIcon size={28} className="text-white/10" />
+                        </div>
+                        <h3 className="text-white/40 font-black uppercase text-xs tracking-[0.3em]">No Lore Today</h3>
+                    </div>
+                )}
+            </div>
+
+            {/* Dismiss Hint Removed as per request */}
+            <div className="py-8" />
+        </motion.div>
     );
 };
 
 
 // --- Refactored & New Components ---
 
-const QuestsScreen: React.FC<{
-    onOpenQuest: (q: Quest) => void,
-    onOpenCompetition: (c: Competition) => void,
-    onOpenMyQuests: () => void,
-    onOpenProfile: () => void,
-    currentUser: UserType,
-    onNavigate: (tab: 'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS') => void,
-    onReset?: () => void,
-    onOpenQuestList: () => void
-}> = ({ onOpenQuest, onOpenCompetition, onOpenMyQuests, onOpenProfile, currentUser, onNavigate, onReset, onOpenQuestList }) => {
-    const [activeTab, setActiveTab] = useState<'SIDE_QUESTS' | 'COMPETITIONS'>('SIDE_QUESTS');
-    const [activeCat, setActiveCat] = useState('All');
-    const [quests, setQuests] = useState<Quest[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedDate, setSelectedDate] = useState(new Date());
-
-    // Month display logic
-    const dateScrollRef = useRef<HTMLDivElement>(null);
-    const [displayedMonth, setDisplayedMonth] = useState('');
-    const [displayedYear, setDisplayedYear] = useState('');
-    const [showYear, setShowYear] = useState(false);
-
-    const handleDateScroll = () => {
-        if (!dateScrollRef.current) return;
-        const scrollLeft = dateScrollRef.current.scrollLeft;
-        const itemWidth = 60; // Approximate width of date-item + gap
-        const index = Math.round(scrollLeft / itemWidth);
-        const focusDate = new Date();
-        focusDate.setDate(focusDate.getDate() + index);
-
-        const monthName = focusDate.toLocaleString('default', { month: 'long' });
-        const year = focusDate.getFullYear();
-        setDisplayedMonth(monthName);
-        setDisplayedYear(year.toString());
-        setShowYear(year > new Date().getFullYear());
-    };
-
-    useEffect(() => {
-        handleDateScroll(); // Init
-    }, []);
-
-    // Scroll Logic
-    const [showTopBar, setShowTopBar] = useState(true);
-    const lastScrollY = useRef(0);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const lastClickTimeRef = useRef(0);
-
-    const handleLogoClick = () => {
-        const now = Date.now();
-        if (now - lastClickTimeRef.current < 300) {
-            onNavigate('HOME');
-        } else {
-            containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        lastClickTimeRef.current = now;
-    };
-
-    const handleScroll = () => {
-        const currentScrollY = containerRef.current?.scrollTop || 0;
-        if (currentScrollY < 10) {
-            setShowTopBar(true);
-        } else if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
-            setShowTopBar(false);
-        } else if (currentScrollY < lastScrollY.current) {
-            setShowTopBar(true);
-        }
-        lastScrollY.current = currentScrollY;
-    };
-
-    const handleJoin = (id: string) => {
-        alert("Joined quest!");
-    };
-
-    useEffect(() => {
-        setLoading(true);
-        // Generate random quests for the selected category and date
-        const randomQuests = generateRandomQuests(activeCat, selectedDate, 15);
-
-        // Fetch existing quests from service and combine with generated ones
-        supabaseService.quests.getQuests(activeCat).then(existingQuests => {
-            // Combine existing and random quests
-            const allQuests = [...existingQuests, ...randomQuests];
-            setQuests(allQuests);
-            setLoading(false);
-        });
-    }, [activeCat, activeTab, selectedDate]);
-
-    return (
-        <div className="flex-1 h-full overflow-hidden relative">
-            <TopBar
-                visible={showTopBar}
-                onOpenProfile={onOpenProfile}
-                user={currentUser}
-                onLogoClick={handleLogoClick}
-                onSearchClick={() => onNavigate('SEARCH')}
-                onNotificationsClick={() => onNavigate('NOTIFICATIONS')}
-                onQuestListClick={onOpenQuestList}
-                onReset={onReset}
-            />
-
-            <div
-                ref={containerRef}
-                onScroll={handleScroll}
-                className="flex-1 h-full overflow-y-auto pb-24 pt-24 no-scrollbar"
-            >
-                {/* Tabs & My Quests */}
-                <div className="px-4 mb-4">
-                    <div className="flex gap-4">
-                        <button
-                            onClick={() => setActiveTab('SIDE_QUESTS')}
-                            className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest border transition-all ${activeTab === 'SIDE_QUESTS' ? 'bg-surface border-white/20 text-primary shadow-[0_0_15px_rgba(204,255,0,0.1)]' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-400'}`}
-                        >
-                            Side Quests
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('COMPETITIONS')}
-                            className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest border transition-all ${activeTab === 'COMPETITIONS' ? 'bg-surface border-white/20 text-white shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-400'}`}
-                        >
-                            Competitions
-                        </button>
-                        <button
-                            onClick={onOpenMyQuests}
-                            className="w-12 h-11 rounded-xl bg-surface border border-white/10 flex items-center justify-center text-primary hover:bg-white/10 transition-colors"
-                        >
-                            <HistoryIcon size={20} />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Date Selector */}
-                {activeTab === 'SIDE_QUESTS' && (
-                    <div className="px-4 mb-4">
-                        <div className="flex gap-2 mb-2 items-center">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 pl-1">
-                                {displayedMonth}{showYear && ` ${displayedYear}`}
-                            </span>
-                        </div>
-                        <div
-                            ref={dateScrollRef}
-                            onScroll={handleDateScroll}
-                            className="flex overflow-x-auto gap-3 no-scrollbar pb-2"
-                        >
-                            {[...Array(30)].map((_, i) => {
-                                const d = new Date();
-                                d.setDate(d.getDate() + i);
-                                const isSelected = d.toDateString() === selectedDate.toDateString();
-                                return (
-                                    <button
-                                        key={i}
-                                        onClick={() => setSelectedDate(d)}
-                                        className={`flex-shrink-0 w-12 h-14 rounded-xl flex flex-col items-center justify-center transition-all ${isSelected ? 'bg-primary text-black scale-110 shadow-lg' : 'bg-surface text-gray-500 border border-white/5'}`}
-                                    >
-                                        <span className="text-[10px] font-bold uppercase">{d.toLocaleString('default', { weekday: 'short' })}</span>
-                                        <span className="text-sm font-black italic">{d.getDate()}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
-
-                {/* Categories */}
-                {/* Categories - Consolidated to 6 Core + All, fitting in single row */}
-                <div className="flex justify-between gap-1 px-4 mb-8 mt-2">
-                    {['All', 'Sports', 'Adventures', 'Travel', 'Social', 'Train', 'Others'].map(cat => (
-                        <button
-                            key={cat}
-                            onClick={() => setActiveCat(cat)}
-                            className={`flex-1 py-2 rounded-full text-[8.5px] font-black uppercase tracking-tighter transition-all duration-300 ${activeCat === cat ? 'bg-primary text-black scale-[1.05] shadow-[0_0_15px_rgba(204,255,0,0.3)]' : 'bg-surface/40 border border-white/5 text-gray-500 hover:text-gray-300'}`}
-                        >
-                            {cat}
-                        </button>
-                    ))}
-                </div>
-
-                <HeartbeatTransition loading={loading} label="Loading Quests...">
-                    {activeTab === 'SIDE_QUESTS' ? (
-                        <div className="px-4 space-y-4">
-                            {quests.filter(q => {
-                                if (activeCat !== 'All' && q.category !== activeCat) return false;
-                                if (q.type === QuestType.COMPETITION) return false;
-                                const qDate = new Date(q.start_time);
-                                if (isNaN(qDate.getTime())) return false;
-                                return qDate.toDateString() === selectedDate.toDateString();
-                            }).map(q => (
-                                <div key={q.id} onClick={() => onOpenQuest(q)} className="cursor-pointer hover:opacity-90 transition-opacity">
-                                    <QuestCard quest={q} onJoin={() => handleJoin(q.id)} />
-                                </div>
-                            ))}
-                            {quests.filter(q => {
-                                if (activeCat !== 'All' && q.category !== activeCat) return false;
-                                if (q.type === QuestType.COMPETITION) return false;
-                                const qDate = new Date(q.start_time);
-                                return qDate.toDateString() === selectedDate.toDateString();
-                            }).length === 0 && (
-                                    <div className="text-center mt-10">
-                                        <p className="text-gray-500 text-xs uppercase tracking-widest mb-2">No Quests Found</p>
-                                        <button onClick={() => setActiveCat('All')} className="text-primary text-[10px] font-bold uppercase">View All Categories</button>
-                                    </div>
-                                )}
-                        </div>
-                    ) : (
-                        <div className="px-4 space-y-4">
-                            {MOCK_COMPETITIONS
-                                .filter(c => activeCat === 'All' || c.category === activeCat)
-                                .map(competition => (
-                                    <CompetitionCard
-                                        key={competition.id}
-                                        competition={competition}
-                                        onClick={() => onOpenCompetition(competition)}
-                                    />
-                                ))}
-                            {MOCK_COMPETITIONS.filter(c => activeCat === 'All' || c.category === activeCat).length === 0 && (
-                                <p className="text-center text-gray-500 text-xs mt-10 uppercase tracking-widest">No Competitions Found</p>
-                            )}
-                        </div>
-                    )}
-                </HeartbeatTransition>
-            </div>
-        </div>
-    );
-};
 
 
 const ActionScreen: React.FC<{ onClose: () => void, onLaunchCamera: () => void, onLaunchQuest: () => void }> = ({ onClose, onLaunchCamera, onLaunchQuest }) => {
     return (
         <div
-            className="absolute inset-0 z-[60] bg-black/60 backdrop-blur-md flex flex-col items-center justify-end pb-24 animate-in fade-in duration-200"
+            className="absolute inset-0 z-[60] bg-deep-black/60 backdrop-blur-md flex flex-col items-center justify-end pb-24 animate-in fade-in duration-200"
             onClick={onClose}
         >
             <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-12 right-6 p-2 bg-black/40 backdrop-blur-md rounded-full text-white border border-white/10"><X size={24} /></button>
@@ -1470,24 +929,16 @@ const ActionScreen: React.FC<{ onClose: () => void, onLaunchCamera: () => void, 
             <div
                 className="flex items-center justify-center gap-12 w-full mb-8"
             >
-                <button
-                    onClick={(e) => { e.stopPropagation(); onLaunchCamera(); onClose(); }}
-                    className="flex flex-col items-center gap-3 group"
-                >
-                    <div className="w-14 h-14 rounded-full bg-surface/90 backdrop-blur-sm border border-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors shadow-[0_0_15px_rgba(204,255,0,0.3)]">
-                        <Camera size={24} className="text-primary" />
-                    </div>
-                    <span className="font-bold text-xs text-white drop-shadow-md">Lore?</span>
-                </button>
+
 
                 <button
                     onClick={(e) => { e.stopPropagation(); onLaunchQuest(); onClose(); }}
                     className="flex flex-col items-center gap-3 group"
                 >
-                    <div className="w-14 h-14 rounded-full bg-surface/90 backdrop-blur-sm border border-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors shadow-[0_0_15px_rgba(204,255,0,0.3)]">
-                        <Compass size={24} className="text-primary" />
+                    <div className="w-14 h-14 rounded-full bg-surface/90 backdrop-blur-sm border border-white/10 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all shadow-[0_0_15px_rgba(204,255,0,0.3)]">
+                        <Zap size={24} className="text-primary group-hover:text-black" />
                     </div>
-                    <span className="font-bold text-xs text-white drop-shadow-md">New Quest</span>
+                    <span className="font-bold text-xs text-white drop-shadow-md">Drop Quest</span>
                 </button>
             </div>
         </div>
@@ -1522,12 +973,40 @@ function MainContent() {
         fetchUser(true);
     }, []);
 
-    const [currentTab, setCurrentTab] = useState<'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS' | 'PROFILE'>('HOME');
+    const [currentTab, setCurrentTab] = useState<'LANDING' | 'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS' | 'PROFILE'>('LANDING');
     const [showActionModal, setShowActionModal] = useState(false);
-    const [activeFlow, setActiveFlow] = useState<'NONE' | 'CAMERA' | 'QUEST'>('NONE');
-
-    // Feed refresh trigger
+    const [activeFlow, setActiveFlow] = useState<'NONE' | 'CAMERA' | 'QUEST' | 'CHAT_CAMERA'>('NONE');
     const [refreshFeed, setRefreshFeed] = useState(0);
+
+    // --- MOCK STREAK SYNC (for Dev Mode / Non-Auth users) ---
+    useEffect(() => {
+        if (!isAuthenticated && currentUser.id === 'u1') {
+            const windowStart = dailyService.getCurrentWindowStart();
+            const prevWindowStart = dailyService.getPreviousWindowStart();
+            const lastPosted = currentUser.last_posted_date ? new Date(currentUser.last_posted_date) : null;
+
+            // If mock user missed the previous window, reset to 0 locally
+            if (!lastPosted || lastPosted < prevWindowStart) {
+                if (currentUser.life_streak !== 0 || currentUser.streak_count !== 0) {
+                    console.log("[MOCK STREAK] Resetting to 0 (Window Missed)");
+                    setCurrentUser(prev => ({ ...prev, life_streak: 0, streak_count: 0 }));
+                }
+            }
+        }
+    }, [isAuthenticated, refreshFeed]);
+
+    // Theme Logic
+    const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+        const saved = localStorage.getItem('be4l_theme');
+        return (saved as 'dark' | 'light') || 'dark';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('be4l_theme', theme);
+        document.documentElement.setAttribute('data-theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
     // Post Detail State
     const [selectedPost, setSelectedPost] = useState<Capture | null>(null);
@@ -1538,18 +1017,25 @@ function MainContent() {
     // Quest Interaction State
     const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
     const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
-    const [showMyQuests, setShowMyQuests] = useState(false);
 
     const [activeChat, setActiveChat] = useState<{ id: string, name: string } | null>(null);
     const [previousTab, setPreviousTab] = useState<'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS' | 'PROFILE'>('HOME');
     const [showQuestList, setShowQuestList] = useState(false);
 
-    const handleFeedReset = () => {
-        setRefreshFeed(prev => prev + 1);
-        showToast("New Pulse Window Started!", 'success');
+    const [isWindowResetting, setIsWindowResetting] = useState(false);
+
+    const handleFeedReset = async () => {
+        setIsWindowResetting(true);
+        // Step 2: 2-Second Strategic Buffer
+        setTimeout(async () => {
+            setRefreshFeed(prev => prev + 1);
+            await fetchUser(); // Sync streak and user stats immediately
+            setIsWindowResetting(false);
+            showToast("Lore Cycle Refreshed. Glow Up. ✨", 'success');
+        }, 2000);
     };
     const windowStart = dailyService.getCurrentWindowStart();
-    const hasUserPostedToday = currentUser.last_posted_date && new Date(currentUser.last_posted_date).getTime() >= windowStart.getTime();
+    const hasUserPostedToday = currentUser.last_posted_date && (new Date(currentUser.last_posted_date).getTime() >= windowStart.getTime());
 
 
 
@@ -1572,14 +1058,24 @@ function MainContent() {
     };
 
     // Callback when a new quest is created (switch to Quests tab and refresh if needed)
-    const handleQuestCreated = () => {
+    const handleQuestCreated = async (id: string, title: string) => {
         setActiveFlow('NONE');
-        setCurrentTab('QUESTS');
+
+        // Find or Create the Lobby to get its real ID
+        const lobby = await supabaseService.chat.getOrCreateQuestLobby(id, title, [currentUser.id]);
+        if (lobby) {
+            setActiveChat({ id: lobby.id, name: lobby.name });
+            setCurrentTab('CHATS');
+        } else {
+            setCurrentTab('QUESTS');
+        }
+
+        setRefreshFeed(prev => prev + 1);
     };
 
     // Nav Helpers
 
-    const handleNav = (tab: 'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS') => {
+    const handleNav = (tab: 'LANDING' | 'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS' | 'PROFILE') => {
         if (tab === 'SEARCH' || tab === 'NOTIFICATIONS') {
             setPreviousTab(currentTab);
         }
@@ -1589,17 +1085,34 @@ function MainContent() {
 
     const renderScreen = () => {
         switch (currentTab) {
-            case 'HOME': return <PulseFeed onOpenProfile={handleOpenProfile} onOpenPostDetail={setSelectedPost} onUserClick={handleUserClick} refreshTrigger={refreshFeed} currentUser={currentUser} onNavigate={handleNav} onLaunchCamera={() => setActiveFlow('CAMERA')} hasUserPostedToday={hasUserPostedToday} onOpenQuestList={() => setShowQuestList(true)} onReset={handleFeedReset} />;
+            case 'LANDING': return <LandingPage onEnter={() => handleNav('QUESTS')} />;
+            case 'HOME': return <LoreFeed
+                onOpenProfile={handleOpenProfile}
+                onOpenPostDetail={setSelectedPost}
+                onUserClick={handleUserClick}
+                refreshTrigger={refreshFeed}
+                currentUser={currentUser}
+                onNavigate={handleNav}
+                onLaunchCamera={() => setActiveFlow('CAMERA')}
+                hasUserPostedToday={hasUserPostedToday}
+                onOpenQuestList={() => setShowQuestList(true)}
+                onReset={handleFeedReset}
+                forceLoading={isWindowResetting}
+            />;
             case 'QUESTS': return (
                 <QuestsScreen
                     onOpenQuest={setSelectedQuest}
                     onOpenCompetition={setSelectedCompetition}
-                    onOpenMyQuests={() => setShowMyQuests(true)}
+                    onOpenMyQuests={() => handleNav('PROFILE')}
                     onOpenProfile={handleOpenProfile}
                     currentUser={currentUser}
                     onNavigate={handleNav}
                     onReset={handleFeedReset}
                     onOpenQuestList={() => setShowQuestList(true)}
+                    onLaunchQuest={() => setActiveFlow('QUEST')}
+                    refreshTrigger={refreshFeed}
+                    hasUserPostedToday={hasUserPostedToday}
+                    onTimerZero={handleFeedReset}
                 />
             );
             case 'CHATS':
@@ -1637,13 +1150,15 @@ function MainContent() {
                     <ProfileScreen
                         user={viewingUser}
                         currentUserId={currentUser.id}
+                        theme={theme}
+                        onToggleTheme={toggleTheme}
                         onBack={() => {
                             setViewingUser(null);
                             setCurrentTab(previousTab);
                         }}
                         onLogout={() => { setViewingUser(null); setIsAuthenticated(false); }}
                         onOpenPostDetail={setSelectedPost}
-                        onOpenMyQuests={() => { setViewingUser(null); setShowMyQuests(true); }}
+                        onOpenQuest={setSelectedQuest}
                         onOpenUser={handleUserClick}
                         onProfileUpdate={(updatedUser) => {
                             if (updatedUser.id === currentUser.id) {
@@ -1651,6 +1166,8 @@ function MainContent() {
                             }
                             setViewingUser(updatedUser);
                         }}
+                        onOpenChat={(id, name) => setActiveChat({ id, name })}
+                        onNavigate={handleNav}
                     />
                 ) : <NotFoundScreen onHome={() => handleNav('HOME')} onBack={() => handleNav('HOME')} />
             );
@@ -1660,7 +1177,7 @@ function MainContent() {
 
 
     return (
-        <AestheticAppBackground className="relative w-full max-w-md mx-auto h-[100dvh] border-x border-white/10 shadow-2xl overflow-hidden">
+        <AestheticAppBackground className="relative w-full max-w-md mx-auto h-[100dvh] shadow-2xl overflow-hidden">
             {!isAuthenticated ? (
                 <SplashScreen onComplete={(user) => {
                     // Merge with defaults if needed
@@ -1688,8 +1205,43 @@ function MainContent() {
                     {selectedQuest && (
                         <QuestDetailsScreen
                             quest={selectedQuest}
+                            currentUser={currentUser}
                             onClose={() => setSelectedQuest(null)}
-                            onJoin={() => { showToast("Requested!", 'success'); setSelectedQuest(null); }}
+                            onJoin={async () => {
+                                if (selectedQuest.id.startsWith('mock-') || selectedQuest.id.startsWith('gen-')) {
+                                    showToast("Hunt Joined! (Simulated)", 'success');
+
+                                    // Simulate Quest > Echo bridge for mock data
+                                    const mockChatId = selectedQuest.id.startsWith('gen-') ? 'lobby_q1' : '1';
+                                    setActiveChat({ id: mockChatId, name: `Lobby: ${selectedQuest.title}` });
+                                    handleNav('CHATS');
+
+                                    setSelectedQuest(null);
+                                    return;
+                                }
+                                const success = await supabaseService.quests.requestToJoin(selectedQuest.id, currentUser.id, selectedQuest.approval_required);
+                                if (success) {
+                                    showToast(selectedQuest.approval_required ? "Hunt Requested! 📡" : "Hunt Started! Entering Comms... ⚡", 'success');
+
+                                    // If instant join, we might want to automatically open the chat?
+                                    if (!selectedQuest.approval_required) {
+                                        const allMemberIds = Array.from(new Set([selectedQuest.host_id, currentUser.id, ...(selectedQuest.participant_ids || [])]));
+                                        const targetEcho = allMemberIds.length > 2
+                                            ? await supabaseService.chat.getOrCreateQuestLobby(selectedQuest.id, `Lobby: ${selectedQuest.title}`, allMemberIds)
+                                            : await supabaseService.chat.getOrCreatePersonalChat(currentUser.id, selectedQuest.host_id, selectedQuest.host?.username || 'Host');
+
+                                        if (targetEcho) {
+                                            setActiveChat({ id: targetEcho.id, name: targetEcho.name });
+                                            handleNav('CHATS');
+                                        }
+                                    }
+                                    setSelectedQuest(null);
+                                } else {
+                                    showToast("Hunt Fumbled. Try Again.", 'error');
+                                }
+                            }}
+                            onNavigate={handleNav}
+                            onOpenChat={(id, name) => setActiveChat({ id, name })}
                         />
                     )}
 
@@ -1697,12 +1249,6 @@ function MainContent() {
                         <CompetitionDetailsScreen onClose={() => setSelectedCompetition(null)} competition={selectedCompetition} />
                     )}
 
-                    {showMyQuests && (
-                        <MyQuestsScreen
-                            onBack={() => setShowMyQuests(false)}
-                            onOpenQuest={(q) => { setShowMyQuests(false); setSelectedQuest(q); }}
-                        />
-                    )}
 
                     {showActionModal && (
                         <ActionScreen
@@ -1718,9 +1264,40 @@ function MainContent() {
                             onClose={() => setActiveFlow('NONE')}
                             onPost={() => {
                                 setRefreshFeed(prev => prev + 1);
-                                // IMMEDIATE UNLOCK: Manually update state so the feed unlocks instantly
-                                setCurrentUser(prev => ({ ...prev, last_posted_date: new Date().toISOString() }));
+                                setCurrentTab('HOME');
+                                // Consolidate State Updates: Streak + Unlock
+                                setCurrentUser(prev => {
+                                    const now = new Date();
+                                    const currentWindowId = dailyService.getWindowId(now);
+                                    const lastWindowId = prev.last_window_id;
+                                    let newStreak = prev.streak_count || 0;
+
+                                    if (currentWindowId === lastWindowId) {
+                                        // Case A: Already Posted
+                                    } else if (!lastWindowId || dailyService.isImmediateSuccessor(currentWindowId, lastWindowId)) {
+                                        // Case B: Perfect Chain
+                                        newStreak += 1;
+                                    } else {
+                                        // Case C: Broken Chain
+                                        newStreak = 1;
+                                    }
+
+                                    return {
+                                        ...prev,
+                                        last_posted_date: now.toISOString(),
+                                        last_window_id: currentWindowId,
+                                        streak_count: newStreak,
+                                        life_streak: newStreak
+                                    };
+                                });
+
                                 fetchUser();
+
+                                // Scroll to top to see the new post (after a small delay to allow feed to update)
+                                setTimeout(() => {
+                                    const feedContainer = document.querySelector('.lore-feed-container');
+                                    if (feedContainer) feedContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                                }, 500);
                             }}
                             currentUser={currentUser}
                         />
@@ -1740,22 +1317,27 @@ function MainContent() {
                         />
                     )}
 
-                    {activeFlow === 'QUEST' && <CreateQuestScreen onClose={() => setActiveFlow('NONE')} onQuestCreated={handleQuestCreated} />}
+                    {activeFlow === 'QUEST' && (
+                        <CreateQuestScreen
+                            onClose={() => setActiveFlow('NONE')}
+                            onQuestCreated={handleQuestCreated}
+                            currentUser={currentUser}
+                        />
+                    )}
 
-                    {/* Bottom Navigation */}
-                    <div className="absolute bottom-0 w-full bg-black/80 backdrop-blur-md border-t border-white/5 px-6 py-2 pb-6 flex justify-between items-center z-50">
-                        <button onClick={() => handleNav('HOME')} className={`flex flex-col items-center gap-1 transition-colors ${currentTab === 'HOME' && !viewingUser ? 'text-primary' : 'text-gray-500'}`}>
-                            <Activity size={22} strokeWidth={currentTab === 'HOME' && !viewingUser ? 2.5 : 2} />
-                            <span className="text-[10px] font-bold">Pulse</span>
-                        </button>
+                    <div className="absolute bottom-0 w-full bg-deep-black/90 backdrop-blur-2xl border-t border-transparent px-6 pt-[15px] pb-[15px] flex justify-between items-center z-50">
+
 
                         <button onClick={() => handleNav('QUESTS')} className={`flex flex-col items-center gap-1 transition-colors ${currentTab === 'QUESTS' && !viewingUser ? 'text-primary' : 'text-gray-500'}`}>
                             <Compass size={22} strokeWidth={currentTab === 'QUESTS' && !viewingUser ? 2.5 : 2} />
                             <span className="text-[10px] font-bold">Quests</span>
                         </button>
 
-                        <button onClick={() => setShowActionModal(true)} className="bg-primary text-black h-9 w-9 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(204,255,0,0.3)] hover:scale-105 transition-transform mx-2">
-                            <Plus size={20} strokeWidth={2.5} />
+                        <button
+                            onClick={() => setShowActionModal(true)}
+                            className="bg-primary text-black h-11 w-11 rounded-2xl flex items-center justify-center shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:scale-105 active:scale-90 transition-all mx-2"
+                        >
+                            <Plus size={24} strokeWidth={3} />
                         </button>
 
                         <button onClick={() => handleNav('CHATS')} className={`flex flex-col items-center gap-1 transition-colors ${currentTab === 'CHATS' && !viewingUser ? 'text-primary' : 'text-gray-500'}`}>

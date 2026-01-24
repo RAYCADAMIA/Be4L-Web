@@ -53,35 +53,27 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                             key={toast.id}
                             className={`
                                 pointer-events-auto
-                                flex items-center gap-3 p-4 rounded-2xl
-                                backdrop-blur-xl border shadow-2xl
-                                animate-in slide-in-from-top-4 fade-in duration-300
-                                ${toast.type === 'success' ? 'bg-primary/10 border-primary/50 text-white' : ''}
-                                ${toast.type === 'error' ? 'bg-red-500/10 border-red-500/50 text-white' : ''}
-                                ${toast.type === 'info' ? 'bg-gray-900/90 border-white/10 text-white' : ''}
+                                flex items-center gap-3 px-5 py-3.5 rounded-[22px]
+                                bg-black/60 backdrop-blur-3xl border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.4)]
+                                animate-in slide-in-from-top-4 fade-in duration-500
+                                ${toast.type === 'success' ? 'border-primary/20' : ''}
+                                ${toast.type === 'error' ? 'border-red-500/20' : ''}
                             `}
                         >
                             <div className={`
-                                shrink-0 w-8 h-8 rounded-full flex items-center justify-center
+                                shrink-0 w-6 h-6 rounded-full flex items-center justify-center
                                 ${toast.type === 'success' ? 'bg-primary text-black' : ''}
                                 ${toast.type === 'error' ? 'bg-red-500 text-white' : ''}
                                 ${toast.type === 'info' ? 'bg-white/10 text-white' : ''}
                             `}>
-                                {toast.type === 'success' && <Check strokeWidth={3} size={16} />}
-                                {toast.type === 'error' && <AlertCircle strokeWidth={3} size={16} />}
-                                {toast.type === 'info' && <Info strokeWidth={3} size={16} />}
+                                {toast.type === 'success' && <Check strokeWidth={3} size={12} />}
+                                {toast.type === 'error' && <AlertCircle strokeWidth={3} size={12} />}
+                                {toast.type === 'info' && <Info strokeWidth={3} size={12} />}
                             </div>
 
-                            <p className="text-sm font-bold flex-1 leading-tight tracking-wide">
+                            <p className="text-[11px] font-black uppercase tracking-[0.15em] text-white/90 flex-1 leading-tight">
                                 {toast.message}
                             </p>
-
-                            <button
-                                onClick={() => removeToast(toast.id)}
-                                className="p-1 rounded-full hover:bg-white/10 transition-colors shrink-0"
-                            >
-                                <X size={16} className="opacity-50" />
-                            </button>
                         </div>
                     ))}
                 </div>,

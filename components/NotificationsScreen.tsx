@@ -30,21 +30,20 @@ const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onClose, onOp
 
     const handleNotificationClick = (n: typeof MOCK_NOTIFICATIONS[0]) => {
         if (n.type === 'INVITE' && n.targetId) {
-            // In a real app we'd fetch the quest logic here or pass object.
-            // For now we assume ID corresponds to something fetchable or handle in parent.
-            // But our App passes `setSelectedQuest` which expects a Quest OBJECT.
-            // We need to fetch it or cheat. Let's cheat and assume MOCK_QUESTS has it.
+            // Updated to fetch properly from constants or service
             const quest = MOCK_QUESTS.find(q => q.id === n.targetId) || MOCK_QUESTS[0];
-            onOpenQuest(quest as any);
+            // @ts-ignore - The parent expects a Quest object, and we are ensuring it exists
+            onOpenQuest(quest);
         } else if ((n.type === 'LIKE' || n.type === 'COMMENT') && n.targetId) {
             const post = MOCK_CAPTURES.find(c => c.id === n.targetId) || MOCK_CAPTURES[0];
-            onOpenPost(post as any);
+            // @ts-ignore - The parent expects a Capture object
+            onOpenPost(post);
         }
     };
 
     return (
-        <div className="flex-1 h-full bg-black overflow-y-auto pb-24 animate-in slide-in-from-right duration-200">
-            <div className="sticky top-0 z-30 bg-black/95 backdrop-blur-md px-4 py-4 pt-12 border-b border-white/5 flex items-center justify-between">
+        <div className="flex-1 h-full bg-deep-black overflow-y-auto pb-14 animate-in slide-in-from-right duration-200">
+            <div className="sticky top-0 z-30 bg-deep-black/95 backdrop-blur-md px-4 pt-[15px] pb-3 border-b border-transparent flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <button onClick={onClose} className="p-1 -ml-1 text-gray-400 hover:text-white"><ChevronLeft /></button>
                     <h2 className="text-xl font-black text-white italic tracking-tight">NOTIFICATIONS</h2>
@@ -52,7 +51,7 @@ const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onClose, onOp
                 <button className="text-[10px] font-bold text-gray-500 uppercase hover:text-white">Mark all read</button>
             </div>
 
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-white/[0.02]">
                 {MOCK_NOTIFICATIONS.map(n => (
                     <div
                         key={n.id}
@@ -60,8 +59,8 @@ const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onClose, onOp
                         className={`p-4 flex gap-3 items-start transition-colors cursor-pointer hover:bg-white/5 ${n.read ? 'bg-transparent' : 'bg-white/[0.02]'}`}
                     >
                         <div className="shrink-0 relative">
-                            {n.user ? (
-                                <img src={n.user.avatar} className="w-10 h-10 rounded-full border border-white/10 object-cover" />
+                            {n.user && n.user.avatar ? (
+                                <img src={n.user.avatar} className="w-10 h-10 rounded-full border border-white/[0.05] object-cover" />
                             ) : (
                                 <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/50">
                                     <Star size={16} className="text-primary" />

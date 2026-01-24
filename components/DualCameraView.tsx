@@ -21,6 +21,7 @@ interface DualCameraViewProps {
     onInteractionEnd?: () => void;   // Triggered on release
     isLocked?: boolean;
     onUnlock?: () => void;
+    mediaType?: 'image' | 'video';
 }
 
 /**
@@ -49,16 +50,36 @@ const DualCameraView: React.FC<DualCameraViewProps> = ({
     onInteractionStart,
     onInteractionEnd,
     isLocked = false,
-    onUnlock
+    onUnlock,
+    mediaType = 'image'
 }) => {
     const [internalIsSwapped, setInternalIsSwapped] = useState(false);
     const isSwapped = controlledIsSwapped ?? internalIsSwapped;
+
+    const [isPaused, setIsPaused] = useState(false);
+    const mainVideoRef = useRef<HTMLVideoElement>(null);
+    const pipVideoRef = useRef<HTMLVideoElement>(null);
 
     const toggleSwap = () => {
         if (isLocked) return;
         const newValue = !isSwapped;
         if (controlledIsSwapped === undefined) setInternalIsSwapped(newValue);
         onSwap?.(newValue);
+    };
+
+    const handleVideoTap = () => {
+        if (mediaType !== 'video') return;
+        if (isPaused) {
+            setIsPaused(false);
+            mainVideoRef.current?.play().catch(e => console.error("Video play failed", e));
+            pipVideoRef.current?.play().catch(e => console.error("Video play failed", e));
+        } else {
+            // Optional: toggle pause? User said "tap to play", so maybe only play if paused
+            // But usually toggle is expected.
+            setIsPaused(true);
+            mainVideoRef.current?.pause();
+            pipVideoRef.current?.pause();
+        }
     };
 
     const [isHolding, setIsHolding] = useState(false);
@@ -105,15 +126,26 @@ const DualCameraView: React.FC<DualCameraViewProps> = ({
     React.useEffect(() => {
         if (isHolding) {
             pipControls.start({ opacity: 0, scale: 0.9, transition: { duration: 0.1 } });
+            if (mediaType === 'video') {
+                mainVideoRef.current?.pause();
+                pipVideoRef.current?.pause();
+            }
         } else {
             pipControls.start({ opacity: 1, scale: 1, x: 0, y: 0 });
+            if (mediaType === 'video' && !isPaused) {
+                mainVideoRef.current?.play().catch(() => { });
+                pipVideoRef.current?.play().catch(() => { });
+            }
         }
-    }, [isHolding, pipControls]);
+    }, [isHolding, pipControls, mediaType, isPaused]);
 
     const handleContainerClick = () => {
         if (isLocked) return;
         // Only swap if we aren't holding/dragging
         if (!isHolding && !isDraggingPIP.current) {
+            if (mediaType === 'video') {
+                handleVideoTap();
+            }
             toggleSwap();
         }
     };
@@ -158,18 +190,32 @@ const DualCameraView: React.FC<DualCameraViewProps> = ({
             onPointerCancel={handlePointerUp}
             onClick={handleContainerClick}
         >
-            {/* 1. Main Background Image */}
-            <motion.img
-                src={isSwapped ? frontImage : backImage}
-                alt="Main Capture"
-                initial={false}
-                animate={{
-                    scale: 1,
-                    filter: isLocked ? "blur(40px) brightness(0.6)" : "blur(0px) brightness(1)"
-                }}
-                transition={{ duration: 0.5 }}
-                className="w-full h-full object-cover pointer-events-none"
-            />
+            {mediaType === 'video' ? (
+                <video
+                    ref={mainVideoRef}
+                    src={isSwapped ? frontImage : backImage}
+                    loop
+                    muted={isLocked || isPlaying}
+                    playsInline
+                    autoPlay
+                    className="w-full h-full object-cover pointer-events-none"
+                    style={{
+                        filter: isLocked ? "blur(40px) brightness(0.6)" : "blur(0px) brightness(1)"
+                    }}
+                />
+            ) : (
+                <motion.img
+                    src={isSwapped ? frontImage : backImage}
+                    alt="Main Capture"
+                    initial={false}
+                    animate={{
+                        scale: 1,
+                        filter: isLocked ? "blur(40px) brightness(0.6)" : "blur(0px) brightness(1)"
+                    }}
+                    transition={{ duration: 0.5 }}
+                    className="w-full h-full object-cover pointer-events-none"
+                />
+            )}
 
             {/* 2. Draggable PIP Secondary Image */}
             <motion.div
@@ -195,14 +241,27 @@ const DualCameraView: React.FC<DualCameraViewProps> = ({
                     layout: { type: 'spring', stiffness: 400, damping: 30, mass: 0.8 }
                 }}
             >
-                <motion.img
-                    initial={false}
-                    animate={{ filter: isLocked ? 'blur(10px)' : 'blur(0px)' }}
-                    src={isSwapped ? backImage : frontImage}
-                    alt="Secondary PIP"
-                    className="w-full h-full object-cover pointer-events-none"
-                    transition={{ duration: 0.3 }}
-                />
+                {mediaType === 'video' ? (
+                    <video
+                        ref={pipVideoRef}
+                        src={isSwapped ? backImage : frontImage}
+                        loop
+                        muted // Secondary is always muted
+                        playsInline
+                        autoPlay
+                        className="w-full h-full object-cover pointer-events-none"
+                        style={{ filter: isLocked ? 'blur(10px)' : 'blur(0px)' }}
+                    />
+                ) : (
+                    <motion.img
+                        initial={false}
+                        animate={{ filter: isLocked ? 'blur(10px)' : 'blur(0px)' }}
+                        src={isSwapped ? backImage : frontImage}
+                        alt="Secondary PIP"
+                        className="w-full h-full object-cover pointer-events-none"
+                        transition={{ duration: 0.3 }}
+                    />
+                )}
             </motion.div>
 
             {/* 3. Metadata Overlay (Floating Pills) */}

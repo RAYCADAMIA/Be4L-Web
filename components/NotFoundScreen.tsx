@@ -13,7 +13,7 @@ const NotFoundScreen: React.FC<NotFoundScreenProps> = ({ onHome, onBack }) => {
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center h-full">
             <div className="relative mb-12">
                 {/* Floating/Glow Effect */}
-                <div className="absolute inset-0 bg-primary/10 blur-[80px] animate-aurora-pulse rounded-full" />
+                <div className="absolute inset-0 bg-primary/10 blur-[80px] animate-aurora-lore rounded-full" />
 
                 <div className="relative flex flex-col items-center">
                     <div className="w-32 h-32 bg-black/40 backdrop-blur-3xl rounded-[40px] border border-white/5 flex items-center justify-center shadow-2xl mb-6">

@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreHorizontal, User as UserIcon, Lock, Globe, Smile, X, Check, Trash2, Download, MessageCircle, UserPlus, Search } from 'lucide-react';
+import { MoreHorizontal, User as UserIcon, Lock, Globe, Smile, X, Check, Trash2, Download, MessageCircle, UserPlus, Search, Share2, Users } from 'lucide-react';
 import MapPopup from './MapPopup';
-import { Capture, User, Reaction } from '../types';
+import { Capture, User, Reaction, QuestType, QuestStatus } from '../types';
 import { OTHER_USERS } from '../constants';
 import { audioService } from '../services/audioService';
 import { supabaseService } from '../services/supabaseService';
-import { GlassCard } from './ui/AestheticComponents';
 import DualCameraView from './DualCameraView';
 
 interface Props {
@@ -68,8 +67,10 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
 
     const handleCompositeDownload = async () => {
         setIsMenuOpen(false);
-        const mainSrc = isSwapped ? capture.front_image_url : capture.back_image_url;
-        const pipSrc = isSwapped ? capture.back_image_url : capture.front_image_url;
+        const mainSrc = isSwapped ? capture.front_media_url || capture.front_image_url : capture.back_media_url || capture.back_image_url;
+        const pipSrc = isSwapped ? capture.back_media_url || capture.back_image_url : capture.front_media_url || capture.front_image_url;
+        if (!mainSrc || !pipSrc) return;
+
         try {
             const loadImage = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => {
                 const img = new Image();
@@ -82,10 +83,17 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
+
             canvas.width = mainImg.naturalWidth;
             canvas.height = mainImg.naturalHeight;
+
+            // Draw Main
             ctx.drawImage(mainImg, 0, 0);
+
+            // Measure scale
             const scaleFactor = canvas.width / 360;
+
+            // Draw PIP
             const pipW = 80 * scaleFactor, pipH = 112 * scaleFactor, pipX = 12 * scaleFactor, pipY = 16 * scaleFactor, radius = 10 * scaleFactor;
             ctx.save();
             ctx.beginPath();
@@ -94,20 +102,56 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
             ctx.clip();
             ctx.drawImage(pipImg, pipX, pipY, pipW, pipH);
             ctx.restore();
+
+            // PIP Border
             ctx.lineWidth = 2 * scaleFactor;
-            ctx.strokeStyle = '#000000';
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
             ctx.stroke();
+
+            // --- WATERMARK: Be4L ---
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.shadowBlur = 10 * scaleFactor;
+            ctx.fillStyle = '#CCFF00'; // Brand Primary
+            ctx.font = `italic black ${Math.round(24 * scaleFactor)}px Inter, sans-serif`;
+            ctx.textAlign = 'center';
+            const watermarkY = canvas.height - (30 * scaleFactor);
+            ctx.fillText('Be4L', canvas.width / 2, watermarkY);
+
+            // Reset shadow
+            ctx.shadowBlur = 0;
+
             const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
             if (blob) {
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `be4l-${capture.id}.jpg`;
+                link.download = `be4l-lore-${capture.id}.jpg`;
                 link.click();
                 window.URL.revokeObjectURL(url);
             }
         } catch (e) {
+            console.error("Download failed", e);
             window.open(mainSrc, '_blank');
+        }
+    };
+
+    const handleShare = async () => {
+        setIsMenuOpen(false);
+        const shareData = {
+            title: 'Be4L Lore',
+            text: `Check out my Lore on Be4L: "${capture.caption || 'Always for Life'}"`,
+            url: window.location.origin + `?post=${capture.id}`
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(shareData.url);
+                window.alert("Link copied to clipboard!");
+            }
+        } catch (err) {
+            console.log('Share failed');
         }
     };
 
@@ -143,9 +187,11 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
         await supabaseService.captures.updateCapture(capture.id, { caption: captionText });
     };
 
-    const togglePrivacy = () => {
-        setCapture(prev => ({ ...prev, privacy: prev.privacy === 'public' ? 'private' : 'public' }));
+    const togglePrivacy = async () => {
+        const newVis = capture.visibility === 'public' ? 'friends' : 'public';
+        setCapture(prev => ({ ...prev, visibility: newVis, privacy: newVis }));
         setIsMenuOpen(false);
+        await supabaseService.captures.updateCapture(capture.id, { visibility: newVis });
     };
 
     const handleTagUser = async (user: User) => {
@@ -172,19 +218,29 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
     if (isDeleted) return null;
 
     return (
-        <GlassCard
+        <div
             ref={containerRef}
-            onClick={() => onOpenDetail?.(capture)}
-            className="mb-2 mx-0 bg-transparent border-none shadow-none backdrop-blur-none transition-all duration-300 cursor-pointer group/card relative"
+            onClick={() => !isLocked && onOpenDetail?.(capture)}
+            className={`mb-4 mx-0 bg-transparent transition-all duration-300 relative ${isLocked ? 'cursor-default' : 'cursor-pointer group/card'}`}
         >
             {/* Header */}
             <div className="p-4 pb-1.5 flex justify-between items-start">
                 <div className="flex items-center gap-3">
                     <div className="relative" onClick={(e) => { e.stopPropagation(); capture.user && onUserClick?.(capture.user); }}>
                         <img src={capture.user?.avatar_url || 'https://picsum.photos/100/100?random=1'} className="w-10 h-10 rounded-full border border-primary/50 cursor-pointer object-cover shadow-lg" />
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary text-[8px] font-black text-black rounded-full flex items-center justify-center border border-black">{capture.user?.streak_count || 0}</div>
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#FF9F0A] text-[8px] font-black text-black rounded-full flex items-center justify-center border border-black shadow-sm">{capture.user?.streak_count || 0}</div>
                     </div>
                     <div>
+                        {capture.quest && (
+                            <div className="flex items-center gap-1.5 mb-1 animate-in slide-in-from-left-2 fade-in duration-300">
+                                <div className="bg-primary/20 text-primary p-0.5 rounded-[4px] shadow-[0_0_8px_rgba(204,255,0,0.3)]">
+                                    <Zap size={10} fill="currentColor" />
+                                </div>
+                                <span className="text-[9px] font-black text-primary uppercase tracking-widest leading-none drop-shadow-sm line-clamp-1 max-w-[150px]">
+                                    {capture.quest.title}
+                                </span>
+                            </div>
+                        )}
                         <div className="flex items-center">
                             <p className="font-black text-white text-[13px] mr-1 cursor-pointer hover:underline" onClick={(e) => { e.stopPropagation(); capture.user && onUserClick?.(capture.user); }}>{capture.user?.username || 'Unknown User'}</p>
                             {capture.tagged_users && capture.tagged_users.length > 0 && (
@@ -214,8 +270,8 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
 
             <div className="px-3 pb-1" onClick={(e) => e.stopPropagation()}>
                 <DualCameraView
-                    frontImage={capture.front_image_url}
-                    backImage={capture.back_image_url}
+                    frontImage={capture.front_media_url || capture.front_image_url}
+                    backImage={capture.back_media_url || capture.back_image_url}
                     musicTrack={capture.music_track}
                     locationName={capture.location_name}
                     isPlaying={isPlaying}
@@ -225,6 +281,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                     onSwap={setIsSwapped}
                     isLocked={isLocked && !isOwnPost}
                     onUnlock={onUnlock}
+                    mediaType={capture.media_type}
                 />
             </div>
 
@@ -235,21 +292,21 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            if (isOwnPost) return; // Don't allow own post reacts
+                            if (isOwnPost || isLocked) return; // Don't allow own post reacts or locked reacts
                             startReactionCamera();
                         }}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-white/90 hover:bg-white/20 active:scale-90 transition-all shadow-sm ${isOwnPost ? 'bg-white/5 opacity-40 cursor-default' : 'bg-white/10'}`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-white/90 transition-all shadow-sm ${(isOwnPost || isLocked) ? 'bg-white/5 opacity-40 cursor-default' : 'bg-white/10 hover:bg-white/20 active:scale-90'}`}
                     >
-                        <Smile size={20} />
+                        {isLocked ? <Lock size={16} className="text-gray-500" /> : <Smile size={20} />}
                     </button>
 
                     {/* Comments Button */}
                     <button
-                        onClick={(e) => { e.stopPropagation(); onOpenDetail?.(capture); }}
-                        className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/90 hover:bg-white/20 active:scale-90 transition-all relative shadow-sm"
+                        onClick={(e) => { e.stopPropagation(); if (!isLocked) onOpenDetail?.(capture); }}
+                        className={`w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/90 transition-all relative shadow-sm ${isLocked ? 'opacity-40 cursor-default' : 'hover:bg-white/20 active:scale-90'}`}
                     >
                         <MessageCircle size={18} />
-                        {capture.comment_count > 0 && (
+                        {capture.comment_count > 0 && !isLocked && (
                             <span className="absolute -top-1 -right-1 bg-primary text-black text-[9px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center border border-black shadow-sm">
                                 {capture.comment_count}
                             </span>
@@ -309,13 +366,23 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                                     </button>
 
                                     <button
+                                        onClick={(e) => { e.stopPropagation(); handleShare(); }}
+                                        className="w-full px-4 py-3.5 text-[13px] font-bold text-white/90 hover:bg-white/10 rounded-xl flex items-center gap-3 transition-colors group"
+                                    >
+                                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                            <Share2 size={16} className="text-blue-400" />
+                                        </div>
+                                        Share
+                                    </button>
+
+                                    <button
                                         onClick={(e) => { e.stopPropagation(); handleCompositeDownload(); }}
                                         className="w-full px-4 py-3.5 text-[13px] font-bold text-white/90 hover:bg-white/10 rounded-xl flex items-center gap-3 transition-colors group"
                                     >
                                         <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                                            <Download size={16} />
+                                            <Download size={16} className="text-primary" />
                                         </div>
-                                        Download
+                                        Download Memory
                                     </button>
 
                                     <button
@@ -323,9 +390,9 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                                         className="w-full px-4 py-3.5 text-[13px] font-bold text-white/90 hover:bg-white/10 rounded-xl flex items-center gap-3 transition-colors group"
                                     >
                                         <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                                            {capture.privacy === 'public' ? <Lock size={16} /> : <Globe size={16} />}
+                                            {capture.visibility === 'public' ? <Users size={16} /> : <Globe size={16} />}
                                         </div>
-                                        {capture.privacy === 'public' ? 'Make Private' : 'Make Public'}
+                                        {capture.visibility === 'public' ? 'Show to Friends Only' : 'Make Publicly Visible'}
                                     </button>
 
                                     <div className="h-[1px] bg-white/5 my-1 mx-2" />
@@ -469,7 +536,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                     </div>
                 </div>
             )}
-        </GlassCard>
+        </div>
     );
 };
 

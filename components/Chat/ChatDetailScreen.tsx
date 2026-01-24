@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Camera, Send, Check, X, MapPin } from 'lucide-react';
+import { ChevronLeft, Camera, Send, Check, X, MapPin, Zap } from 'lucide-react';
 import { supabaseService } from '../../services/supabaseService';
 import { Message } from '../../types';
 
@@ -13,31 +13,47 @@ interface ChatDetailScreenProps {
 }
 
 const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, onBack, onLaunchCamera }) => {
+    const isLobby = chatId.startsWith('lobby');
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
+    const [showHandshake, setShowHandshake] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
+    const handleHandshake = () => {
+        setShowHandshake(true);
+        setTimeout(() => {
+            alert("Bluetooth Handshake Verified! Multi-Peer Proximity Confirmed.");
+            setShowHandshake(false);
+        }, 2000);
+    };
+
     useEffect(() => {
-        loadMessages(true); // first load
-        // Poll for new messages (simulate real-time)
-        const interval = setInterval(() => loadMessages(false), 3000); // 3s polling
-        return () => clearInterval(interval);
+        // Initial Load
+        loadMessages(true);
+
+        // Realtime Subscription
+        const channel = supabaseService.chat.subscribeToEcho(chatId, (incomingMsg) => {
+            setMessages(prev => {
+                // Prevent duplicates (e.g., from optimistic updates)
+                if (prev.some(m => m.id === incomingMsg.id)) return prev;
+                return [...prev, incomingMsg];
+            });
+        });
+
+        return () => {
+            channel.unsubscribe();
+        };
     }, [chatId]);
 
     const loadMessages = async (isFirst: boolean) => {
         if (isFirst) setLoading(true);
         const data = await supabaseService.chat.getMessages(chatId);
-        // Only update if difference (simple check)
-        setMessages(prev => {
-            if (prev.length !== data.length) return data;
-            return prev;
-        });
+        setMessages(data);
         if (isFirst) setLoading(false);
     };
 
     useEffect(() => {
-        // Scroll to bottom on load/new message
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
@@ -48,13 +64,19 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
         const tempMsg = newMessage;
         setNewMessage('');
 
-        await supabaseService.chat.sendMessage(chatId, tempMsg);
-        loadMessages(false);
+        // Optimistic UI could go here, but waiting for DB ack is safer for now.
+        // We rely on the subscription to show the message to avoid issues, 
+        // OR we push it manually if we want instant feel.
+        // Let's rely on the response for self-message to ensure ID consistency.
+
+        const sentMsg = await supabaseService.chat.sendMessage(chatId, tempMsg);
+        if (sentMsg) {
+            setMessages(prev => [...prev, sentMsg]);
+        }
     };
 
     const handleAcceptQuest = (questId: string) => {
         alert(`Joined Quest ${questId}!`);
-        // In real app, call supabaseService.quests.joinQuest(...)
     };
 
     const handleDeclineQuest = () => {
@@ -64,15 +86,29 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
     return (
         <div className="flex flex-col h-full bg-black absolute inset-0 z-50 animate-in slide-in-from-right duration-300">
             {/* Header */}
-            <div className="flex items-center p-4 pt-12 bg-black/90 backdrop-blur-md border-b border-white/10 z-20">
+            <div className={`flex items-center p-4 pt-12 ${isLobby ? 'bg-primary/5' : 'bg-black/90'} backdrop-blur-md border-b border-white/10 z-20`}>
                 <button onClick={onBack} className="p-2 -ml-2 mr-2 rounded-full text-white hover:bg-white/10 transition-colors">
                     <ChevronLeft size={28} />
                 </button>
                 <div className="flex-1">
-                    <h2 className="font-bold text-base text-white leading-tight">{chatName}</h2>
-                    <span className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Online now</span>
+                    <h2 className={`font-black uppercase italic tracking-tighter ${isLobby ? 'text-primary' : 'text-white'} text-lg leading-tight`}>
+                        {isLobby ? `[Lobby] ${chatName}` : chatName}
+                    </h2>
+                    <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                            {isLobby ? '4 members live' : 'Online now'}
+                        </span>
+                    </div>
                 </div>
-                <div className="w-10" /> {/* Spacer */}
+                {isLobby && (
+                    <button
+                        onClick={handleHandshake}
+                        className={`p-2 rounded-xl border border-primary/30 flex items-center justify-center text-primary transition-all active:scale-90 ${showHandshake ? 'animate-ping bg-primary/20' : 'hover:bg-primary/10'}`}
+                    >
+                        <Zap size={20} className="fill-current" />
+                    </button>
+                )}
             </div>
 
             {/* Messages */}

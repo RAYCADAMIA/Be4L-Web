@@ -33,7 +33,7 @@ class ErrorBoundary extends Component<Props, State> {
                     <div className="relative z-10 flex flex-col items-center max-w-md w-full animate-in fade-in zoom-in-95 duration-700">
                         {/* Error Icon */}
                         <div className="relative mb-8">
-                            <div className="absolute inset-0 bg-red-500/20 blur-[60px] animate-aurora-pulse rounded-full" />
+                            <div className="absolute inset-0 bg-red-500/20 blur-[60px] animate-aurora-lore rounded-full" />
                             <div className="relative w-24 h-24 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(239,68,68,0.2)]">
                                 <AlertTriangle size={48} className="text-red-500" />
                             </div>
