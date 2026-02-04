@@ -71,7 +71,7 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
             <header className={`
                 flex items-center justify-between p-4 md:px-8 md:py-6 sticky top-0 z-30
                 backdrop-blur-xl border-b border-white/5
-                ${isLobby ? 'bg-primary/5' : 'bg-black/60'}
+                ${isLobby ? 'bg-primary/5' : 'bg-white/[0.02]'}
             `}>
                 <div className="flex items-center gap-4">
                     <button onClick={onBack} className="md:hidden p-2 -ml-2 rounded-full text-white/60 hover:text-white transition-colors">
@@ -84,10 +84,6 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
                             </span>
                             {isLobby && <Zap size={14} className="text-primary fill-primary" />}
                         </h2>
-                        <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">Live Coordination</span>
-                        </div>
                     </div>
                 </div>
 

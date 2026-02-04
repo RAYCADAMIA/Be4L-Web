@@ -51,38 +51,38 @@ const awardQuestRewardsImpl = async (userId: string, auraAmount: number, expAmou
 };
 
 export const MOCK_CHATS = [
-  { id: '1', type: 'personal', name: 'Sarah J', lastMsg: 'See you tomorrow!', time: '10:30 AM', unread: 2, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200' },
-  { id: '2', type: 'personal', name: 'Mike Ross', lastMsg: 'Did you see the game?', time: '9:45 AM', unread: 0, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200' },
-  { id: '3', type: 'personal', name: 'Chloe Kim', lastMsg: 'The photos look insane!', time: 'Yesterday', unread: 0, avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=200' },
-  { id: '4', type: 'group', name: 'Davao Pickleball Squad', lastMsg: 'Alex: Who is bringing the balls?', time: 'Yesterday', unread: 12, avatar: 'https://images.unsplash.com/photo-1599586120429-48281b6f0ece?auto=format&fit=crop&q=80&w=200' },
-  { id: '5', type: 'personal', name: 'Marcus', lastMsg: 'Just reached the summit!', time: 'Monday', unread: 0, avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200' },
-  { id: '6', type: 'personal', name: 'Elena', lastMsg: 'Check out this lore capture.', time: 'Monday', unread: 0, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200' },
-  { id: 'lobby_q1', type: 'lobby', context_type: 'QUEST', name: 'Sunset Bouldering', lastMsg: 'Dave: Who has extra chalk?', time: '9:15 AM', unread: 5, avatar: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=200' },
-  { id: 'lobby_q2', type: 'lobby', context_type: 'QUEST', name: 'Midnight Run - Roxas', lastMsg: 'Syncing pulses...', time: 'Live', unread: 0, avatar: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&q=80&w=200' },
-  { id: 'lobby_q3', type: 'lobby', context_type: 'QUEST', name: 'Cafe Matcha Hunt', lastMsg: 'Jen: Found the hidden spot!', time: '2:30 PM', unread: 1, avatar: 'https://images.unsplash.com/photo-1541167760496-162955ed8a9f?auto=format&fit=crop&q=80&w=200' },
-  { id: '10', type: 'personal', name: 'Sam Rivera', lastMsg: 'Let me know when you arrive.', time: '11:20 AM', unread: 0, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200' },
-  { id: '11', type: 'personal', name: 'Jade', lastMsg: 'Can we move the meetup?', time: 'Yesterday', unread: 0, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200' },
-  { id: '12', type: 'group', name: 'Street Food Hunters', lastMsg: 'Isaw is life guys.', time: 'Sat', unread: 0, avatar: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80&w=200' },
-  { id: '13', type: 'personal', name: 'Professor X', lastMsg: 'The simulation is ready.', time: 'Fri', unread: 0, avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200' }
+  { id: '1', type: 'personal', name: 'Sarah Cameron', lastMsg: 'See you at the Wreck?', time: '10:30 AM', unread: 2, avatar: 'https://tse2.mm.bing.net/th?q=Madelyn%20Cline%20Headshot&w=500&h=500&c=7' },
+  { id: '2', type: 'personal', name: 'John B. Routledge', lastMsg: 'I found something in the marsh.', time: '9:45 AM', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Chase%20Stokes%20Headshot&w=500&h=500&c=7' },
+  { id: '3', type: 'personal', name: 'JJ Maybank', lastMsg: 'Bad idea? Probably.', time: 'Yesterday', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Rudy%20Pankow%20Headshot&w=500&h=500&c=7' },
+  { id: '4', type: 'group', name: 'The Pogues', lastMsg: 'Pope: We need a plan.', time: 'Yesterday', unread: 12, avatar: 'https://tse2.mm.bing.net/th?q=Outer%20Banks%20Cast%20Group&w=500&h=500&c=7' },
+  { id: '5', type: 'personal', name: 'Kiara', lastMsg: 'Save the turtles! 🐢', time: 'Monday', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Madison%20Bailey%20Headshot&w=500&h=500&c=7' },
+  { id: '6', type: 'personal', name: 'Pope Heyward', lastMsg: 'Statistically speaking...', time: 'Monday', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Jonathan%20Daviss%20Headshot&w=500&h=500&c=7' },
+  { id: 'lobby_q1', type: 'lobby', context_type: 'QUEST', name: 'Treasure Hunt', lastMsg: 'John B: X marks the spot.', time: '9:15 AM', unread: 5, avatar: 'https://tse2.mm.bing.net/th?q=Outer%20Banks%20Map&w=500&h=500&c=7' },
+  { id: 'lobby_q2', type: 'lobby', context_type: 'QUEST', name: 'Midsummer Party', lastMsg: 'Rafe: Who invited them?', time: 'Live', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Outer%20Banks%20Party&w=500&h=500&c=7' },
+  { id: 'lobby_q3', type: 'lobby', context_type: 'QUEST', name: 'Surf Competition', lastMsg: 'JJ: I am gonna win this.', time: '2:30 PM', unread: 1, avatar: 'https://tse2.mm.bing.net/th?q=Outer%20Banks%20Surfing&w=500&h=500&c=7' },
+  { id: '10', type: 'personal', name: 'Rafe Cameron', lastMsg: 'Stay out of my way.', time: '11:20 AM', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Drew%20Starkey%20Headshot&w=500&h=500&c=7' },
+  { id: '11', type: 'personal', name: 'Cleo', lastMsg: 'Watch your back.', time: 'Yesterday', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Carlacia%20Grant%20Headshot&w=500&h=500&c=7' },
+  { id: '12', type: 'personal', name: 'Topper', lastMsg: 'Have you seen Sarah?', time: 'Sat', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Austin%20North%20Headshot&w=500&h=500&c=7' },
+  { id: '13', type: 'personal', name: 'Barry (Peeler)', lastMsg: 'Money first.', time: 'Fri', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Nicholas%20Cirillo%20Headshot&w=500&h=500&c=7' }
 ];
 
 const localMockMessages: Record<string, Message[]> = {
   '1': [
-    { id: 'm1', echo_id: '1', sender_id: 'sarah_j', content: 'Hey! Are we still on for the run?', timestamp: '10:25 AM', created_at: '2025-12-31T10:25:00Z', is_me: false, type: 'text', content_type: 'text' },
-    { id: 'm2', echo_id: '1', sender_id: 'me', content: 'Yes! Definitely.', timestamp: '10:28 AM', created_at: '2025-12-31T10:28:00Z', is_me: true, type: 'text', content_type: 'text' }
+    { id: 'm1', echo_id: '1', sender_id: 'sarah_c', content: 'Hey! Are we going to the Wreck later?', timestamp: '10:25 AM', created_at: '2025-12-31T10:25:00Z', is_me: false, type: 'text', content_type: 'text' },
+    { id: 'm2', echo_id: '1', sender_id: 'me', content: 'Yeah, I will meet you there.', timestamp: '10:28 AM', created_at: '2025-12-31T10:28:00Z', is_me: true, type: 'text', content_type: 'text' }
   ],
   '2': [
-    { id: 'm3', echo_id: '2', sender_id: 'mike', content: 'Did you see the game last night?', timestamp: '9:40 AM', created_at: '2025-12-31T09:40:00Z', is_me: false, type: 'text', content_type: 'text' },
-    { id: 'm4', echo_id: '2', sender_id: 'me', content: 'Yeah, that buzzer beater was insane!!', timestamp: '9:45 AM', created_at: '2025-12-31T09:45:00Z', is_me: true, type: 'text', content_type: 'text' }
+    { id: 'm3', echo_id: '2', sender_id: 'john_b', content: 'Did you see the Royal Merchant manifest?', timestamp: '9:40 AM', created_at: '2025-12-31T09:40:00Z', is_me: false, type: 'text', content_type: 'text' },
+    { id: 'm4', echo_id: '2', sender_id: 'me', content: 'That is insane!!', timestamp: '9:45 AM', created_at: '2025-12-31T09:45:00Z', is_me: true, type: 'text', content_type: 'text' }
   ],
   'lobby_q1': [
-    { id: 'm5', echo_id: 'lobby_q1', sender_id: 'dave', content: 'Who has extra chalk?', timestamp: '9:10 AM', created_at: '2025-12-31T09:10:00Z', is_me: false, type: 'text', content_type: 'text' },
-    { id: 'm6', echo_id: 'lobby_q1', sender_id: 'sarah', content: 'I have some in my bag. See you at the wall!', timestamp: '9:12 AM', created_at: '2025-12-31T09:12:00Z', is_me: false, type: 'text', content_type: 'text' },
-    { id: 'm7', echo_id: 'lobby_q1', sender_id: 'me', content: 'On my way!', timestamp: '9:15 AM', created_at: '2025-12-31T09:15:00Z', is_me: true, type: 'text', content_type: 'text' }
+    { id: 'm5', echo_id: 'lobby_q1', sender_id: 'john_b', content: 'X marks the spot.', timestamp: '9:10 AM', created_at: '2025-12-31T09:10:00Z', is_me: false, type: 'text', content_type: 'text' },
+    { id: 'm6', echo_id: 'lobby_q1', sender_id: 'pope', content: 'We need to be careful.', timestamp: '9:12 AM', created_at: '2025-12-31T09:12:00Z', is_me: false, type: 'text', content_type: 'text' },
+    { id: 'm7', echo_id: 'lobby_q1', sender_id: 'me', content: 'I am ready.', timestamp: '9:15 AM', created_at: '2025-12-31T09:15:00Z', is_me: true, type: 'text', content_type: 'text' }
   ],
   '4': [
-    { id: 'm8', echo_id: '4', sender_id: 'alex', content: 'Who is bringing the balls?', timestamp: 'Yesterday', created_at: '2025-12-30T10:00:00Z', is_me: false, type: 'text', content_type: 'text' },
-    { id: 'm9', echo_id: '4', sender_id: 'chris', content: 'I got 4 new ones.', timestamp: 'Yesterday', created_at: '2025-12-30T10:05:00Z', is_me: false, type: 'text', content_type: 'text' }
+    { id: 'm8', echo_id: '4', sender_id: 'pope', content: 'We need a plan.', timestamp: 'Yesterday', created_at: '2025-12-30T10:00:00Z', is_me: false, type: 'text', content_type: 'text' },
+    { id: 'm9', echo_id: '4', sender_id: 'jj', content: 'I say we just go for it.', timestamp: 'Yesterday', created_at: '2025-12-30T10:05:00Z', is_me: false, type: 'text', content_type: 'text' }
   ]
 };
 

@@ -247,7 +247,7 @@ export const HomePage: React.FC = () => {
                                 More features coming soon
                             </p>
                             <p className="text-xs md:text-sm font-black tracking-[0.3em] uppercase animate-liquid-text">
-                                ~Lush
+                                ~Badsiro
                             </p>
                         </div>
                     </motion.div>
