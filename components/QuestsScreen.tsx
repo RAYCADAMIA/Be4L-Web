@@ -296,7 +296,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                 </div>
 
                 {/* Persistent Create FAB (Bottom Right) */}
-                <div className="fixed bottom-10 right-10 z-[60]">
+                <div className="fixed bottom-32 md:bottom-10 right-6 md:right-10 z-[60]">
                     <motion.button
                         whileHover={{ scale: 1.1, rotate: 90 }}
                         whileTap={{ scale: 0.9 }}

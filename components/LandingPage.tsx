@@ -51,15 +51,17 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                             <VisionSection />
                         </div>
 
+
                         <div id="features">
                             <FeatureShowcase />
                         </div>
+
+                        <PartnerPitch />
 
                         <div id="roadmap">
                             <RoadmapSection />
                         </div>
 
-                        <PartnerPitch />
                         <TeamRecruitment />
                         <PoweredBy />
                     </main>
