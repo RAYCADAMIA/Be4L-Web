@@ -399,7 +399,7 @@ export const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = 
                                 <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Username</label>
                                 <div className={`bg-white/5 border rounded-2xl p-4 flex items-center transition-all ${errorMsg ? 'border-red-500' : 'border-white/10 focus-within:border-primary/50'}`}>
                                     <span className="text-gray-600 mr-1 font-bold">@</span>
-                                    <input type="text" value={username} onChange={(e) => { setUsername(e.target.value); setErrorMsg(''); }} placeholder="badsiro4l" className="bg-transparent text-white font-bold w-full outline-none placeholder-white/5" />
+                                    <input type="text" value={username} onChange={(e) => { setUsername(e.target.value); setErrorMsg(''); }} placeholder="lush4l" className="bg-transparent text-white font-bold w-full outline-none placeholder-white/5" />
                                 </div>
                                 {errorMsg && <p className="text-red-500 text-[10px] font-bold ml-2">{errorMsg}</p>}
                             </div>

@@ -92,7 +92,20 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                                         The OS for life, love, lore, and lark. Join the giant friend group.
                                     </p>
                                     <div className="flex gap-4">
-                                        {['IG', 'TW', 'TK'].map(social => (
+                                        <a
+                                            href="https://www.instagram.com/be4l.app/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white/[0.03] border border-white/5 text-cool-grey hover:text-white hover:border-electric-teal/40 transition-all hover:-translate-y-1 group"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:text-electric-teal transition-colors">
+                                                <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                                                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                                            </svg>
+                                        </a>
+                                        {/* Placeholder for others */}
+                                        {['TW', 'TK'].map(social => (
                                             <a key={social} href="#" className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white/[0.03] border border-white/5 text-cool-grey hover:text-white hover:border-white/20 transition-all hover:-translate-y-1">
                                                 <div className="w-5 h-5 rounded-full bg-current opacity-20" />
                                             </a>

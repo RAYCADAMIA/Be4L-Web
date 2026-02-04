@@ -42,6 +42,9 @@ const DibsCard: React.FC<Props> = ({ operator, onClick, isMe }) => {
                     <div className="px-3 py-1 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-[9px] font-black uppercase tracking-widest text-white">
                         {operator.category}
                     </div>
+                    <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] font-black uppercase tracking-widest text-white/40">
+                        PROTOTYPE
+                    </div>
                     {isMe && (
                         <div className="px-3 py-1 bg-electric-teal text-black rounded-full text-[9px] font-black uppercase tracking-widest">
                             Your Brand

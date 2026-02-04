@@ -38,6 +38,9 @@ const QuestCard: React.FC<Props> = ({ quest, onOpenDetail }) => {
                             <Clock size={8} className="md:w-[10px]" /> SOON
                         </div>
                     )}
+                    <div className="px-2 py-0.5 md:px-3 md:py-1 bg-white/5 border border-white/10 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-widest text-white/40">
+                        PROTOTYPE
+                    </div>
                 </div>
                 <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-primary group-hover:bg-primary/10 transition-all duration-300">
                     <ArrowRight size={12} strokeWidth={3} className="md:w-[14px]" />

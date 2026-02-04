@@ -5,9 +5,9 @@ import { OTHER_USERS } from '../constants';
 // Quest templates for each category
 const CANON_TEMPLATES = {
     Sports: [
-        { activity: 'Pickleball', titles: ['Davao Pickleball Open', 'SuperSmasher League Finals', 'MTS Pickle Cup'], descriptions: ['Elite pickleball competition at SuperSmasher.', 'Season finale for the local league.', 'Highest stakes pickleball in Davao.'] },
+        { activity: 'Pickleball', titles: ['SuperSmasher Open', 'Pickletown League Finals', 'MTC Pickle Cup'], descriptions: ['Elite pickleball competition at SuperSmasher.', 'Season finale for the local league.', 'Highest stakes pickleball in Davao.'] },
         { activity: 'Golf', titles: ['Rancho Palos Verdes Open', 'Davao Golf Club Championship', 'Apo Golf Invitational'], descriptions: ['Premium golf tournament at Davao\'s finest course.', 'Annual championship for local legends.', 'Elite invitational at the foothills of Mt. Apo.'] },
-        { activity: 'Basketball', titles: ['Ballbreakers Invitational', 'Homecourt 5v5 Tournament', 'Coloseo Streetball Finals'], descriptions: ['Elite level basketball.', 'Davao\'s top ballers only.', 'City-wide streetball championship.'] }
+        { activity: 'Basketball', titles: ['Homecourt 5v5 Invitational', 'Ballbreakers 3x3', 'NCCC Centerstage Hops'], descriptions: ['Elite level basketball.', 'Davao\'s top ballers only.', 'City-wide streetball championship.'] }
     ],
     Adventures: [
         { activity: 'Road Trip', titles: ['Buda Highlands Run', 'Calaunan Scenic Drive', 'Arakan Valley Loop'], descriptions: ['Epic road trip to the fog-covered Buda.', 'Scenic views of the mountains.', 'Full day adventure through the highlands.'] },
@@ -17,7 +17,7 @@ const CANON_TEMPLATES = {
         { activity: 'Island', titles: ['Samal Island Traverse', 'Talikud Island Escape', 'Island Hopping Adventure'], descriptions: ['Cross-island trekking expedition.', 'Hidden beach discovery.', 'Epic Samal sea loop.'] }
     ],
     Social: [
-        { activity: 'Party', titles: ['Psyched House Party', 'Groundead Underground HP', 'Cloud29 Rooftop Social'], descriptions: ['Davao\'s wildest house party.', 'Underground vibes only.', 'Elite social at Davao\'s highest rooftop.'] }
+        { activity: 'Party', titles: ['Psyched House Party', 'Secret Society Elite Social', 'Groundead Underground'], descriptions: ['Davao\'s wildest house party.', 'An exclusive night out.', 'Underground vibes only.'] }
     ],
     Train: [
         { activity: 'Ironman', titles: ['Ironman 70.3 Azuela Prep', 'Quinspot Fitness Camp', 'Coastline Endurance'], descriptions: ['Intense prep for Ironman Davao.', 'High-intensity interval training.', 'Endurance training at the coast.'] }
@@ -26,17 +26,17 @@ const CANON_TEMPLATES = {
         { activity: 'Flea Market', titles: ['Weekend Flea Market', 'Azuela Night Market', 'Obrero Thrift Run'], descriptions: ['Best local finds and food.', 'Night-time shopping spree.', 'Curated thrifting at Obrero.'] }
     ],
     Jobs: [
-        { activity: 'Task', titles: ['Math Tutor Needed', 'App Beta Tester', 'Event Crew @ SMX'], descriptions: ['Help a freshman with Calculus.', 'Test a new local lifestyle app.', 'Assist in a major event setup at SMX.'] },
+        { activity: 'Task', titles: ['Math Tutor Needed', 'App Beta Tester', 'Event Crew @ &Friends'], descriptions: ['Help a freshman with Calculus.', 'Test a new local lifestyle app.', 'Assist in a major event setup with &Friends.'] },
         { activity: 'Gig', titles: ['Social Media Mod', 'Photography Assistant', 'Campus Courier'], descriptions: ['Moderate a local community group.', 'Assist in a wedding shoot.', 'Help deliver study packs around campus.'] }
     ]
 };
 
 const QUEST_TEMPLATES = {
     Sports: [
-        { activity: 'Pickleball', titles: ['Play Pickleball @ PickleTown', 'Quick Rally @ MTS', 'Pickleball Night', 'Beginner Pickleball Davao'], descriptions: ['Looking for players at PickleTown', 'Casual game at MTS Town Square', 'Sunset pickleball session', 'New to the sport? Let\'s rally!'] },
+        { activity: 'Pickleball', titles: ['Play Pickleball @ SuperSmasher', 'Quick Rally @ Pickletown', 'Pickleball Night', 'Beginner Pickleball Davao'], descriptions: ['Looking for players at SuperSmasher', 'Casual game at Pickletown', 'Sunset pickleball session', 'New to the sport? Let\'s rally!'] },
         { activity: 'Golf', titles: ['9 Holes @ Rancho', 'Driving Range Session', 'Morning Tee Time', 'Golf with Vibes'], descriptions: ['Quick round at Rancho Palos Verdes', 'Working on my swing at the range', 'Early morning tee off at Davao Golf Club', 'Casual golf and chill with the crew'] },
         { activity: 'Basketball', titles: ['Casual 3v3 @ Homecourt', 'Shootaround @ Coloseo', 'Evening Ball @ Ballbreakers', 'Pickup Game'], descriptions: ['Casual hoops at Homecourt', 'Quick shooting session at Coloseo', 'Night ball at Ballbreakers', 'Looking for a full court run'] },
-        { activity: 'Bowling', titles: ['Bowling Night @ SM', 'Strike Session', 'Gaisano Bowling Meet', 'Lucky Bowl Run'], descriptions: ['Evening strikes and vibes', 'Casual bowling session', 'Meeting at the bowling lanes', 'Work on your hook shot'] },
+        { activity: 'Bowling', titles: ['Bowling Night @ SM', 'Strike Session', 'Lucky Bowl Run'], descriptions: ['Evening strikes and vibes', 'Casual bowling session', 'Work on your hook shot'] },
     ],
     Adventures: [
         { activity: 'Running', titles: ['Coastal Road Run', 'Azuela Morning Dash', 'Magsaysay Jog', 'Shrine Hill Run'], descriptions: ['Scenic run by the sea', 'Quick Azuela cardio', 'Morning jog at the park', 'Hill sprints at Shrine'] },
@@ -48,7 +48,7 @@ const QUEST_TEMPLATES = {
     Social: [
         { activity: 'Matcha', titles: ['Matcha Coffee Run', 'The Matcha Spot Meetup', 'Obrero Matcha Hangout', 'Morning Matcha'], descriptions: ['Testing the new matcha spot', 'Brunch and matcha lattes', 'Quick caffeine fix in Obrero', 'Davao\'s best matcha crawl'] },
         { activity: 'Cafe Meet', titles: ['Out of Boredom Cafe Meet', 'Steep Coffee Hangout', 'Glasshouse Session', 'Creative Cafe Work'], descriptions: ['Meeting up just because we\'re bored', 'Coffee and chill at Steep', 'Productive vibes at the Glasshouse', 'Work session at my favorite cafe'] },
-        { activity: 'Party', titles: ['Psyched House Party', 'Apartment Vibe Session', 'Weekend Social', 'Night Out'], descriptions: ['Ultimate house party vibes', 'Chill apartment hangout', 'Weekend social gathering', 'Davao nightlife run'] },
+        { activity: 'Party', titles: ['Psyched House Party', 'Secret Society Social', 'Apartment Vibe Session'], descriptions: ['Ultimate house party vibes', 'An exclusive night out.', 'Chill apartment hangout'] },
     ],
     Train: [
         { activity: 'Gym', titles: ['Morning Lift @ Metro', 'Quinspot Session', 'Gym Grind', 'Hardcore Workout'], descriptions: ['Early session at Metro Fitness', 'Training at Quinspot', 'Daily gym routine', 'Lets get those gains'] },
@@ -64,15 +64,13 @@ const QUEST_TEMPLATES = {
 };
 
 const LOCATIONS = [
-    'SuperSmasher Pickleball', 'PickleTown Davao', 'MTS Pickle Courts', 'Azuela Cove',
+    'SuperSmasher', 'Pickletown', 'Psyched', 'Secret Society',
+    '&Friends', 'Homecourt', 'Quinspot', 'SM Bowling Center',
     'Buda Highlands', 'Davao Coastal Road', 'Metro Fitness Center', 'Matina Town Square',
-    'SM Lanang Premier', 'SM City Davao - Bowling', 'Quinspot', 'Ballbreakers HQ',
-    'Homecourt Davao', 'Coloseo Streetball', 'The Matcha Spot', 'Steep Coffee - Obrero',
+    'SM Lanang Premier', 'The Matcha Spot', 'Steep Coffee - Obrero',
     'Glasshouse Coffee', 'Roxas Night Market', 'People\'s Park', 'Abreeza Mall',
-    'Cloud29 Rooftop', 'Azuela Night Market', 'Shrine Hill', 'Magsaysay Park',
     'Rancho Palos Verdes', 'Davao Golf Club', 'Apo Golf & Country Club',
-    'UP Mindanao Library', 'Ateneo de Davao University', 'SMX Convention Center',
-    'Obrero Shared Space', 'Davao City Library', 'Workspace Davao'
+    'SMX Convention Center', 'Obrero Shared Space'
 ];
 
 const TIMES = [

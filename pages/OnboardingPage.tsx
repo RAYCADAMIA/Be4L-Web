@@ -82,15 +82,18 @@ export const OnboardingPage: React.FC = () => {
 
             const { error: profileError } = await supabase
                 .from('profiles')
-                .update(updates)
-                .eq('id', user.id);
+                .upsert({
+                    id: user.id,
+                    ...updates,
+                    updated_at: new Date().toISOString()
+                });
 
             if (profileError) throw profileError;
 
             // Sync with local context so HomePage updates immediately
             updateUser(updates);
 
-            navigate('/app/home');
+            setStep(3); // Go to Disclaimer
 
         } catch (err) {
             console.error('Onboarding Error:', err);
@@ -218,6 +221,52 @@ export const OnboardingPage: React.FC = () => {
                                 </button>
                                 <button onClick={() => setStep(1)} className="w-full text-center text-xs font-bold uppercase tracking-widest text-white/30 hover:text-white transition-colors">
                                     Back
+                                </button>
+                            </motion.div>
+                        )}
+                        {step === 3 && (
+                            <motion.div
+                                key="step3"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="text-center space-y-8"
+                            >
+                                <div className="space-y-4">
+                                    <h1 className="text-4xl font-black font-fui uppercase tracking-tighter text-electric-teal animate-pulse">
+                                        Welcome, Founding Member
+                                    </h1>
+                                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-left space-y-4">
+                                        <p className="text-sm text-cool-grey leading-relaxed">
+                                            <strong className="text-white block mb-1">⚠️ Pre-Launch Prototype Access</strong>
+                                            You are experiencing an early prototype version of Be4L. Some features (Echo, Quests) are currently using <strong>mock data</strong> for demonstration purposes.
+                                        </p>
+                                        <p className="text-sm text-cool-grey leading-relaxed">
+                                            <strong className="text-white block mb-1">🚀 Official Launch: Feb 6, 2026</strong>
+                                            The full MVP with real-time features will go live this Friday. Your handle and profile are secured as a Founding Member.
+                                        </p>
+                                        <div className="pt-2 border-t border-white/5 mt-2">
+                                            <a
+                                                href="https://www.instagram.com/be4l.app/"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-3 group"
+                                            >
+                                                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
+                                                </div>
+                                                <span className="text-[11px] font-black uppercase tracking-widest text-[#E4405F] group-hover:text-white transition-colors">
+                                                    Follow our IG page
+                                                </span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => navigate('/app/home')}
+                                    className="w-full py-4 rounded-2xl bg-white text-black font-black font-fui uppercase tracking-widest hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_40px_rgba(255,255,255,0.3)]"
+                                >
+                                    Enter the Lore
                                 </button>
                             </motion.div>
                         )}

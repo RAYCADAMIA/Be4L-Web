@@ -1,87 +1,102 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, X, Gift, Rocket, ShieldCheck } from 'lucide-react';
+import { X, Rocket, AlertCircle, Instagram, ChevronRight } from 'lucide-react';
 
 export const PreLaunchWelcome = () => {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        // Check if user has seen this welcome message
-        const hasSeen = localStorage.getItem('be4l_prelaunch_welcome_seen');
-        if (!hasSeen) {
-            // Small delay for dramatic effect
-            const timer = setTimeout(() => setIsVisible(true), 1500);
-            return () => clearTimeout(timer);
-        }
+        // Delay adjusted to 6s to coincide with the "Be For Life -> Be4L" transition (4.5s + animation time)
+        const timer = setTimeout(() => setIsVisible(true), 6000);
+        return () => clearTimeout(timer);
     }, []);
 
     const handleDismiss = () => {
         setIsVisible(false);
-        localStorage.setItem('be4l_prelaunch_welcome_seen', 'true');
     };
 
     return (
         <AnimatePresence>
             {isVisible && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-deep-black/90 backdrop-blur-md">
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-6 bg-deep-black/60 backdrop-blur-xl">
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        initial={{ opacity: 0, scale: 0.9, y: 30 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="relative w-full max-w-sm rounded-[2.5rem] bg-[#0A0A0A] border border-electric-teal/30 shadow-[0_0_50px_rgba(45,212,191,0.15)] overflow-hidden"
+                        exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                        className="relative w-full max-w-md rounded-[2.5rem] bg-[#0A0A0A] border border-white/10 shadow-[0_0_80px_rgba(45,212,191,0.1)] overflow-hidden"
                     >
-                        {/* Decorative Background */}
-                        <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-electric-teal/10 to-transparent pointer-events-none" />
+                        {/* Status Bar */}
+                        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-electric-teal via-cyan-500 to-electric-teal animate-liquid-text" />
 
-                        <div className="relative p-8 flex flex-col items-center text-center">
-                            {/* Icon Badge */}
-                            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-electric-teal to-cyan-500 p-[1px] mb-6 shadow-xl animate-float">
-                                <div className="w-full h-full rounded-[23px] bg-black flex items-center justify-center">
-                                    <Rocket size={32} className="text-electric-teal drop-shadow-[0_0_10px_rgba(45,212,191,0.8)]" />
-                                </div>
+                        <div className="relative p-8 md:p-10 flex flex-col items-center">
+                            {/* Close Button */}
+                            <button
+                                onClick={handleDismiss}
+                                className="absolute top-6 right-6 p-2 text-white/20 hover:text-white transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+
+                            {/* Badge */}
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-electric-teal/10 border border-electric-teal/20 text-electric-teal text-[9px] font-black uppercase tracking-[0.2em] mb-6">
+                                Pre-Launch disclaimer
                             </div>
 
-                            <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white mb-2 leading-none">
-                                <span className="animate-liquid-text">Be4L</span> <br />
-                                <span className="text-xs font-black bg-white/10 text-white px-2 py-0.5 rounded-md border border-white/10 ml-1 vertical-middle inline-block not-italic animate-liquid-text">BETA</span>
+                            <h2 className="text-3xl font-black font-fui uppercase tracking-tighter mb-4 text-center">
+                                <span className="animate-liquid-text">Campus <br /> Pre-Launch Access</span>
                             </h2>
 
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6 border-b border-white/5 pb-6 w-full">
-                                Campus Pre-Launch Access
-                            </p>
-
-                            <div className="space-y-4 mb-8 text-left w-full">
-                                <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
-                                    <ShieldCheck size={20} className="text-electric-teal shrink-0 mt-0.5" />
-                                    <div>
-                                        <h4 className="text-xs font-black uppercase tracking-widest text-white mb-1">First 100 User</h4>
-                                        <p className="text-[10px] text-gray-400 leading-relaxed font-medium">
-                                            You are officially one of the first 100 members. Your early Aura reputation is being tracked.
-                                        </p>
+                            <div className="space-y-4 w-full">
+                                {/* Warning Box */}
+                                <div className="p-5 rounded-3xl bg-white/5 border border-white/10 space-y-3">
+                                    <div className="flex items-center gap-3 text-electric-teal">
+                                        <AlertCircle size={18} />
+                                        <h4 className="text-[11px] font-black uppercase tracking-widest leading-none">Beta Testing</h4>
                                     </div>
+                                    <p className="text-[11px] text-gray-400 font-medium leading-relaxed">
+                                        You are exploring a <span className="text-white">mock up version</span> of the platform. Core features like <span className="animate-liquid-text font-black italic">Dibs</span> and <span className="animate-liquid-text font-black italic">Quests</span> currently utilize mock data for demonstration purposes.
+                                    </p>
                                 </div>
 
-                                <div className="flex items-start gap-4 p-4 rounded-2xl bg-electric-teal/5 border border-electric-teal/10 relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-electric-teal/5 animate-pulse" />
-                                    <Gift size={20} className="text-electric-teal shrink-0 mt-0.5 relative z-10" />
-                                    <div className="relative z-10">
-                                        <h4 className="text-xs font-black uppercase tracking-widest text-white mb-1">Launch Airdrop</h4>
-                                        <p className="text-[10px] text-gray-300 leading-relaxed font-medium">
-                                            Create your account now to be eligible for the <span className="text-electric-teal italic font-black">Aura Airdrop</span> on full launch.
-                                        </p>
+                                {/* Timer/Info Box */}
+                                <div className="p-5 rounded-3xl bg-white/5 border border-white/10 space-y-3">
+                                    <div className="flex items-center gap-3 text-cyan-400">
+                                        <Rocket size={18} />
+                                        <h4 className="text-[11px] font-black uppercase tracking-widest leading-none">
+                                            <span className="animate-liquid-text">MVP Launch: Feb 6, 2026</span>
+                                        </h4>
                                     </div>
+                                    <p className="text-[11px] text-gray-400 font-medium leading-relaxed">
+                                        The full ecosystem with real-time functionality drops this Friday, Feb 6, 2026. <span className="text-white italic">Accounts created before launch will receive Aura Points.</span>
+                                    </p>
+                                </div>
+
+                                {/* IG Integration */}
+                                <div className="pt-2">
+                                    <a
+                                        href="https://www.instagram.com/be4l.app/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-tr from-[#f09433]/10 via-[#dc2743]/10 to-[#bc1888]/10 border border-white/5 group hover:border-white/20 transition-all"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                                <Instagram size={16} className="text-white" />
+                                            </div>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-white/50 group-hover:text-white transition-colors">
+                                                Follow our IG Page
+                                            </span>
+                                        </div>
+                                        <ChevronRight size={16} className="text-white/20" />
+                                    </a>
                                 </div>
                             </div>
-
-                            <p className="text-[9px] text-gray-600 mb-6 italic leading-relaxed px-4">
-                                "This is a preview build. Features are limited. Full ecosystem unlocks this Friday."
-                            </p>
 
                             <button
                                 onClick={handleDismiss}
-                                className="w-full py-4 bg-white text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-electric-teal transition-all active:scale-95 shadow-xl hover:shadow-electric-teal/20"
+                                className="w-full py-4 mt-8 bg-white text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] hover:bg-electric-teal transition-all active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.1)]"
                             >
-                                Enter Be4L
+                                <span className="animate-liquid-text text-black">Enter Be4L</span>
                             </button>
                         </div>
                     </motion.div>

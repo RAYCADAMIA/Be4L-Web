@@ -126,14 +126,35 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
         const randomQuests = generateRandomQuests(activeCat, selectedDate, 25, type);
 
         supabaseService.quests.getQuests(activeCat).then(existingQuests => {
-            // V1 Spec: Discovery ONLY shows DISCOVERABLE quests.
-            // ACTIVE quests are removed from discovery.
-            const allQuests = [...existingQuests, ...randomQuests].filter(q =>
+            // Feature: Specific Quests In Order on every date (for Canon)
+            let featured: Quest[] = [];
+            if (activeTab === 'CANON') {
+                const FEATURED_IDS = ['q-psy-1', 'q-sec-1', 'q-trv-1', 'q-trv-2', 'q-sp-1', 'q-and-1', 'q-golf-1', 'q-train-1', 'q-trv-3', 'q-job-1', 'q-soc-2'];
+                featured = FEATURED_IDS.map(id => {
+                    const q = [...existingQuests, ...randomQuests].find(quest => quest.id === id);
+                    if (q) {
+                        // Force the date to match selectedDate so it appears on "every date"
+                        const newDate = new Date(selectedDate);
+                        const originalDate = new Date(q.start_time);
+                        newDate.setHours(originalDate.getHours(), originalDate.getMinutes());
+                        return { ...q, start_time: newDate.toISOString(), mode: QuestType.CANON };
+                    }
+                    return null;
+                }).filter(Boolean) as Quest[];
+            }
+
+            const allQuests = [...featured, ...existingQuests, ...randomQuests].filter(q =>
                 q.status === QuestStatus.DISCOVERABLE ||
                 !q.status ||
                 (q.status === QuestStatus.ACTIVE && q.mode === QuestType.SPONTY)
             );
-            setQuests(allQuests);
+
+            // De-duplicate by ID, keeping featured first
+            const uniqueQuests = allQuests.filter((q, index, self) =>
+                index === self.findIndex((t) => t.id === q.id)
+            );
+
+            setQuests(uniqueQuests);
             setLoading(false);
         });
     }, [activeTab, activeCat, selectedDate, refreshTrigger]);

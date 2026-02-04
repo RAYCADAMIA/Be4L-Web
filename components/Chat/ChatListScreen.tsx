@@ -169,7 +169,10 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                                                     {chat.name}
                                                 </span>
                                             </h3>
-                                            <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{chat.time}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="px-1 py-0.5 rounded border border-white/10 bg-white/5 text-[6px] font-bold text-white/30 uppercase tracking-widest">Prototype</span>
+                                                <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{chat.time}</span>
+                                            </div>
                                         </div>
                                         <p className={`text-xs truncate ${chat.unread > 0 ? 'text-white font-bold' : 'text-gray-500 font-medium'}`}>
                                             {chat.lastMsg}

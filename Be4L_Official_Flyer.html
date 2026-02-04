@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be4L - Side Quest 4 Life (Official Flyer)</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-gradient: linear-gradient(90deg,
+                    #2dd4bf 0%,
+                    #06b6d4 15%,
+                    #a855f7 40%,
+                    #ec4899 60%,
+                    #a855f7 80%,
+                    #2dd4bf 100%);
+            --electric-teal: #2DD4BF;
+            --deep-void: #05050A;
+            --cool-grey: #94A3B8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0c0f16;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .flyer {
+            width: 148mm;
+            height: 210mm;
+            background-color: var(--deep-void);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 50px 40px;
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8);
+            -webkit-print-color-adjust: exact;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+
+            .flyer {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+            }
+        }
+
+        /* Branding Style */
+        .logo-container {
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 110px;
+            font-weight: 900;
+            letter-spacing: -0.05em;
+            font-style: italic;
+            line-height: 0.8;
+            background: var(--brand-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+            filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.3));
+        }
+
+        .slogan {
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            color: white;
+            margin-top: 15px;
+            opacity: 0.9;
+        }
+
+        /* Scattered Symbols Layer - Richer Background */
+        .symbols-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.12;
+        }
+
+        .symbol {
+            position: absolute;
+            color: white;
+        }
+
+        /* Bottom Layout */
+        .footer-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-text {
+            flex: 1;
+            text-align: left;
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.25;
+            color: #f8fafc;
+        }
+
+        .gradient-span {
+            background: var(--brand-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+        }
+
+        .launching-badge {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 4px 12px;
+            background: rgba(45, 212, 191, 0.1);
+            border: 1px solid rgba(45, 212, 191, 0.3);
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 900;
+            color: var(--electric-teal);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qr-box {
+            width: 120px;
+            height: 120px;
+            background: white;
+            padding: 8px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-placeholder {
+            width: 100%;
+            height: 100%;
+            border: 2px dashed #ccc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .visit-text {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--cool-grey);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .url-text {
+            font-size: 15px;
+            font-weight: 900;
+            color: white;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="flyer">
+        <!-- Rich Scattered Background -->
+        <div class="symbols-layer">
+            <!-- Row 1 -->
+            <i data-lucide="dumbbell" class="symbol"
+                style="top: 5%; left: 10%; transform: rotate(-15deg); width: 40px; height: 40px;"></i>
+            <i data-lucide="music" class="symbol"
+                style="top: 8%; left: 40%; transform: rotate(10deg); width: 30px; height: 30px;"></i>
+            <i data-lucide="beer" class="symbol"
+                style="top: 5%; right: 10%; transform: rotate(20deg); width: 45px; height: 45px;"></i>
+
+            <!-- Row 2 -->
+            <i data-lucide="camera" class="symbol"
+                style="top: 25%; left: 5%; transform: rotate(-5deg); width: 35px; height: 35px;"></i>
+            <i data-lucide="coffee" class="symbol"
+                style="top: 28%; right: 5%; transform: rotate(15deg); width: 30px; height: 30px;"></i>
+
+            <!-- Row 3 - Center Area -->
+            <i data-lucide="globe" class="symbol"
+                style="top: 45%; left: 12%; transform: rotate(-10deg); width: 50px; height: 50px;"></i>
+            <i data-lucide="zap" class="symbol"
+                style="top: 40%; right: 15%; transform: rotate(25deg); width: 40px; height: 40px; color: var(--electric-teal); opacity: 0.5;"></i>
+
+            <!-- Row 4 -->
+            <i data-lucide="map" class="symbol"
+                style="top: 65%; left: 5%; transform: rotate(5deg); width: 35px; height: 35px;"></i>
+            <i data-lucide="trophy" class="symbol"
+                style="top: 60%; right: 8%; transform: rotate(-10deg); width: 35px; height: 35px;"></i>
+
+            <!-- Row 5 -->
+            <i data-lucide="backpack" class="symbol"
+                style="bottom: 15%; left: 30%; transform: rotate(15deg); width: 30px; height: 30px;"></i>
+            <i data-lucide="tent" class="symbol"
+                style="bottom: 10%; right: 30%; transform: rotate(-15deg); width: 40px; height: 40px;"></i>
+            <i data-lucide="glass-water" class="symbol"
+                style="bottom: 5%; left: 50%; transform: rotate(10deg); width: 30px; height: 30px;"></i>
+        </div>
+
+        <div class="logo-container">
+            <div class="logo">Be4L</div>
+            <p class="slogan">Side Quest 4 Life</p>
+        </div>
+
+        <div style="flex: 1;"></div>
+
+        <div class="footer-row">
+            <div class="footer-text">
+                Conquer real world <br>
+                <span class="gradient-span">Side Quest</span> <br>
+                with friends, <br>
+                Collect lores to tell, <br>
+                and meet new people.<br>
+                <div style="margin-top: 8px;">
+                    <span class="gradient-span">THIS IS LIFE!</span>
+                </div>
+                <div class="launching-badge">Mobile app launching soon</div>
+            </div>
+
+            <div class="qr-section">
+                <div class="qr-box" style="width: 140px; height: 140px;">
+                    <img src="C:/Users/Acer/.gemini/antigravity/brain/6efe3055-7442-4886-9578-79b9f90217c7/uploaded_media_1770191171209.png"
+                        alt="Join Be4L" style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
+                <p class="scan-text"
+                    style="color: white; font-size: 16px; font-weight: 900; margin-top: 10px; letter-spacing: 0.1em; text-transform: uppercase;">
+                    SCAN ME</p>
+                <div style="text-align: center; margin-top: 2px;">
+                    <p class="visit-text">Visit us at</p>
+                    <p class="url-text">WWW.BE4L.APP</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

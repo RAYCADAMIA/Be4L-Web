@@ -406,7 +406,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                                         <p className="text-[10px] font-black uppercase tracking-[0.4em] animate-liquid-text">Capturing Lore coming soon</p>
                                         <div className="space-y-4">
                                             <p className="text-sm font-bold text-gray-400 leading-relaxed px-4">
-                                                <span className="animate-liquid-text italic">Lore</span> is a social feed of your memories and your friends' captures. Revisit your collected lores and personal legacy anytime here on your <span className="animate-liquid-text italic">My Lore</span>.
+                                                <span className="animate-liquid-text italic">Lore</span> is a social feed of your memories and your friends' captures. Revisit your collected lores and personal legacy anytime on your <span className="animate-liquid-text italic">profile</span>.
                                             </p>
                                             <p className="text-sm font-bold text-gray-400 leading-relaxed">
                                                 Join our waitlist to be among the first founding members of <span className="animate-liquid-text italic">Be4L</span>.

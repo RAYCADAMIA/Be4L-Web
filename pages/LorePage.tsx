@@ -97,7 +97,7 @@ export const LorePage: React.FC = () => {
                                         <p className="text-[10px] font-black uppercase tracking-[0.4em] animate-liquid-text">Capturing Lore coming soon</p>
                                         <div className="space-y-4">
                                             <p className="text-sm font-bold text-gray-400 leading-relaxed px-4">
-                                                <span className="animate-liquid-text">Lore</span> is a social feed of your memories and your friends' captures. Revisit your collected lores and personal legacy anytime here on your <span className="animate-liquid-text">My Lore</span>.
+                                                <span className="animate-liquid-text">Lore</span> is a social feed of your memories and your friends' captures. Revisit your collected lores and personal legacy anytime on your <span className="animate-liquid-text">profile</span>.
                                             </p>
                                             <p className="text-sm font-bold text-gray-400 leading-relaxed">
                                                 Join our waitlist to be among the first founding members of <span className="animate-liquid-text">Be4L</span>.

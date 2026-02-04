@@ -112,9 +112,29 @@ export const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose })
                                     </form>
                                 )}
 
-                                <p className="text-[10px] text-cool-grey/60 font-medium">
-                                    Limited spots available for the first wave.
-                                </p>
+                                <div className="flex flex-col items-center gap-6">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <p className="text-[9px] text-cool-grey/60 font-black uppercase tracking-[0.2em]">
+                                            Follow our journey
+                                        </p>
+                                        <a
+                                            href="https://www.instagram.com/be4l.app/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 group px-4 py-2 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all"
+                                        >
+                                            <div className="w-6 h-6 rounded-md bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
+                                            </div>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-[#E4405F] group-hover:text-white transition-colors">
+                                                @be4l.app
+                                            </span>
+                                        </a>
+                                    </div>
+                                    <p className="text-[10px] text-cool-grey/60 font-medium">
+                                        Limited spots available for the first wave.
+                                    </p>
+                                </div>
                             </div>
                         </motion.div>
                     </motion.div>

@@ -36,7 +36,10 @@ const QuestDropCard: React.FC<QuestDropCardProps> = ({ drop, onAccept }) => {
                             </div>
                             <div className="flex flex-col text-left">
                                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-600">Quest Drop</span>
-                                <span className="text-[8px] font-bold text-gray-700 uppercase tracking-widest leading-none">Idle Mode</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[8px] font-bold text-gray-700 uppercase tracking-widest leading-none">Idle Mode</span>
+                                    <span className="px-1 py-0.5 rounded border border-white/10 bg-white/5 text-[6px] font-bold text-white/40 uppercase tracking-widest leading-none">Prototype</span>
+                                </div>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -53,18 +56,18 @@ const QuestDropCard: React.FC<QuestDropCardProps> = ({ drop, onAccept }) => {
                             <div className="absolute inset-0 rounded-full border-t border-primary/20 animate-spin" />
                         </div>
 
-                        <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 mb-4">Core Objective</h3>
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.15em] px-4 leading-relaxed mb-6">
+                        <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40 mb-4">Core Objective</h3>
+                        <p className="text-[10px] text-white font-bold uppercase tracking-[0.15em] px-4 leading-relaxed mb-6">
                             Let&apos;s heal our inner childhood.<br />
-                            <span className="text-primary/60">Earn real rewards if you complete the dropped quest.</span>
+                            <span className="text-primary">Earn real rewards if you complete the dropped quest.</span>
                         </p>
 
-                        <div className="space-y-3 bg-white/[0.02] p-4 rounded-2xl border border-white/5 w-full">
-                            <p className="text-[8px] text-gray-600 font-medium italic leading-relaxed">
+                        <div className="space-y-4 bg-white/[0.04] p-5 rounded-3xl border border-white/10 w-full backdrop-blur-md">
+                            <p className="text-[10px] text-white font-black italic underline decoration-primary/30 underline-offset-4 leading-relaxed">
                                 "Would you walk around the planet for $1B?"
                             </p>
-                            <div className="h-[1px] w-4 bg-white/10 mx-auto" />
-                            <p className="text-[8px] text-gray-600 font-medium italic leading-relaxed">
+                            <div className="h-[1px] w-6 bg-white/10 mx-auto" />
+                            <p className="text-[10px] text-white font-black italic underline decoration-primary/30 underline-offset-4 leading-relaxed">
                                 "Swim across the school pool with your uniform on for ₱500!"
                             </p>
                         </div>

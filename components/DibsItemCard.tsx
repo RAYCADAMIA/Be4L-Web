@@ -34,7 +34,7 @@ const DibsItemCard: React.FC<DibsItemCardProps> = ({ item, operator, onClick }) 
                         ? 'bg-electric-teal text-black border-electric-teal shadow-[0_0_15px_rgba(45,212,191,0.5)]'
                         : 'bg-black/80 text-gray-400 border-white/10'
                         }`}>
-                        {item.id === ALPHA_EVENT_ID ? 'LIVE NOW' : 'PREVIEW'}
+                        {item.id === ALPHA_EVENT_ID ? 'LIVE NOW' : 'PROTOTYPE'}
                     </div>
                 </div>
 

@@ -53,7 +53,7 @@ export const HomePage: React.FC = () => {
         loadHomePageData();
     }, []);
 
-    const discoveryQuests = MOCK_QUESTS.slice(0, 7);
+    const discoveryQuests = MOCK_QUESTS.slice(0, 11);
 
     const displayName = user?.username || user?.email?.split('@')[0] || 'Friend';
 
@@ -84,9 +84,17 @@ export const HomePage: React.FC = () => {
                         animate={{ opacity: 1, x: 0 }}
                         className="text-4xl md:text-5xl font-black font-fui text-white italic pr-12"
                     >
-                        What's the plan, <span className="animate-liquid-text">{displayName}</span>.
+                        What's the plan, <span className="animate-liquid-text">{displayName}</span>?
                     </motion.h1>
                 </div>
+                <motion.p
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-electric-teal font-black uppercase tracking-[0.2em] text-[10px] mb-4"
+                >
+                    Do a side quest now to farm aura points
+                </motion.p>
                 <div className="flex items-center gap-2 group cursor-pointer">
                     <MapPin size={18} className="text-electric-teal group-hover:animate-bounce" />
                     <p className="text-cool-grey font-bold text-sm tracking-widest uppercase">
@@ -214,14 +222,34 @@ export const HomePage: React.FC = () => {
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        className="space-y-2 opacity-40"
+                        className="space-y-6 opacity-80"
                     >
-                        <p className="text-cool-grey font-bold text-[9px] tracking-[0.2em] uppercase">
-                            More features coming soon
-                        </p>
-                        <p className="text-xs md:text-sm font-black tracking-[0.3em] uppercase animate-liquid-text">
-                            ~Badsiro
-                        </p>
+                        <div className="flex flex-col items-center gap-4">
+                            <p className="text-cool-grey font-bold text-[9px] tracking-[0.2em] uppercase">
+                                Stay connected with the squad
+                            </p>
+                            <a
+                                href="https://www.instagram.com/be4l.app/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 group bg-white/5 border border-white/10 px-6 py-3 rounded-2xl hover:bg-white/10 hover:border-electric-teal/30 transition-all shadow-xl"
+                            >
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
+                                </div>
+                                <span className="text-xs font-black uppercase tracking-widest text-[#E4405F] group-hover:text-white transition-colors">
+                                    Follow our IG page
+                                </span>
+                            </a>
+                        </div>
+                        <div className="space-y-2 opacity-50">
+                            <p className="text-cool-grey font-bold text-[9px] tracking-[0.2em] uppercase">
+                                More features coming soon
+                            </p>
+                            <p className="text-xs md:text-sm font-black tracking-[0.3em] uppercase animate-liquid-text">
+                                ~Lush
+                            </p>
+                        </div>
                     </motion.div>
 
                     {/* Feedback Form */}
