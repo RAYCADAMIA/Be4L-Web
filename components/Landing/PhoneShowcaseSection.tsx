@@ -33,7 +33,10 @@ export const PhoneShowcaseSection: React.FC = () => {
                                 transition={{ duration: 0.8, ease: "easeInOut" }}
                                 className="text-5xl md:text-7xl font-black tracking-tighter font-display animate-liquid-text absolute left-0 right-0 md:left-auto md:right-auto leading-[0.9]"
                             >
-                                {showFullText ? "Be for Life" : "Be4L"}
+                                <span className="flex items-center gap-2 md:gap-4 leading-[0.9]">
+                                    {showFullText ? "Be for Life" : "Be4L"}
+                                    <span className="text-[10px] md:text-xl font-black bg-white/5 px-2 md:px-3 py-0.5 md:py-1 rounded-md border border-white/10 animate-liquid-text opacity-70">BETA</span>
+                                </span>
                             </motion.h2>
                         </AnimatePresence>
                     </div>

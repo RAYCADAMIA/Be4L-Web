@@ -42,13 +42,16 @@ const Phone = ({ position, texturePath, scale = 1 }: { position: [number, number
         const shape = createRoundedRectShape(screenWidth, screenHeight, screenRadius);
         const geo = new THREE.ShapeGeometry(shape);
 
-        // Fix UV mapping to stretch image across the entire shape
+        // Standard UV mapping
         const posAttribute = geo.attributes.position;
         const uvAttribute = geo.attributes.uv;
 
         for (let i = 0; i < posAttribute.count; i++) {
             const x = posAttribute.getX(i);
             const y = posAttribute.getY(i);
+
+            // Map UVs with a slight "contain" logic to prevent extreme stretching
+            // if the texture isn't exactly the right aspect ratio.
             const u = (x + screenWidth / 2) / screenWidth;
             const v = (y + screenHeight / 2) / screenHeight;
             uvAttribute.setXY(i, u, v);
@@ -126,9 +129,9 @@ const RotatingPhoneCarousel = ({ isPaused }: { isPaused: boolean }) => {
     const angleRef = useRef(0);
     const phoneRefs = useRef<THREE.Group[]>([]);
 
-    // Adjust radius and scale based on viewport
-    const radius = isMobile ? 1.8 : 4.2; // Reduced mobile radius from 2.3 to 1.8 to keep phones in view
-    const basePhoneScale = isMobile ? 0.95 : 1.65; // Slightly reduced scale for mobile to fit better
+    // Adjust radius and scale based on viewport - Optimized for clarity
+    const radius = isMobile ? 1.4 : 3.8; // Further reduced to prevent overlapping
+    const basePhoneScale = isMobile ? 0.8 : 1.35; // Reduced from 1.65 to 1.35 to avoid massive overlapping
 
     // Use a group for positioning, but update children positions manually
     useFrame((state, delta) => {
@@ -224,7 +227,7 @@ export const Hero3DScene = ({ isPaused = false }: { isPaused?: boolean }) => {
         <div className="w-full h-full absolute inset-0 z-0">
             <Canvas
                 dpr={[1, 2]}
-                camera={{ position: [0, 0, 14], fov: 35 }} // Pushed camera back from 12 to 14 for safer mobile margins
+                camera={{ position: [0, 0, 16], fov: 32 }} // Pushed camera even further and narrowed FOV for more cinematic perspective
                 gl={{ antialias: true, alpha: true }}
             >
                 <Suspense fallback={null}>

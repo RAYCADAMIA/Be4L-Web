@@ -66,17 +66,31 @@ export const PersistentLogo: React.FC<PersistentLogoProps> = ({ viewState, expan
                 </div>
 
                 {/* 'Life' grows out of 'L' */}
-                <div className="flex items-center">
-                    <motion.span layout className="animate-liquid-text leading-none">L</motion.span>
-                    <motion.span
+                <div className="flex items-center relative gap-4">
+                    <div className="flex items-center">
+                        <motion.span layout className="animate-liquid-text leading-none">L</motion.span>
+                        <motion.span
+                            animate={{
+                                width: expanded ? "auto" : 0,
+                                opacity: expanded ? 1 : 0
+                            }}
+                            className="overflow-hidden animate-liquid-text flex leading-none"
+                        >
+                            <span className="pr-4">ife</span>
+                        </motion.span>
+                    </div>
+
+                    {/* Persistent BETA Tag */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
                         animate={{
-                            width: expanded ? "auto" : 0,
-                            opacity: expanded ? 1 : 0
+                            opacity: viewState === 'hero' ? 0.6 : 0,
+                            scale: viewState === 'hero' ? 1 : 0.8
                         }}
-                        className="overflow-hidden animate-liquid-text flex leading-none"
+                        className={`absolute left-full ml-4 md:ml-8 border border-white/10 bg-white/5 rounded-lg md:rounded-2xl px-2 md:px-4 py-1 md:py-2 text-[10px] md:text-xl font-black uppercase tracking-[0.2em] animate-liquid-text whitespace-nowrap not-italic`}
                     >
-                        <span className="pr-4">ife</span>
-                    </motion.span>
+                        BETA
+                    </motion.div>
                 </div>
             </motion.div>
         </motion.div>

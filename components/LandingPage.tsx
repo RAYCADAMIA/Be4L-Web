@@ -83,9 +83,9 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                                                 <path d="M100,30 C100,30 90,10 70,10 C50,10 40,30 40,50 C40,75 100,90 100,90 C100,90 160,75 160,50 C160,30 150,10 130,10 C110,10 100,30 100,30 Z" fill="url(#footerLogoGradientV2)" />
                                             </svg>
                                         </div>
-                                        <span className="text-3xl font-black tracking-tighter font-display text-white transition-all group-hover:text-electric-teal flex items-center gap-2">
+                                        <span className="text-3xl font-black tracking-tighter font-display flex items-center gap-2 animate-liquid-text">
                                             Be4L
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-electric-teal/50">Beta</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Beta</span>
                                         </span>
                                     </div>
                                     <p className="text-cool-grey text-base font-medium leading-[1.8] max-w-xs opacity-70 italic font-sans">

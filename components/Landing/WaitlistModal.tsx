@@ -64,8 +64,9 @@ export const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose })
                             {/* Content */}
                             <div className="relative z-10 text-center space-y-6">
                                 <div className="space-y-2">
-                                    <h3 className="text-2xl font-black font-display text-white uppercase tracking-tight">
+                                    <h3 className="text-2xl font-black font-display text-white uppercase tracking-tight flex items-center justify-center gap-3">
                                         App Launching <span className="animate-liquid-text">Soon</span>
+                                        <span className="text-[10px] font-black bg-white/5 px-2 py-0.5 rounded border border-white/10 animate-liquid-text opacity-70">BETA</span>
                                     </h3>
                                     <p className="text-cool-grey font-medium text-sm leading-relaxed">
                                         We are doing the final touches for the Be4L app for a more OBX experience.<br /><br />
