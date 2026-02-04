@@ -2,13 +2,15 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 const milestones = [
-    { date: 'Nov 2025', title: 'Project Start', status: 'done', desc: 'Defining the vision for a side quest-focused lifestyle platform.' },
+    { date: 'Nov 2025', title: 'Life Realization', status: 'done', desc: 'Realize that we all share the passion of living life to the fullest and what it is to truly live not just to exist. Envisioned a side quest-focused lifestyle platform.' },
     { date: 'Dec 2025', title: 'Core Development', status: 'done', desc: 'Building the fundamental Quest, Booking, and Story systems.' },
     { date: 'Q1 2026', title: 'Web Beta Release', status: 'done', desc: 'Public launch of the Be4L web platform for early testers.' },
     { date: 'Q1 2026', title: 'Exclusive Brand Partnership', status: 'upcoming', desc: 'Selected partners to be one of the first founding pilot brands. Places, Events, and Merchants.' },
     { date: 'Q1 2026', title: 'Quest Drop Launch', status: 'upcoming', desc: 'First wave of real-world challenges with official rewards.' },
     { date: 'Q1 2026', title: 'App Launch', status: 'upcoming', desc: 'Official release on App Store and Google Play.' },
-    { date: 'Q2 2026', title: 'Partner Expansion', status: 'upcoming', desc: 'Onboarding social venues and businesses into the ecosystem.' }
+    { date: 'Q2 2026', title: 'Tokenization', status: 'upcoming', desc: 'Launching token ecosystem and exploring opportunites for users.' },
+    { date: 'Q2 2026', title: 'Partner Expansion', status: 'upcoming', desc: 'Onboarding multiple brands of different categories around the Philippines. Sports, Events, Competitions, Vacations, and etc to live life to the fullest.' },
+    { date: '∞', title: 'Live Life', status: 'upcoming', desc: 'The future is ours to take. More milestones to reach.' }
 ];
 
 export const RoadmapSection: React.FC = () => {
