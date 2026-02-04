@@ -89,6 +89,18 @@ export const PreLaunchWelcome = () => {
                                         </div>
                                         <ChevronRight size={16} className="text-white/20" />
                                     </a>
+
+                                    {/* Partnership Section */}
+                                    <div className="pt-6 border-t border-white/5 flex items-center justify-center gap-4">
+                                        <h3 className="text-[9px] font-black uppercase tracking-[0.3em] font-display animate-liquid-text bg-clip-text text-transparent bg-gradient-to-r from-electric-teal via-cyan-400 to-indigo-400 shrink-0">
+                                            In Partnership With
+                                        </h3>
+                                        <img
+                                            src="/assets/partners_lockup.jpg"
+                                            alt="Partners: AdDU and DDVentures"
+                                            className="h-9 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity rounded-lg"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 

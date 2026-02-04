@@ -249,7 +249,7 @@ export const OnboardingPage: React.FC = () => {
                                                 href="https://www.instagram.com/be4l.app/"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex items-center gap-3 group"
+                                                className="flex items-center gap-3 group mb-6"
                                             >
                                                 <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
@@ -258,6 +258,18 @@ export const OnboardingPage: React.FC = () => {
                                                     Follow our IG page
                                                 </span>
                                             </a>
+
+                                            {/* Partnership Section */}
+                                            <div className="pt-4 border-t border-white/5 flex items-center gap-4">
+                                                <h3 className="text-[9px] font-black uppercase tracking-[0.3em] font-display animate-liquid-text bg-clip-text text-transparent bg-gradient-to-r from-electric-teal via-cyan-400 to-indigo-400 shrink-0">
+                                                    In Partnership With
+                                                </h3>
+                                                <img
+                                                    src="/assets/partners_lockup.jpg"
+                                                    alt="Partners: AdDU and DDVentures"
+                                                    className="h-8 w-auto object-contain hover:brightness-110 transition-all rounded-lg opacity-90"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

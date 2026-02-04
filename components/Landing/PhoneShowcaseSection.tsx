@@ -48,7 +48,7 @@ export const PhoneShowcaseSection: React.FC = () => {
                         className="mt-6 space-y-1"
                     >
                         <p className="text-cool-grey text-lg md:text-xl font-medium leading-relaxed">
-                            An OBX lifestyle-inspired platform
+                            An OBX-inspired platform
                         </p>
                         <p className="text-cool-grey text-lg md:text-xl font-medium leading-relaxed">
                             for the lore you’ve yet to live.

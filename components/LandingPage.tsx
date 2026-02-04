@@ -56,14 +56,17 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                             <FeatureShowcase />
                         </div>
 
-                        <PartnerPitch />
+                        <div id="powered-by">
+                            <PoweredBy />
+                        </div>
 
                         <div id="roadmap">
                             <RoadmapSection />
                         </div>
 
+                        <PartnerPitch />
+
                         <TeamRecruitment />
-                        <PoweredBy />
                     </main>
 
                     {/* Footer - Precise Horizontal Layout (Matching Image 5) */}
@@ -91,7 +94,7 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                                         </span>
                                     </div>
                                     <p className="text-cool-grey text-base font-medium leading-[1.8] max-w-xs opacity-70 italic font-sans">
-                                        The OS for life, love, lore, and lark. Join the giant friend group.
+                                        OBX-Inspired platform for the lore you're yet to live.
                                     </p>
                                     <div className="flex gap-4">
                                         <a
@@ -139,14 +142,7 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                                 </div>
                             </div>
 
-                            <div className="mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 opacity-40">
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] font-fui">
-                                    BE4L | PLATFORM | LEGAL
-                                </p>
-                                <p className="text-[9px] font-bold uppercase tracking-widest font-fui">
-                                    © 2026 BE4L MISSION CONTROL. ALL SYSTEMS GO.
-                                </p>
-                            </div>
+
                         </div>
                     </footer>
 

@@ -89,9 +89,9 @@ export const TeamRecruitment: React.FC = () => {
                     <div className="w-1.5 h-1.5 rounded-full bg-electric-teal animate-pulse" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">We are Hiring</span>
                 </div>
-                <h3 className="text-3xl md:text-6xl font-black text-white mb-6 font-display uppercase tracking-tighter animate-liquid-text">Are you passionate about your dreams?</h3>
+                <h3 className="text-3xl md:text-6xl font-black text-white mb-6 font-display uppercase tracking-tighter animate-liquid-text">Are you up for a side quest?</h3>
                 <p className="text-base md:text-lg text-cool-grey mb-10 max-w-xl mx-auto font-sans font-medium">
-                    We're looking for dreamers, action-driven people, and anyone who chooses to live life to the fullest. Join the movement.
+                    We're looking for dreamers, action-driven people, and anyone who chooses to live life to the fullest. Join our quest!
                 </p>
                 <button
                     onClick={() => navigate('/team')}
@@ -108,7 +108,7 @@ export const PoweredBy: React.FC = () => {
     return (
         <section className="py-24 px-6 relative">
             <div className="max-w-7xl mx-auto flex flex-col items-center gap-6 text-center">
-                <h4 className="text-xs md:text-sm font-black uppercase tracking-[0.6em] text-white/30">In Partnership With</h4>
+                <h4 className="text-sm md:text-base font-black uppercase tracking-[0.6em] font-display animate-liquid-text bg-clip-text text-transparent bg-gradient-to-r from-electric-teal via-cyan-400 to-indigo-400">In Partnership With</h4>
 
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
