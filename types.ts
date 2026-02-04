@@ -22,6 +22,22 @@ export enum QuestParticipantStatus {
   DECLINED = 'DECLINED',
 }
 
+// PARTNER POST SYSTEM (New)
+export interface PartnerPost {
+  id: string;
+  operator_id: string;
+  operator: Operator; // Expanded
+  caption: string;
+  media_urls: string[]; // Up to 5
+  tagged_item_id?: string;
+  tagged_item?: DibsItem; // "Shop Now" link
+
+  // Interactions (Separate from Lore)
+  likes_count: number;
+  comments_count: number;
+  created_at: string;
+}
+
 export interface User {
   id: string;
   handle: string; // @username
@@ -60,6 +76,8 @@ export interface User {
   followers_count?: number;
   following_count?: number;
   cover_url?: string;
+  is_operator?: boolean; // v3.0
+  is_admin?: boolean;
 }
 
 // 0. LORE SYSTEM DEFINITION (LOCK)
@@ -290,62 +308,114 @@ export interface Squad {
   created_at: string;
 }
 
-// DIBS SYSTEM (LOGISTICS)
-export interface Provider {
-  id: string;
-  name: string;
-  category: string;
-  image_url: string;
-  description: string;
-  gcash_number?: string; // For manual transfer
+// DIBS SYSTEM (LOGISTICS) v3.0 Social Marketplace
+
+export interface Operator {
+  user_id: string; // PK, One-to-One with User
+  business_name: string;
+  slug: string; // Unique URL identifier
+  bio: string;
+  category: string; // 'venue' | 'event' | 'service' | 'food' | 'barber' etc
+  cover_photo_url: string;
+  logo_url: string; // Circular avatar
+  location_text: string; // e.g. "Davao City"
+
+  // Payment Info (Manual Verification)
   gcash_name?: string;
-  manifesto?: any; // JSON for rich pages
+  gcash_number?: string;
+
+  is_verified: boolean;
+
+  // UI Helpers
+  followers_count?: number;
+  following_count?: number;
+  rating?: number;
+  is_following?: boolean;
+  owner?: User; // Expanded user details
+  gallery?: OperatorPhoto[];
+}
+
+export interface UserRelationship {
+  id: string;
+  follower_id: string; // User who follows
+  following_id: string; // Operator/User being followed
   created_at: string;
 }
+
+export interface EventTier {
+  id: string;
+  name: string; // e.g. "Early Bird", "VIP"
+  price: number;
+  perks: string[]; // e.g. ["Free Drink", "Front Row"]
+  capacity: number;
+  available: number;
+}
+
+export type DibsType = 'PLACE' | 'EVENT';
 
 export interface DibsItem {
   id: string;
-  provider_id: string;
-  name: string;
-  description: string;
-  price: number;
-  type: 'EVENT' | 'PLACE';
-  image_url: string;
-  capacity?: number;
-  date_info?: {
-    date: string;
-    time: string;
-  };
-  location: string;
-}
-
-export interface DibsOrder {
-  id: string;
-  user_id: string;
-  item_id: string;
-  item?: DibsItem; // expanded
-  status: 'PENDING_VERIFICATION' | 'CONFIRMED' | 'REJECTED';
-  payment_ref_no?: string;
-  proof_url?: string;
-  total_amount: number;
-  ticket_code?: string;
-  created_at: string;
-}
-
-export interface DibsTemplate {
-  id: string;
-  provider_id: string;
+  operator_id: string; // FK to Operator
   title: string;
-  unit_price: number;
-  capacity_per_unit: number;
+  description: string;
+  price: number; // Base price or starting price
+  category: string; // Flexible string for filtering
+  image_url: string;
+  images?: string[]; // Multiple high-res posters/photos
+  unit_label?: string; // e.g. "ticket", "pax", "hour"
+  is_featured?: boolean;
+
+  // New Fields for Places vs Events
+  type: DibsType;
+  event_date?: string; // ISO Date for Events
+  event_location?: string; // Optional override for Operator location
+  event_lat?: number;
+  event_lng?: number;
+  tiers?: EventTier[]; // For Events
+
+  // Place operational fields
+  opening_time?: string; // HH:mm
+  closing_time?: string; // HH:mm
+  slot_duration?: number; // minutes
+  amenities?: string[];
+  total_slots?: number;
+  resources?: { id: string; name: string }[];
+  is_active?: boolean;
+
+  // Inventory
+  available_slots: number;
 }
 
-export interface ReservationIntent {
+export interface OperatorPhoto {
+  id: string;
+  operator_id: string;
+  photo_url: string;
+  caption?: string;
+}
+
+export interface DibsBooking {
   id: string;
   user_id: string;
+  operator_id: string; // Denormalized for query perf
+  item_id: string;
+  item?: DibsItem;
+  user?: User; // The buyer
+
+  status: 'PENDING_PAYMENT' | 'PENDING_VERIFICATION' | 'CONFIRMED' | 'REDEEMED' | 'REJECTED';
   total_amount: number;
-  status: 'DRAFT' | 'LOCKED' | 'EXPIRED' | 'CONFIRMED';
-  qr_code_url?: string; // If confirmed
+  payment_proof_url?: string; // Screenshot
+
+  // Form Data
+  quantity: number;
+  booking_date: string; // ISO Date of the booking slot
+
+  // New Fields
+  booking_ref?: string;
+  slot_times?: string[];
+  extracted_ref?: string;
+  tier_id?: string; // For Events
+
+  created_at: string;
 }
 
 // DATA EXPORTS

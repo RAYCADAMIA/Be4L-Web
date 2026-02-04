@@ -57,10 +57,10 @@ export const GradientButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonEleme
         <button
             className={`
                 relative px-6 py-3 rounded-xl font-black uppercase tracking-wider text-xs text-black
-                bg-gradient-to-r from-primary to-lime-400
-                shadow-[0_0_20px_rgba(204,255,0,0.3)]
+                animate-liquid-bg
+                shadow-[0_0_20px_rgba(45,212,191,0.3)]
                 transition-all duration-300
-                hover:shadow-[0_0_40px_rgba(204,255,0,0.5)] hover:scale-[1.02] active:scale-[0.98]
+                hover:shadow-[0_0_40px_rgba(45,212,191,0.5)] hover:bg-white hover:text-black hover:scale-[1.02] active:scale-[0.98]
                 disabled:opacity-50 disabled:cursor-not-allowed
                 flex items-center justify-center gap-2 overflow-hidden group
                 ${fullWidth ? 'w-full' : ''}
@@ -80,7 +80,7 @@ export const GradientButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonEleme
 /**
  * Glowing Text Header
  */
-export const GlowText: React.FC<{ children: React.ReactNode; className?: string; size?: 'sm' | 'md' | 'lg' | 'xl' }> = ({ children, className = "", size = 'md' }) => {
+export const GlowText: React.FC<{ children: React.ReactNode; className?: string; size?: 'sm' | 'md' | 'lg' | 'xl'; liquid?: boolean }> = ({ children, className = "", size = 'md', liquid = false }) => {
     const sizes = {
         sm: "text-sm",
         md: "text-xl",
@@ -88,8 +88,10 @@ export const GlowText: React.FC<{ children: React.ReactNode; className?: string;
         xl: "text-5xl"
     };
 
+    const isLiquid = liquid || size === 'lg' || size === 'xl';
+
     return (
-        <h1 className={`font-black italic text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.2)] ${sizes[size]} ${className}`}>
+        <h1 className={`font-black italic drop-shadow-[0_0_12px_rgba(255,255,255,0.2)] ${sizes[size]} ${isLiquid ? 'animate-liquid-text' : 'text-white'} ${className}`}>
             {children}
         </h1>
     );
@@ -129,10 +131,10 @@ export const FeedPlaceholder: React.FC<{
 /**
  * Aesthetic Lore Loader (HD)
  */
-export const EKGLoader: React.FC<{ size?: number; color?: string; isFlatline?: boolean; className?: string; showLabel?: boolean }> = ({ size = 120, color = "#CCFF00", isFlatline = false, className = "", showLabel = true }) => {
+export const EKGLoader: React.FC<{ size?: number; color?: string; isFlatline?: boolean; className?: string; showLabel?: boolean }> = ({ size = 120, color = "#2DD4BF", isFlatline = false, className = "", showLabel = true }) => {
     return (
         <div className={`flex flex-col items-center justify-center gap-4 ${className}`}>
-            <svg width={size} height={size / 2} viewBox="0 0 120 60" className="opacity-80 drop-shadow-[0_0_10px_rgba(204,255,0,0.3)]">
+            <svg width={size} height={size / 2} viewBox="0 0 120 60" className="opacity-80 drop-shadow-[0_0_10px_rgba(45,212,191,0.3)]">
                 <motion.path
                     d="M0 30 H20 L25 10 L35 50 L45 30 H70 L75 5 L85 55 L95 30 H120"
                     fill="transparent"
@@ -322,7 +324,7 @@ export const MissionCalendarModal: React.FC<{
                                         aspect-square flex flex-col items-center justify-center rounded-xl text-xs font-bold transition-all relative
                                         ${!isCurrentMonth ? 'opacity-0 pointer-events-none' : ''}
                                         ${isPast ? 'text-gray-800' : 'text-white hover:bg-white/5'}
-                                        ${isSelected ? 'bg-primary text-black shadow-[0_0_20px_rgba(204,255,0,0.4)] scale-110' : ''}
+                                        ${isSelected ? 'bg-primary text-black shadow-[0_0_20px_rgba(45,212,191,0.4)] scale-110' : ''}
                                         ${isToday && !isSelected ? 'border border-primary/30 text-primary' : ''}
                                     `}
                                 >
@@ -412,7 +414,7 @@ export const MissionTimeline: React.FC<{
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: 10 }}
                                 transition={{ duration: 0.2 }}
-                                className="text-[10px] font-black uppercase tracking-[0.1em] whitespace-nowrap text-primary drop-shadow-[0_0_10px_rgba(204,255,0,0.5)]"
+                                className="text-[10px] font-black uppercase tracking-[0.1em] whitespace-nowrap text-primary drop-shadow-[0_0_10px_rgba(45,212,191,0.5)]"
                             >
                                 {activeIndex === 0 ? 'TODAY' : selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase()}
                             </motion.div>
@@ -432,7 +434,7 @@ export const MissionTimeline: React.FC<{
                             {dates.map((_, i) => (
                                 <div
                                     key={i}
-                                    className={`w-0.5 h-0.5 rounded-full transition-all duration-500 ${i === activeIndex ? 'bg-primary scale-[2.5] shadow-[0_0_5px_#CCFF00]' : 'bg-white/10'}`}
+                                    className={`w-0.5 h-0.5 rounded-full transition-all duration-500 ${i === activeIndex ? 'bg-primary scale-[2.5] shadow-[0_0_5px_#2DD4BF]' : 'bg-white/10'}`}
                                 />
                             ))}
                         </div>
@@ -443,14 +445,14 @@ export const MissionTimeline: React.FC<{
                                 opacity: activeIndex === -1 ? 0.3 : 1
                             }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="absolute w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_15px_rgba(204,255,0,0.9)] -translate-x-1/2 z-10"
+                            className="absolute w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_15px_rgba(45,212,191,0.9)] -translate-x-1/2 z-10"
                         />
                     </div>
 
                     {/* Calendar Toggle */}
                     <button
                         onClick={() => setIsCalendarOpen(true)}
-                        className={`p-2 rounded-xl transition-all ${activeIndex === -1 ? 'bg-primary text-black shadow-[0_0_15px_rgba(204,255,0,0.4)]' : 'bg-white/5 text-gray-500 hover:text-white'}`}
+                        className={`p-2 rounded-xl transition-all ${activeIndex === -1 ? 'bg-primary text-black shadow-[0_0_15px_rgba(45,212,191,0.4)]' : 'bg-white/5 text-gray-500 hover:text-white'}`}
                     >
                         <CalendarIcon size={16} strokeWidth={2.5} />
                     </button>
@@ -485,16 +487,27 @@ export const FloatingTabs: React.FC<{
     className?: string;
 }> = ({ tabs, activeTab, onChange, className = "" }) => {
     return (
-        <div className={`flex items-center justify-center gap-6 py-4 px-8 bg-black/40 backdrop-blur-2xl rounded-full border border-white/[0.02] shadow-2xl pointer-events-auto ${className}`}>
+        <div className={`flex items-center justify-center gap-1 h-[52px] p-1.5 bg-white/[0.08] backdrop-blur-3xl rounded-full border border-white/10 shadow-2xl pointer-events-auto ${className}`}>
             {tabs.map((tab, index) => (
                 <React.Fragment key={tab.value}>
                     <button
                         onClick={() => onChange(tab.value)}
-                        className={`text-[10px] font-black uppercase tracking-[0.25em] transition-all duration-300 ${activeTab === tab.value ? 'text-primary drop-shadow-[0_0_8px_rgba(204,255,0,0.5)]' : 'text-white/20 hover:text-white/40'}`}
+                        className={`relative h-10 px-6 rounded-full text-[10px] font-black uppercase tracking-[0.25em] transition-all duration-300 ${activeTab === tab.value ? 'text-primary' : 'text-white/40 hover:text-white'}`}
                     >
-                        {tab.label}
+                        <span className="relative z-10" style={{
+                            textShadow: activeTab === tab.value ? '0 0 12px rgba(45,212,191,0.8)' : 'none'
+                        }}>
+                            {tab.label}
+                        </span>
+                        {activeTab === tab.value && (
+                            <motion.div
+                                layoutId="activeFloatingTab"
+                                className="absolute inset-0 bg-white/15 rounded-full border border-white/20 -z-10 shadow-[0_0_20px_rgba(45,212,191,0.15)]"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                        )}
                     </button>
-                    {index < tabs.length - 1 && <div className="w-[1px] h-3 bg-white/[0.05] mx-1" />}
+                    {/* {index < tabs.length - 1 && <div className="w-[1px] h-3 bg-white/10 mx-1" />} */}
                 </React.Fragment>
             ))}
         </div>

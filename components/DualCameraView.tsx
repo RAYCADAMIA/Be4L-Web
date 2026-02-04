@@ -41,8 +41,8 @@ const DualCameraView: React.FC<DualCameraViewProps> = ({
     onToggleMusic,
     onOpenMap,
     aspectRatio = "aspect-[4/5]",
-    rounded = "rounded-[32px]",
-    pipRounded = "rounded-[24px]",
+    rounded = "rounded-[1.5rem] md:rounded-[2.5rem]",
+    pipRounded = "rounded-[1.2rem] md:rounded-[2rem]",
     showMetadata = true,
     isSwapped: controlledIsSwapped,
     className = "",
@@ -230,7 +230,7 @@ const DualCameraView: React.FC<DualCameraViewProps> = ({
                 onDragEnd={handlePipDragEnd}
                 animate={pipControls}
                 className={`
-                    absolute w-28 h-36 border-2 border-black/50 overflow-hidden shadow-2xl z-20 
+                    absolute w-[95px] h-[130px] border-2 border-black/50 overflow-hidden shadow-2xl z-20 
                     ${pipRounded} ${isLocked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} 
                     pointer-events-auto
                     ${pipCorner === 'tl' ? 'top-4 left-4' : 'top-4 right-4'}

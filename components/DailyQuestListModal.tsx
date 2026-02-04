@@ -87,7 +87,7 @@ const DailyQuestListModal: React.FC<DailyQuestListModalProps> = ({ onClose }) =>
                         <button
                             onClick={addTask}
                             disabled={!newItem.trim()}
-                            className="w-12 bg-primary text-black rounded-xl flex items-center justify-center hover:bg-lime-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-12 bg-primary text-black rounded-xl flex items-center justify-center hover:bg-white hover:scale-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Plus size={20} strokeWidth={3} />
                         </button>

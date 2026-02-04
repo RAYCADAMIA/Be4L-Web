@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="liquidGradient" x1="0%" y1="0%" x2="200%" y2="0%">
+      <stop offset="0%" stop-color="#2dd4bf">
+        <animate attributeName="offset" values="-1; 0; 1" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="33%" stop-color="#06b6d4">
+        <animate attributeName="offset" values="-0.66; 0.33; 1.33" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="66%" stop-color="#a855f7">
+        <animate attributeName="offset" values="-0.33; 0.66; 1.66" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="#2dd4bf">
+        <animate attributeName="offset" values="0; 1; 2" dur="3s" repeatCount="indefinite" />
+      </stop>
+    </linearGradient>
+  </defs>
+  <path d="M100,30 C100,30 90,10 70,10 C50,10 40,30 40,50 C40,75 100,90 100,90 C100,90 160,75 160,50 C160,30 150,10 130,10 C110,10 100,30 100,30 Z" fill="url(#liquidGradient)" />
+</svg>

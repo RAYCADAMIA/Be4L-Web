@@ -88,7 +88,7 @@ const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onClose, onOp
 
                             {n.type === 'INVITE' && (
                                 <div className="mt-2 flex gap-2">
-                                    <button className="text-[10px] font-bold bg-primary text-black px-3 py-1.5 rounded-full hover:bg-lime-400">Accept</button>
+                                    <button className="text-[10px] font-bold bg-primary text-black px-3 py-1.5 rounded-full hover:bg-white transition-colors">Accept</button>
                                     <button className="text-[10px] font-bold bg-surface border border-white/10 text-white px-3 py-1.5 rounded-full hover:bg-white/10">Decline</button>
                                 </div>
                             )}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Camera, Send, Check, X, MapPin, Zap } from 'lucide-react';
+import { ChevronLeft, Camera, Send, Check, X, MapPin, Zap, Info } from 'lucide-react';
 import { supabaseService } from '../../services/supabaseService';
 import { Message } from '../../types';
+import { useNavigate } from 'react-router-dom';
 
 import { HeartbeatTransition } from '../ui/AestheticComponents';
 
@@ -10,9 +11,11 @@ interface ChatDetailScreenProps {
     chatName: string;
     onBack: () => void;
     onLaunchCamera: () => void;
+    onToggleInfo?: () => void;
 }
 
-const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, onBack, onLaunchCamera }) => {
+const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, onBack, onLaunchCamera, onToggleInfo }) => {
+    const navigate = useNavigate();
     const isLobby = chatId.startsWith('lobby');
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
@@ -23,27 +26,20 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
     const handleHandshake = () => {
         setShowHandshake(true);
         setTimeout(() => {
-            alert("Bluetooth Handshake Verified! Multi-Peer Proximity Confirmed.");
+            // Placeholder for proximity verification
             setShowHandshake(false);
         }, 2000);
     };
 
     useEffect(() => {
-        // Initial Load
         loadMessages(true);
-
-        // Realtime Subscription
         const channel = supabaseService.chat.subscribeToEcho(chatId, (incomingMsg) => {
             setMessages(prev => {
-                // Prevent duplicates (e.g., from optimistic updates)
                 if (prev.some(m => m.id === incomingMsg.id)) return prev;
                 return [...prev, incomingMsg];
             });
         });
-
-        return () => {
-            channel.unsubscribe();
-        };
+        return () => channel.unsubscribe();
     }, [chatId]);
 
     const loadMessages = async (isFirst: boolean) => {
@@ -63,147 +59,123 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
         if (!newMessage.trim()) return;
         const tempMsg = newMessage;
         setNewMessage('');
-
-        // Optimistic UI could go here, but waiting for DB ack is safer for now.
-        // We rely on the subscription to show the message to avoid issues, 
-        // OR we push it manually if we want instant feel.
-        // Let's rely on the response for self-message to ensure ID consistency.
-
         const sentMsg = await supabaseService.chat.sendMessage(chatId, tempMsg);
         if (sentMsg) {
             setMessages(prev => [...prev, sentMsg]);
         }
     };
 
-    const handleAcceptQuest = (questId: string) => {
-        alert(`Joined Quest ${questId}!`);
-    };
-
-    const handleDeclineQuest = () => {
-        alert("Declined invite.");
-    };
-
     return (
-        <div className="flex flex-col h-full bg-black absolute inset-0 z-50 animate-in slide-in-from-right duration-300">
-            {/* Header */}
-            <div className={`flex items-center p-4 pt-12 ${isLobby ? 'bg-primary/5' : 'bg-black/90'} backdrop-blur-md border-b border-white/10 z-20`}>
-                <button onClick={onBack} className="p-2 -ml-2 mr-2 rounded-full text-white hover:bg-white/10 transition-colors">
-                    <ChevronLeft size={28} />
-                </button>
-                <div className="flex-1">
-                    <h2 className={`font-black uppercase italic tracking-tighter ${isLobby ? 'text-primary' : 'text-white'} text-lg leading-tight`}>
-                        {isLobby ? `[Lobby] ${chatName}` : chatName}
-                    </h2>
-                    <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                            {isLobby ? '4 members live' : 'Online now'}
-                        </span>
+        <div className="flex flex-col h-full bg-transparent relative">
+            {/* Minimalist Glass Header */}
+            <header className={`
+                flex items-center justify-between p-4 md:px-8 md:py-6 sticky top-0 z-30
+                backdrop-blur-xl border-b border-white/5
+                ${isLobby ? 'bg-primary/5' : 'bg-black/60'}
+            `}>
+                <div className="flex items-center gap-4">
+                    <button onClick={onBack} className="md:hidden p-2 -ml-2 rounded-full text-white/60 hover:text-white transition-colors">
+                        <ChevronLeft size={24} />
+                    </button>
+                    <div className="flex flex-col">
+                        <h2 className="text-lg font-black italic tracking-tighter uppercase text-white flex items-center gap-2">
+                            <span className="animate-liquid-text">
+                                {chatName}
+                            </span>
+                            {isLobby && <Zap size={14} className="text-primary fill-primary" />}
+                        </h2>
+                        <div className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">Live Coordination</span>
+                        </div>
                     </div>
                 </div>
-                {isLobby && (
-                    <button
-                        onClick={handleHandshake}
-                        className={`p-2 rounded-xl border border-primary/30 flex items-center justify-center text-primary transition-all active:scale-90 ${showHandshake ? 'animate-ping bg-primary/20' : 'hover:bg-primary/10'}`}
-                    >
-                        <Zap size={20} className="fill-current" />
-                    </button>
-                )}
-            </div>
 
-            {/* Messages */}
+                <div className="flex items-center gap-2 md:gap-4">
+                    <button onClick={handleHandshake} className={`w-10 h-10 rounded-xl border border-white/5 flex items-center justify-center text-white/40 hover:text-primary hover:border-primary/30 transition-all ${showHandshake ? 'animate-ping' : ''}`}>
+                        <Zap size={18} />
+                    </button>
+                    <button onClick={onToggleInfo} className="w-10 h-10 rounded-xl border border-white/5 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all">
+                        <Info size={18} />
+                    </button>
+                </div>
+            </header>
+
+            {/* Messages Area */}
             <div
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto p-4 space-y-6 pb-24 scroll-smooth"
+                className="flex-1 overflow-y-auto px-6 py-8 space-y-8 no-scrollbar scroll-smooth"
             >
-                <HeartbeatTransition loading={loading} label="Accessing Comms...">
-                    {messages.map((msg) => (
-                        <div key={msg.id} className={`flex ${msg.is_me ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-[80%] ${msg.type === 'image' ? 'w-64' : ''}`}>
-                                {msg.type === 'text' && (
-                                    <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${msg.is_me
-                                        ? 'bg-primary text-black rounded-tr-none font-medium text-xs'
-                                        : 'bg-surface text-white rounded-tl-none border border-white/10 text-xs'
-                                        }`}>
-                                        {msg.content}
-                                    </div>
-                                )}
-
-                                {msg.type === 'image' && msg.image_url && (
-                                    <div className={`rounded-3xl overflow-hidden border-2 ${msg.is_me ? 'border-primary' : 'border-surface'} relative`}>
-                                        <img src={msg.image_url} className="w-full h-auto object-cover" alt="Sent photo" />
-                                        <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-full text-[10px] text-white font-bold">
-                                            RealMoji
-                                        </div>
-                                    </div>
-                                )}
-
-                                {msg.type === 'quest_invite' && (
-                                    <div className="bg-surface border border-white/10 p-4 rounded-3xl w-64 shadow-lg shadow-primary/5">
-                                        <div className="text-[9px] text-primary font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                                            <MapPin size={12} /> Quest Invite
-                                        </div>
-                                        <h3 className="text-white font-bold text-sm mb-1 leading-tight">{msg.content.replace('Quest Invite: ', '')}</h3>
-                                        <p className="text-gray-400 text-[10px] mb-4">You are invited to join this quest!</p>
-
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => msg.quest_id && handleAcceptQuest(msg.quest_id)}
-                                                className="flex-1 bg-primary text-black py-2 rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-1 hover:scale-105 transition-transform"
-                                            >
-                                                <Check size={14} /> Accept
-                                            </button>
-                                            <button
-                                                onClick={handleDeclineQuest}
-                                                className="flex-1 bg-white/5 text-white py-2 rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-1 hover:bg-white/10 transition-colors"
-                                            >
-                                                <X size={14} /> Decline
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <span className={`text-[10px] text-gray-500 mt-1 block ${msg.is_me ? 'text-right' : 'text-left'}`}>
-                                    {msg.timestamp}
-                                </span>
-                            </div>
+                <HeartbeatTransition loading={loading} label="Decrypting Comms...">
+                    {messages.length === 0 ? (
+                        <div className="py-20 text-center opacity-10">
+                            <Zap size={48} className="mx-auto mb-4" />
+                            <p className="text-xs font-black uppercase tracking-widest">Awaiting signal...</p>
                         </div>
-                    ))}
+                    ) : (
+                        messages.map((msg, idx) => {
+                            const showAvatar = idx === 0 || messages[idx - 1].sender_id !== msg.sender_id;
+                            const senderId = msg.sender_id === 'me' ? 'me' : msg.sender_id;
+
+                            return (
+                                <div key={msg.id} className={`flex ${msg.is_me ? 'justify-end' : 'justify-start'} group items-end gap-3`}>
+                                    {!msg.is_me && (
+                                        <div
+                                            onClick={() => navigate(`?profile=${senderId}`)}
+                                            className={`w-8 h-8 rounded-2xl bg-white/5 border border-white/10 shrink-0 transition-opacity cursor-pointer hover:border-primary/50 overflow-hidden ${showAvatar ? 'opacity-100' : 'opacity-0'}`}
+                                        >
+                                            <img src={`https://i.pravatar.cc/100?u=${senderId}`} className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
+                                    <div className={`flex flex-col ${msg.is_me ? 'items-end' : 'items-start'}`}>
+                                        <div className={`
+                                            px-5 py-3 text-sm leading-relaxed max-w-[280px] md:max-w-md shadow-2xl
+                                            ${msg.is_me
+                                                ? 'bg-primary text-black font-bold rounded-[1.8rem] rounded-br-[0.4rem]'
+                                                : 'bg-white/[0.03] text-white font-medium border border-white/5 rounded-[1.8rem] rounded-bl-[0.4rem]'}
+                                        `}>
+                                            {msg.content}
+                                        </div>
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-gray-600 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {msg.timestamp}
+                                        </span>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
                 </HeartbeatTransition>
             </div>
 
-            {/* Input Area */}
-            <div className="absolute bottom-0 w-full bg-black/95 border-t border-white/10 p-4 pb-8 safe-area-bottom z-20">
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={onLaunchCamera}
-                        className="w-12 h-12 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-primary hover:bg-white/20 transition-colors active:scale-95"
-                    >
-                        <Camera size={24} />
+            {/* Input Bar */}
+            <div className="p-6 pb-10 md:pb-8 shrink-0 relative z-20">
+                <div className="max-w-4xl mx-auto flex items-center gap-3 bg-white/[0.03] backdrop-blur-2xl border border-white/10 p-2 rounded-[2rem] shadow-3xl focus-within:border-primary/20 transition-all">
+                    <button className="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/5 transition-all">
+                        <Camera size={20} />
                     </button>
-
-                    <div className="flex-1 relative">
-                        <input
-                            type="text"
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                            placeholder="Message..."
-                            className="w-full bg-surface border border-white/10 rounded-full py-3 px-5 text-white placeholder-gray-500 outline-none focus:border-primary/50 transition-colors"
-                        />
-                        {newMessage.trim() && (
-                            <button
-                                onClick={handleSend}
-                                className="absolute right-1 top-1/2 -translate-y-1/2 p-2 bg-primary rounded-full text-black hover:scale-105 transition-transform animate-in zoom-in duration-200"
-                            >
-                                <Send size={18} strokeWidth={2.5} />
-                            </button>
-                        )}
-                    </div>
+                    <input
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                        placeholder="Coordination code..."
+                        className="flex-1 bg-transparent border-none outline-none text-sm font-medium text-white placeholder:text-gray-700 px-2"
+                    />
+                    <button
+                        onClick={handleSend}
+                        disabled={!newMessage.trim()}
+                        className={`
+                            w-10 h-10 rounded-full flex items-center justify-center transition-all animate-in zoom-in duration-300
+                            ${newMessage.trim() ? 'bg-primary text-black' : 'bg-white/5 text-gray-600'}
+                        `}
+                    >
+                        <Send size={18} className={newMessage.trim() ? 'translate-x-0.5' : ''} />
+                    </button>
                 </div>
             </div>
         </div>
     );
 };
+
 
 export default ChatDetailScreen;

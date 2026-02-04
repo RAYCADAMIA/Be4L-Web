@@ -1,15 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Zap, ChevronLeft, MapPin, Search, X, Compass } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { Zap, ChevronLeft, MapPin, Search, X, Compass, Plus, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import TopBar from './TopBar';
+
 import { supabaseService } from '../services/supabaseService';
 import { Quest, QuestType, QuestStatus, User, Competition } from '../types';
 import { generateRandomQuests } from '../utils/questGenerator';
 import QuestGeneratorUI from './Quest/QuestGeneratorUI';
 import QuestCard from './QuestCard';
 import QuestMap from './Quest/QuestMap';
-import { MissionTimeline, FloatingTabs, EKGLoader } from './ui/AestheticComponents';
+import { EKGLoader } from './ui/AestheticComponents';
 import { useToast } from './Toast';
+import { useNavigation } from '../contexts/NavigationContext';
+import { QuestSidebar, QuestHeader, MinimalCalendar } from './Quest/QuestFilters';
+import CreateQuestScreen from './CreateQuestScreen';
+import QuestDropModal from './Quest/QuestDropModal';
+import QuestDropCard from './Quest/QuestDropCard';
 
 interface QuestsScreenProps {
     onOpenQuest: (q: Quest) => void;
@@ -40,48 +45,41 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
     hasUserPostedToday,
     onTimerZero
 }) => {
-    const [activeTab, setActiveTab] = useState<'CANON' | 'SPONTY'>('CANON');
+    const { setTabs, activeTab, setActiveTab } = useNavigation();
     const [activeCat, setActiveCat] = useState('All');
     const [quests, setQuests] = useState<Quest[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showGenerator, setShowGenerator] = useState(false);
+    const [showCreate, setShowCreate] = useState(false);
+    const [showCalendar, setShowCalendar] = useState(false);
+    const [activeDrop, setActiveDrop] = useState<any>(null);
     const [isMapFull, setIsMapFull] = useState(false);
 
-    // Scroll Logic for Sync Top Bar
-    const [topBarY, setTopBarY] = useState(0);
-    const lastScrollY = useRef(0);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const lastClickTimeRef = useRef(0);
+    const MOCK_DROPS = [
+        {
+            id: 'drop-1',
+            brand: 'Be4L Official',
+            brand_logo: 'https://ui-avatars.com/api/?name=B4L&background=000&color=fff',
+            title: 'Community Kickstart',
+            description: 'Record a side quest clip and upload it to the Lore feed. Show us what "living" looks like to you.',
+            reward: '₱1,000 PHP',
+            hunters_count: 124,
+            difficulty: 'EASY' as const
+        },
+        {
+            id: 'drop-2',
+            brand: 'UrbanX',
+            brand_logo: 'https://ui-avatars.com/api/?name=UX&background=333&color=fff',
+            title: 'School Pool Dare',
+            description: 'Are you willing to jump into your school swimming pool with your full uniform on for a reward? Video proof required.',
+            reward: '₱500 PHP',
+            hunters_count: 12,
+            difficulty: 'HARD' as const
+        }
+    ];
 
     const { showToast } = useToast();
-
-    const handleLogoClick = () => {
-        const now = Date.now();
-        if (now - lastClickTimeRef.current < 300) {
-            onNavigate('LANDING');
-        } else {
-            containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-            if (onReset) onReset();
-        }
-        lastClickTimeRef.current = now;
-    };
-
-    const handleScroll = () => {
-        const currentScrollY = containerRef.current?.scrollTop || 0;
-        const delta = currentScrollY - lastScrollY.current;
-
-        if (currentScrollY > 10) {
-            setTopBarY(prev => {
-                const newY = prev - delta;
-                return Math.max(-80, Math.min(0, newY));
-            });
-        } else {
-            setTopBarY(0);
-        }
-
-        lastScrollY.current = currentScrollY;
-    };
 
     const handleJoin = async (id: string) => {
         if (id.startsWith('mock-') || id.startsWith('gen-')) {
@@ -102,12 +100,32 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
         }
     };
 
+    // Register Tabs
+    useEffect(() => {
+        // We no longer set global tabs because the Sidebar now handles the switching locally and visually
+        // setTabs([...]); 
+
+        // Ensure default tab
+        if (!activeTab || (activeTab !== 'CANON' && activeTab !== 'SPONTY')) {
+            setActiveTab('CANON');
+        }
+
+        // Clear global tabs to hide the floating side pill
+        setTabs([]);
+
+        return () => setTabs([]);
+    }, []);
+
+    useEffect(() => {
+        setActiveCat('All');
+    }, [activeTab]);
+
     useEffect(() => {
         setLoading(true);
         const type = activeTab === 'CANON' ? QuestType.CANON : QuestType.SPONTY;
         const randomQuests = generateRandomQuests(activeCat, selectedDate, 25, type);
 
-        supabaseService.quests.getQuests(activeCat, currentUser?.id).then(existingQuests => {
+        supabaseService.quests.getQuests(activeCat).then(existingQuests => {
             // V1 Spec: Discovery ONLY shows DISCOVERABLE quests.
             // ACTIVE quests are removed from discovery.
             const allQuests = [...existingQuests, ...randomQuests].filter(q =>
@@ -121,193 +139,194 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
     }, [activeTab, activeCat, selectedDate, refreshTrigger]);
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-deep-black relative overflow-hidden">
-            <TopBar
-                visible={true}
-                translateY={topBarY}
-                onOpenProfile={onOpenProfile}
-                user={currentUser}
-                onLogoClick={handleLogoClick}
-                onSearchClick={() => onNavigate('SEARCH')}
-                onNotificationsClick={() => onNavigate('NOTIFICATIONS')}
-                onQuestListClick={onOpenQuestList}
-                onReset={onReset}
-                hasUserPostedToday={hasUserPostedToday}
-                onTimerZero={onTimerZero}
-            />
+        <div className="flex-1 flex flex-col h-full relative overflow-hidden">
 
-            <motion.div
-                animate={{ y: topBarY }}
-                transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="absolute top-[80px] left-0 right-0 z-40 flex items-center justify-center pt-2 pointer-events-none"
-            >
-                <FloatingTabs
-                    activeTab={activeTab}
-                    onChange={(val) => setActiveTab(val as 'CANON' | 'SPONTY')}
-                    tabs={[
-                        { label: 'Canon', value: 'CANON' },
-                        { label: 'Sponty', value: 'SPONTY' }
-                    ]}
-                />
-            </motion.div>
+
+
 
             <div
-                ref={containerRef}
-                onScroll={handleScroll}
-                className="flex-1 h-full overflow-y-auto pb-32 pt-[150px] no-scrollbar"
+                // ref={containerRef}
+                // onScroll={handleScroll}
+                className="flex-1 h-full overflow-hidden flex flex-col md:flex-row max-w-[1600px] mx-auto w-full"
             >
-                {activeTab === 'CANON' && (
-                    <div className="space-y-6 animate-in fade-in duration-500">
-                        <MissionTimeline
+                {/* Desktop Sidebar (Left) */}
+                <div className="hidden md:flex flex-col w-24 shrink-0 pt-8 sticky top-0 h-full overflow-y-auto no-scrollbar border-r border-white/[0.02]">
+                    <QuestSidebar
+                        selectedDate={selectedDate}
+                        onDateChange={(d) => {
+                            setSelectedDate(d);
+                            setLoading(true);
+                            setTimeout(() => setLoading(false), 400);
+                        }}
+                        onOpenCalendar={() => setShowCalendar(true)}
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        activeCat={activeCat}
+                        setActiveCat={setActiveCat}
+                    />
+                </div>
+
+                {/* Main Feed Content (Right / Center) */}
+                <div className="flex-1 h-full overflow-y-auto pb-32 no-scrollbar relative">
+
+                    {/* Mobile Header (Filters) */}
+                    <div className="md:hidden pt-6 pb-2 sticky top-0 z-30">
+                        <QuestHeader
                             selectedDate={selectedDate}
                             onDateChange={(d) => {
                                 setSelectedDate(d);
                                 setLoading(true);
                                 setTimeout(() => setLoading(false), 400);
                             }}
-                            daysCount={7}
+                            onOpenCalendar={() => setShowCalendar(true)}
+                            activeCat={activeCat}
+                            setActiveCat={setActiveCat}
+                            activeTab={activeTab}
+                            setActiveTab={setActiveTab}
                         />
+                    </div>
 
-                        <div className="px-4">
-                            <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-2 px-2 py-1">
-                                {['All', 'Sports', 'Events', 'Socials', 'Adventure', 'Travel', 'Train', 'Jobs', 'Others'].map(cat => (
-                                    <button
-                                        key={cat}
-                                        onClick={() => setActiveCat(cat)}
-                                        className={`px-5 py-2 rounded-full whitespace-nowrap text-[9px] font-black uppercase tracking-widest transition-all ${activeCat === cat ? 'bg-primary text-black shadow-[0_0_15px_rgba(204,255,0,0.3)]' : 'bg-white/[0.04] text-gray-700 hover:bg-white/[0.08] hover:text-white'}`}
-                                    >
-                                        {cat}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="px-4 space-y-4">
-                            {loading ? (
-                                <div className="py-12 flex justify-center">
-                                    <EKGLoader size={60} />
-                                </div>
-                            ) : quests.filter(q => {
-                                if (q.mode !== QuestType.CANON) return false;
-                                if (activeCat !== 'All' && q.category !== activeCat) return false;
-                                const qDate = new Date(q.start_time);
-                                return qDate.getFullYear() === selectedDate.getFullYear() &&
-                                    qDate.getMonth() === selectedDate.getMonth() &&
-                                    qDate.getDate() === selectedDate.getDate();
-                            }).length > 0 ? (
-                                quests.filter(q => {
+                    {activeTab === 'CANON' && (
+                        <div className="px-4 md:px-8 pt-4 md:pt-8 animate-in fade-in duration-500">
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-20">
+                                {loading ? (
+                                    <div className="col-span-full py-20 flex justify-center">
+                                        <EKGLoader size={60} />
+                                    </div>
+                                ) : quests.filter(q => {
                                     if (q.mode !== QuestType.CANON) return false;
                                     if (activeCat !== 'All' && q.category !== activeCat) return false;
                                     const qDate = new Date(q.start_time);
                                     return qDate.getFullYear() === selectedDate.getFullYear() &&
                                         qDate.getMonth() === selectedDate.getMonth() &&
                                         qDate.getDate() === selectedDate.getDate();
-                                }).map(q => (
-                                    <QuestCard
-                                        key={q.id}
-                                        quest={q}
-                                        currentUser={currentUser}
-                                        onJoin={handleJoin}
-                                        onOpenDetail={onOpenQuest}
-                                    />
-                                ))
-                            ) : (
-                                <div className="py-20 flex flex-col items-center justify-center text-gray-600 border border-white/[0.03] rounded-[2.5rem] bg-white/5">
-                                    <Zap size={32} className="mb-2 opacity-50" />
-                                    <p className="text-xs font-bold uppercase tracking-widest">No Missions Today</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'SPONTY' && (
-                    <div className={`px-4 space-y-4 animate-in fade-in duration-500 ${isMapFull ? 'fixed inset-0 z-[100] bg-deep-black p-0 mt-0 space-y-0' : ''}`}>
-                        <div className={`relative transition-all duration-500 overflow-hidden ${isMapFull ? 'h-full rounded-none' : 'h-80 rounded-[2.5rem]'}`}>
-                            <QuestMap
-                                quests={quests.filter(q => q.mode === QuestType.SPONTY)}
-                                onQuestClick={onOpenQuest}
-                                isFull={isMapFull}
-                            />
-
-                            <div className={`absolute bottom-6 left-6 z-30 flex items-center gap-3 transition-all ${isMapFull ? 'bottom-8 left-8' : ''}`}>
-                                <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => setShowGenerator(true)}
-                                    className="w-10 h-10 bg-primary text-black rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(204,255,0,0.3)] border border-white/20 hover:shadow-[0_0_30px_rgba(204,255,0,0.5)] transition-shadow"
-                                >
-                                    <Zap size={20} className="fill-current" />
-                                </motion.button>
-                            </div>
-
-                            <div className={`absolute bottom-6 right-6 z-30 transition-all ${isMapFull ? 'top-10 right-8 bottom-auto' : ''}`}>
-                                <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => setIsMapFull(!isMapFull)}
-                                    className={`p-3 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-2xl border transition-all ${isMapFull ? 'bg-black/60 border-white/20 text-white' : 'bg-primary text-black border-white/10'}`}
-                                >
-                                    {isMapFull ? <X size={24} /> : <Compass size={24} />}
-                                    {!isMapFull && <span className="ml-2 text-[10px] font-black uppercase tracking-widest pr-1">Full Map</span>}
-                                </motion.button>
-                            </div>
-                        </div>
-
-                        {!isMapFull && (
-                            <div className="space-y-4 pt-4 pb-20">
-                                {loading ? (
-                                    <div className="py-12 flex justify-center">
-                                        <EKGLoader size={60} />
-                                    </div>
-                                ) : quests.filter(q => q.mode === QuestType.SPONTY).length > 0 ? (
-                                    quests.filter(q => q.mode === QuestType.SPONTY).map(q => (
+                                }).length > 0 ? (
+                                    quests.filter(q => {
+                                        if (q.mode !== QuestType.CANON) return false;
+                                        if (activeCat !== 'All' && q.category !== activeCat) return false;
+                                        const qDate = new Date(q.start_time);
+                                        return qDate.getFullYear() === selectedDate.getFullYear() &&
+                                            qDate.getMonth() === selectedDate.getMonth() &&
+                                            qDate.getDate() === selectedDate.getDate();
+                                    }).map(q => (
                                         <QuestCard
                                             key={q.id}
                                             quest={q}
                                             currentUser={currentUser}
-                                            onJoin={handleJoin}
                                             onOpenDetail={onOpenQuest}
                                         />
                                     ))
                                 ) : (
-                                    <div className="py-12 flex flex-col items-center justify-center text-gray-600 border border-white/5 rounded-2xl bg-white/5">
-                                        <MapPin size={24} className="mb-2 opacity-30" />
-                                        <p className="text-[10px] font-black uppercase tracking-widest">No Active Sponty Runs</p>
+                                    <div className="col-span-full py-32 flex flex-col items-center justify-center text-gray-600 border border-dashed border-white/10 rounded-[2.5rem] bg-white/[0.02]">
+                                        <Zap size={32} className="mb-4 opacity-50" />
+                                        <p className="text-xs font-bold uppercase tracking-widest">No Quests Scheduled</p>
                                     </div>
                                 )}
                             </div>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            <AnimatePresence>
-                {showGenerator && (
-                    <div className="absolute inset-0 z-[100] flex items-center justify-center p-6">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowGenerator(false)}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-xl"
-                        />
-                        <div className="relative z-10 w-full max-w-sm">
-                            <QuestGeneratorUI
-                                onAccept={(q) => {
-                                    handleJoin(q.id);
-                                    setShowGenerator(false);
-                                }}
-                                onViewDetail={(q) => {
-                                    onOpenQuest(q);
-                                    setShowGenerator(false);
-                                }}
-                                onClose={() => setShowGenerator(false)}
-                            />
                         </div>
-                    </div>
-                )}
-            </AnimatePresence>
+                    )}
+
+                    {activeTab === 'SPONTY' && (
+                        <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-10 space-y-12 min-h-[70vh] animate-in fade-in duration-700 max-w-6xl mx-auto w-full">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full items-start">
+                                {/* Left Side: Random Generator */}
+                                <div className="flex flex-col gap-4">
+                                    <QuestGeneratorUI
+                                        onAccept={(q) => {
+                                            handleJoin(q.id);
+                                        }}
+                                        onViewDetail={(q) => {
+                                            onOpenQuest(q);
+                                        }}
+                                        showClose={false}
+                                    />
+                                </div>
+
+                                {/* Right Side: Quest Drops */}
+                                <div className="flex flex-col gap-4">
+                                    <QuestDropCard
+                                        drop={null} // Set to null to show 'Stay Tuned' state, or MOCK_DROPS[0] to show active
+                                        onAccept={(drop) => {
+                                            setActiveDrop(drop);
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Coming Soon Section */}
+                            <div className="w-full max-w-2xl pt-12 border-t border-white/5 flex flex-col items-center">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center text-primary/40">
+                                        <Sparkles size={14} />
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Signal Scan</span>
+                                </div>
+                                <p className="text-[11px] text-gray-500 font-medium uppercase tracking-[0.2em] text-center max-w-md leading-loose">
+                                    Discovering currently happening quests around your city is coming soon.
+                                </p>
+                                <div className="mt-6 flex items-center gap-4 opacity-20">
+                                    <div className="h-[1px] w-8 bg-white" />
+                                    <div className="w-1 h-1 rounded-full bg-white" />
+                                    <div className="h-[1px] w-8 bg-white" />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Persistent Create FAB (Bottom Right) */}
+                <div className="fixed bottom-10 right-10 z-[60]">
+                    <motion.button
+                        whileHover={{ scale: 1.1, rotate: 90 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setShowCreate(true)}
+                        className="w-14 h-14 bg-white text-black rounded-full flex items-center justify-center shadow-[0_20px_40px_rgba(0,0,0,0.4)] hover:shadow-primary/20 transition-all border border-white/20"
+                    >
+                        <Plus size={28} strokeWidth={3} />
+                    </motion.button>
+                </div>
+
+                <AnimatePresence>
+                    {showCreate && (
+                        <CreateQuestScreen
+                            currentUser={currentUser}
+                            onClose={() => setShowCreate(false)}
+                            onQuestCreated={(id, title) => {
+                                setShowCreate(false);
+                                showToast(`Quest "${title}" deployed!`, "success");
+                            }}
+                        />
+                    )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                    {showCalendar && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md" onClick={() => setShowCalendar(false)}>
+                            <div onClick={e => e.stopPropagation()} className="w-full max-w-xs relative">
+                                <MinimalCalendar
+                                    selectedDate={selectedDate}
+                                    onSelect={(d) => {
+                                        setSelectedDate(d);
+                                        setLoading(true);
+                                        setTimeout(() => setLoading(false), 400);
+                                        setShowCalendar(false);
+                                    }}
+                                    onClose={() => setShowCalendar(false)}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                    {activeDrop && (
+                        <QuestDropModal
+                            drop={activeDrop}
+                            onClose={() => setActiveDrop(null)}
+                        />
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
     );
 };

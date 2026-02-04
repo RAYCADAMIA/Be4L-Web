@@ -1,199 +1,279 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Target, MapPin, Search, Navigation, X, ChevronRight, Direction } from 'lucide-react';
+import { Target, MapPin, Search, Navigation, X, ChevronRight, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MapPickerProps {
     onSelect: (coords: { latitude: number; longitude: number }, address: string) => void;
     onClose: () => void;
+    readOnly?: boolean;
+    initialCoords?: { latitude: number; longitude: number };
 }
 
-declare let L: any;
+declare let google: any;
 
-const MapPicker: React.FC<MapPickerProps> = ({ onSelect, onClose }) => {
+const MapPicker: React.FC<MapPickerProps> = ({ onSelect, onClose, readOnly, initialCoords }) => {
     const mapRef = useRef<HTMLDivElement>(null);
-    const leafletMap = useRef<any>(null);
+    const googleMap = useRef<any>(null);
     const markerRef = useRef<any>(null);
+    const autocompleteRef = useRef<any>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
     const [address, setAddress] = useState('Davao City, Philippines');
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<any[]>([]);
-    const [coords, setCoords] = useState<{ latitude: number; longitude: number }>({ latitude: 7.0707, longitude: 125.6087 });
-    const [isSearching, setIsSearching] = useState(false);
+    const [coords, setCoords] = useState<{ latitude: number; longitude: number }>(initialCoords || { latitude: 7.0707, longitude: 125.6087 });
+    const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
-        if (!mapRef.current || !window.hasOwnProperty('L')) return;
-
-        if (!leafletMap.current) {
-            leafletMap.current = L.map(mapRef.current, {
-                zoomControl: false,
-                attributionControl: false
-            }).setView([coords.latitude, coords.longitude], 15);
-
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                maxZoom: 19
-            }).addTo(leafletMap.current);
-
-            const customIcon = L.divIcon({
-                className: 'custom-picker-marker',
-                html: `<div class="relative w-12 h-12 flex items-center justify-center">
-                         <div class="absolute inset-0 bg-[#CCFF00]/20 rounded-full animate-ping"></div>
-                         <div class="w-5 h-5 bg-[#CCFF00] rounded-full border-[3px] border-black z-10 shadow-[0_0_20px_#CCFF00]"></div>
-                       </div>`,
-                iconSize: [48, 48],
-                iconAnchor: [24, 24]
-            });
-
-            markerRef.current = L.marker([coords.latitude, coords.longitude], {
-                icon: customIcon,
-                draggable: true
-            }).addTo(leafletMap.current);
-
-            leafletMap.current.on('click', (e: any) => {
-                const { lat, lng } = e.latlng;
-                moveTo(lat, lng);
-            });
-
-            markerRef.current.on('dragend', () => {
-                const position = markerRef.current.getLatLng();
-                setCoords({ latitude: position.lat, longitude: position.lng });
-                updateAddress(position.lat, position.lng);
-            });
-        }
+        const checkGoogle = setInterval(() => {
+            if (typeof google !== 'undefined') {
+                setIsLoaded(true);
+                clearInterval(checkGoogle);
+            }
+        }, 500);
+        return () => clearInterval(checkGoogle);
     }, []);
 
-    const moveTo = (lat: number, lng: number, zoom = 16) => {
-        if (!markerRef.current || !leafletMap.current) return;
-        markerRef.current.setLatLng([lat, lng]);
-        leafletMap.current.setView([lat, lng], zoom);
+    useEffect(() => {
+        if (!isLoaded || !mapRef.current) return;
+
+        // Initialize Map
+        googleMap.current = new google.maps.Map(mapRef.current, {
+            center: { lat: coords.latitude, lng: coords.longitude },
+            zoom: 15,
+            disableDefaultUI: true,
+            styles: [
+                { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+                { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+                { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+                {
+                    featureType: "administrative.locality",
+                    elementType: "labels.text.fill",
+                    stylers: [{ color: "#d59563" }],
+                },
+                {
+                    featureType: "poi",
+                    elementType: "labels.text.fill",
+                    stylers: [{ color: "#d59563" }],
+                },
+                {
+                    featureType: "poi.park",
+                    elementType: "geometry",
+                    stylers: [{ color: "#263c3f" }],
+                },
+                {
+                    featureType: "poi.park",
+                    elementType: "labels.text.fill",
+                    stylers: [{ color: "#6b9a76" }],
+                },
+                {
+                    featureType: "road",
+                    elementType: "geometry",
+                    stylers: [{ color: "#38414e" }],
+                },
+                {
+                    featureType: "road",
+                    elementType: "geometry.stroke",
+                    stylers: [{ color: "#212a37" }],
+                },
+                {
+                    featureType: "road",
+                    elementType: "labels.text.fill",
+                    stylers: [{ color: "#9ca5b3" }],
+                },
+                {
+                    featureType: "road.highway",
+                    elementType: "geometry",
+                    stylers: [{ color: "#746855" }],
+                },
+                {
+                    featureType: "road.highway",
+                    elementType: "geometry.stroke",
+                    stylers: [{ color: "#1f2835" }],
+                },
+                {
+                    featureType: "road.highway",
+                    elementType: "labels.text.fill",
+                    stylers: [{ color: "#f3d19c" }],
+                },
+                {
+                    featureType: "transit",
+                    elementType: "geometry",
+                    stylers: [{ color: "#2f3948" }],
+                },
+                {
+                    featureType: "transit.station",
+                    elementType: "labels.text.fill",
+                    stylers: [{ color: "#d59563" }],
+                },
+                {
+                    featureType: "water",
+                    elementType: "geometry",
+                    stylers: [{ color: "#17263c" }],
+                },
+                {
+                    featureType: "water",
+                    elementType: "labels.text.fill",
+                    stylers: [{ color: "#515c6d" }],
+                },
+                {
+                    featureType: "water",
+                    elementType: "labels.text.stroke",
+                    stylers: [{ color: "#17263c" }],
+                },
+            ],
+            gestureHandling: 'greedy'
+        });
+
+        // Initialize Marker
+        markerRef.current = new google.maps.Marker({
+            position: { lat: coords.latitude, lng: coords.longitude },
+            map: googleMap.current,
+            draggable: !readOnly,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: "#2DD4BF",
+                fillOpacity: 1,
+                strokeWeight: 2,
+                strokeColor: "#000",
+                scale: 10,
+            }
+        });
+
+        // Autocomplete Setup
+        if (!readOnly && inputRef.current) {
+            autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
+                componentRestrictions: { country: "ph" },
+                fields: ["address_components", "geometry", "name", "formatted_address"],
+            });
+
+            autocompleteRef.current.addListener("place_changed", () => {
+                const place = autocompleteRef.current.getPlace();
+                if (!place.geometry || !place.geometry.location) return;
+
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+                moveTo(lat, lng, place.name || place.formatted_address);
+            });
+        }
+
+        // Draggable Fine-tune
+        if (!readOnly) {
+            google.maps.event.addListener(markerRef.current, 'dragend', () => {
+                const pos = markerRef.current.getPosition();
+                updateAddress(pos.lat(), pos.lng());
+            });
+
+            googleMap.current.addListener('click', (e: any) => {
+                moveTo(e.latLng.lat(), e.latLng.lng());
+            });
+        }
+
+        // Initial Address Update
+        updateAddress(coords.latitude, coords.longitude);
+
+    }, []);
+
+    const moveTo = (lat: number, lng: number, label?: string) => {
+        if (!googleMap.current || !markerRef.current) return;
+        const pos = { lat, lng };
+        googleMap.current.panTo(pos);
+        markerRef.current.setPosition(pos);
         setCoords({ latitude: lat, longitude: lng });
-        updateAddress(lat, lng);
+
+        if (label) {
+            setAddress(label);
+        } else {
+            updateAddress(lat, lng);
+        }
     };
 
     const updateAddress = async (lat: number, lng: number) => {
-        try {
-            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-            const data = await resp.json();
-            const name = data.address.poi || data.address.building || data.address.road || data.display_name.split(',')[0];
-            setAddress(name || 'Selected Location');
-        } catch (e) {
-            setAddress('Location Selected');
-        }
-    };
-
-    const handleSearch = async () => {
-        if (!searchQuery) return;
-        setIsSearching(true);
-        try {
-            const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery + ' Davao')}&limit=5`);
-            const data = await resp.json();
-            setSearchResults(data);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setIsSearching(false);
-        }
-    };
-
-    const handleSelectResult = (result: any) => {
-        const lat = parseFloat(result.lat);
-        const lon = parseFloat(result.lon);
-        moveTo(lat, lon, 17);
-        setAddress(result.display_name.split(',')[0]);
-        setSearchResults([]);
-        setSearchQuery('');
+        if (typeof google === 'undefined') return;
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
+            if (status === "OK" && results[0]) {
+                setAddress(results[0].formatted_address);
+                setCoords({ latitude: lat, longitude: lng });
+            }
+        });
     };
 
     const handleConfirm = () => {
         onSelect(coords, address);
     };
 
+    const openInMaps = () => {
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${coords.latitude},${coords.longitude}`, '_blank');
+    };
+
     return (
-        <div className="absolute inset-0 z-[200] bg-[#070707] flex flex-col pt-12">
-            {/* Minimalist Map Header */}
-            <div className="px-6 pb-6 flex justify-between items-center">
-                <div className="flex flex-col">
-                    <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">Sector Ops</h3>
-                    <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest">Pinpoint Mission Zone</span>
-                </div>
-                <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-500">
-                    <X size={20} />
-                </button>
-            </div>
-
+        <div className="w-full h-full flex flex-col relative overflow-hidden bg-[#0A0A0A]">
             <div className="flex-1 relative">
-                <div ref={mapRef} className="absolute inset-0" />
+                <div ref={mapRef} className="absolute inset-0 z-0" />
 
-                {/* Search Bar Integration */}
-                <div className="absolute top-6 left-6 right-6 z-[210] space-y-2">
-                    <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl flex items-center px-4 shadow-2xl transition-all focus-within:border-primary/50">
-                        <Search size={18} className="text-gray-700" />
-                        <input
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            placeholder="Search facility or area..."
-                            className="flex-1 h-16 bg-transparent text-xs text-white uppercase font-black italic outline-none px-4 placeholder-white/5"
-                        />
-                        {searchQuery && (
-                            <button onClick={handleSearch} className="text-primary font-black text-[10px] uppercase tracking-widest pl-2">Find</button>
-                        )}
+                {!isLoaded && (
+                    <div className="absolute inset-0 bg-[#0A0A0A] z-30 flex flex-col items-center justify-center gap-4">
+                        <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 animate-pulse">Syncing Satellite Data</p>
                     </div>
+                )}
 
-                    <AnimatePresence>
-                        {searchResults.length > 0 && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="bg-[#0A0A0A] border border-white/10 rounded-2xl overflow-hidden shadow-3xl"
-                            >
-                                {searchResults.map((res: any) => (
-                                    <button
-                                        key={res.place_id}
-                                        onClick={() => handleSelectResult(res)}
-                                        className="w-full p-4 border-b border-white/5 flex items-center gap-3 hover:bg-white/5 transition-colors text-left"
-                                    >
-                                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-600">
-                                            <MapPin size={14} />
-                                        </div>
-                                        <div className="flex-1 overflow-hidden">
-                                            <p className="text-[11px] font-black text-white uppercase truncate">{res.display_name.split(',')[0]}</p>
-                                            <p className="text-[8px] font-bold text-gray-700 uppercase truncate">{res.display_name.split(',').slice(1).join(',').trim()}</p>
-                                        </div>
-                                        <ChevronRight size={14} className="text-gray-900" />
-                                    </button>
-                                ))}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-
-                {/* Bottom Place Info (Reflective of Gmaps reference) */}
-                <div className="absolute bottom-10 left-6 right-6 z-[210] space-y-4">
-                    <div className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 shadow-3xl flex items-center gap-4 relative overflow-hidden backdrop-blur-xl">
-                        <div className="absolute top-0 right-0 p-3">
-                            <div className="px-3 py-1 rounded-full bg-white/5 border border-white/5 flex items-center gap-2">
-                                <Navigation size={10} className="text-primary" />
-                                <span className="text-[9px] font-black text-gray-600 uppercase">Directions</span>
-                            </div>
+                {/* Search Bar - Only for Pickers */}
+                {!readOnly && (
+                    <div className="absolute top-4 left-4 right-4 z-[10]">
+                        <div className="bg-[#0A0A0A]/80 backdrop-blur-md border border-white/10 rounded-2xl flex items-center px-4 shadow-2xl transition-all focus-within:border-primary/50">
+                            <Search size={16} className="text-gray-500" />
+                            <input
+                                ref={inputRef}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Find sector..."
+                                className="flex-1 h-12 bg-transparent text-[10px] text-white uppercase font-black italic outline-none px-4 placeholder-white/20"
+                            />
                         </div>
+                    </div>
+                )}
 
-                        <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 shadow-inner">
-                            <MapPin size={24} />
+                {/* Bottom Overlay for Selection */}
+                <div className="absolute bottom-4 left-4 right-4 z-[10] flex flex-col gap-2">
+                    <div className="bg-[#0A0A0A]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-3xl flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 shadow-inner">
+                            <MapPin size={18} />
                         </div>
                         <div className="flex-1 overflow-hidden">
-                            <h4 className="text-lg font-black italic text-white uppercase tracking-tight truncate leading-tight mb-1">{address}</h4>
-                            <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest truncate">Zone Verified • Davao Sector</p>
+                            <h4 className="text-[10px] font-black italic text-white uppercase tracking-tight truncate leading-tight">{address}</h4>
+                            <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest">
+                                {readOnly ? 'Verified Sector' : 'Sector Identified'}
+                            </p>
                         </div>
-                    </div>
 
-                    <button
-                        onClick={handleConfirm}
-                        className="w-full h-20 bg-white text-black font-black uppercase tracking-[0.3em] italic rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.8)] active:scale-95 transition-all text-sm flex items-center justify-center gap-4 group"
-                    >
-                        Establish Sector <Target size={22} className="group-hover:rotate-90 transition-transform" />
-                    </button>
+                        {readOnly ? (
+                            <button
+                                onClick={openInMaps}
+                                className="px-5 h-10 bg-white/5 border border-white/10 text-white font-black text-[10px] uppercase tracking-widest italic rounded-xl active:scale-95 transition-all flex items-center gap-2"
+                            >
+                                Directions <ExternalLink size={14} />
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleConfirm}
+                                className="px-6 h-10 bg-primary text-black font-black text-[10px] uppercase tracking-widest italic rounded-xl active:scale-95 transition-all flex items-center gap-2"
+                            >
+                                Set <Target size={14} />
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
+
+            {onClose && (
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 z-[20] w-12 h-12 bg-black/50 backdrop-blur-md rounded-full border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all shadow-xl"
+                >
+                    <X size={20} />
+                </button>
+            )}
         </div>
     );
 };

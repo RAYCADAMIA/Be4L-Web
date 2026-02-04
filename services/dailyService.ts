@@ -5,7 +5,7 @@ import { DailyTask } from '../types';
 // Timezone: Local Device Time (Feed uses device time for strict sync)
 
 // TOGGLE THIS FOR DEV MODE (2-minute cycles) vs PROD (Midnight reset)
-export const DEV_MODE = true;
+export const DEV_MODE = import.meta.env.DEV;
 
 const STORAGE_KEY = 'be4l_daily_quests';
 

@@ -168,7 +168,11 @@ const PostDetailScreen: React.FC<{
                     <ChevronLeft size={28} />
                 </button>
                 <div className="flex flex-col items-center pt-1">
-                    <span className="font-bold text-white text-base shadow-sm">{capture.user?.username || 'Unknown User'}</span>
+                    <span className="font-bold text-white text-base shadow-sm italic">
+                        <span className="animate-liquid-text">
+                            {capture.user?.username || 'Unknown User'}
+                        </span>
+                    </span>
                     <span className="text-xs text-gray-400 font-medium shadow-sm">
                         {new Date(capture.created_at).toDateString() === new Date().toDateString()
                             ? new Date(capture.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -245,7 +249,11 @@ const PostDetailScreen: React.FC<{
                                 <button onClick={() => setSelectedReaction(r)} className="w-12 h-12 rounded-full border-2 border-surface overflow-hidden hover:scale-105 transition-transform">
                                     <img src={r.image_url} className="w-full h-full object-cover" />
                                 </button>
-                                <span className="text-[9px] font-bold text-gray-400 max-w-[60px] truncate">{r.user.username}</span>
+                                <span className="text-[9px] font-bold text-gray-400 max-w-[60px] truncate italic">
+                                    <span className="animate-liquid-text">
+                                        {r.user.username}
+                                    </span>
+                                </span>
                             </div>
                         ))}
                         {!isOwner && (
@@ -270,7 +278,11 @@ const PostDetailScreen: React.FC<{
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-baseline gap-2">
-                                            <span className="font-bold text-white text-sm">{c.user}</span>
+                                            <span className="font-bold text-white text-sm italic">
+                                                <span className="animate-liquid-text">
+                                                    {c.user}
+                                                </span>
+                                            </span>
                                             <span className="text-xs text-gray-500">{c.time}</span>
                                         </div>
                                         <p className="text-gray-300 text-sm leading-relaxed">{c.text}</p>
@@ -320,11 +332,15 @@ const PostDetailScreen: React.FC<{
 
             {selectedReaction && (
                 <div className="absolute inset-0 z-[70] bg-black/60 flex items-end" onClick={() => setSelectedReaction(null)}>
-                    <div className="w-full bg-[#1A1A1A] rounded-t-[2rem] p-6 pb-10 animate-in slide-in-from-bottom" onClick={e => e.stopPropagation()}>
+                    <div className="w-full bg-[#1A1A1A] rounded-t-[2.5rem] p-6 pb-10 animate-in slide-in-from-bottom" onClick={e => e.stopPropagation()}>
                         <div className="w-32 h-32 rounded-full border-[3px] border-primary overflow-hidden mx-auto mb-4">
                             <img src={selectedReaction.image_url} className="w-full h-full object-cover transform scale-x-[-1]" />
                         </div>
-                        <h3 className="text-center font-bold text-white">{selectedReaction.user.username}</h3>
+                        <h3 className="text-center font-bold text-white italic">
+                            <span className="animate-liquid-text">
+                                {selectedReaction.user.username}
+                            </span>
+                        </h3>
                         <button onClick={() => setSelectedReaction(null)} className="absolute top-6 right-6 p-2 text-gray-500"><X size={16} /></button>
                     </div>
                 </div>

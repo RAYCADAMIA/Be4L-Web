@@ -47,8 +47,8 @@ const QuestMap: React.FC<QuestMapProps> = ({ quests, onQuestClick, isFull = fals
                         const userIcon = L.divIcon({
                             className: 'user-location-marker',
                             html: `<div class="relative w-10 h-10 flex items-center justify-center">
-                                     <div class="absolute inset-0 bg-[#CCFF00]/10 rounded-full animate-ping"></div>
-                                     <div class="w-2.5 h-2.5 bg-[#CCFF00] rounded-full shadow-[0_0_15px_#CCFF00] border-2 border-black z-10"></div>
+                                     <div class="absolute inset-0 bg-[#2DD4BF]/10 rounded-full animate-ping"></div>
+                                     <div class="w-2.5 h-2.5 bg-[#2DD4BF] rounded-full shadow-[0_0_15px_#2DD4BF] border-2 border-black z-10"></div>
                                    </div>`,
                             iconSize: [40, 40],
                             iconAnchor: [20, 20]
@@ -89,8 +89,8 @@ const QuestMap: React.FC<QuestMapProps> = ({ quests, onQuestClick, isFull = fals
                 shadowClass = 'shadow-[0_0_20px_rgba(239,68,68,0.4)]';
                 ringAnimation = 'after:content-[""] after:absolute after:inset-[-4px] after:border after:border-red-500/50 after:rounded-full after:animate-ping';
             } else if (isStartingSoon) {
-                borderClass = 'border-[#CCFF00]/50';
-                shadowClass = 'shadow-[0_0_15px_rgba(204,255,0,0.3)]';
+                borderClass = 'border-[#2DD4BF]/50';
+                shadowClass = 'shadow-[0_0_15px_rgba(45,212,191,0.3)]';
             }
 
             const icon = L.divIcon({
@@ -145,7 +145,7 @@ const QuestMap: React.FC<QuestMapProps> = ({ quests, onQuestClick, isFull = fals
 
             <style>{`
                 .leaflet-tile-pane {
-                    filter: grayscale(70%) brightness(1.2) contrast(1.1) sepia(0.2) hue-rotate(85deg) saturate(1.5);
+                    filter: grayscale(80%) brightness(0.9) contrast(1.1) sepia(0.2) hue-rotate(150deg) saturate(1.8);
                 }
                 .quest-map-marker {
                     z-index: 500 !important;
@@ -155,14 +155,14 @@ const QuestMap: React.FC<QuestMapProps> = ({ quests, onQuestClick, isFull = fals
             {/* Tactical Grid Overlays */}
             <div className="absolute inset-0 pointer-events-none z-10 opacity-[0.1]"
                 style={{
-                    backgroundImage: 'radial-gradient(circle, #CCFF00 1px, transparent 1px)',
+                    backgroundImage: 'radial-gradient(circle, #2DD4BF 1px, transparent 1px)',
                     backgroundSize: '24px 24px'
                 }}
             />
 
             <div className="absolute inset-0 pointer-events-none z-10 opacity-[0.03]"
                 style={{
-                    backgroundImage: 'linear-gradient(to right, #CCFF00 1px, transparent 1px), linear-gradient(to bottom, #CCFF00 1px, transparent 1px)',
+                    backgroundImage: 'linear-gradient(to right, #2DD4BF 1px, transparent 1px), linear-gradient(to bottom, #2DD4BF 1px, transparent 1px)',
                     backgroundSize: '100px 100px'
                 }}
             />
@@ -173,7 +173,7 @@ const QuestMap: React.FC<QuestMapProps> = ({ quests, onQuestClick, isFull = fals
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleLocate}
-                    className="w-12 h-12 bg-[#6b8e23] border border-white/10 rounded-full flex items-center justify-center text-white shadow-xl hover:bg-[#7ba32b] transition-all"
+                    className="w-12 h-12 bg-electric-teal border border-white/10 rounded-full flex items-center justify-center text-black shadow-xl hover:bg-teal-400 transition-all shadow-[0_0_20px_rgba(45,212,191,0.3)]"
                 >
                     <Target size={22} strokeWidth={2.5} />
                 </motion.button>
@@ -188,8 +188,8 @@ const QuestMap: React.FC<QuestMapProps> = ({ quests, onQuestClick, isFull = fals
                         exit={{ opacity: 0, y: 10, scale: 0.98 }}
                         className="absolute bottom-6 left-6 right-20 z-40 max-w-[260px]"
                     >
-                        <div className="bg-[#1a251a]/95 backdrop-blur-3xl border border-[#CCFF00]/20 p-4 rounded-[1.5rem] shadow-[0_20px_40px_rgba(0,0,0,0.8)] flex items-center gap-3 relative overflow-hidden ring-1 ring-white/10">
-                            <div className="absolute top-0 left-0 w-1.5 h-full bg-[#CCFF00]" />
+                        <div className="bg-[#1a251a]/95 backdrop-blur-3xl border border-[#2DD4BF]/20 p-4 rounded-[1.5rem] shadow-[0_20px_40px_rgba(0,0,0,0.8)] flex items-center gap-3 relative overflow-hidden ring-1 ring-white/10">
+                            <div className="absolute top-0 left-0 w-1.5 h-full bg-[#2DD4BF]" />
 
                             <div className="flex-1 min-w-0 pl-1">
                                 {/* Context Label */}
@@ -208,7 +208,7 @@ const QuestMap: React.FC<QuestMapProps> = ({ quests, onQuestClick, isFull = fals
                                         color = "text-amber-400";
                                     } else if (diffMins <= 60 && diffMins > 0) {
                                         label = "STARTING SOON";
-                                        color = "text-[#CCFF00]";
+                                        color = "text-[#2DD4BF]";
                                     }
 
                                     return (
@@ -219,7 +219,7 @@ const QuestMap: React.FC<QuestMapProps> = ({ quests, onQuestClick, isFull = fals
                                 })()}
                                 <h4 className="text-white text-[12px] font-black uppercase tracking-tight truncate mb-1.5">{selectedQuest.title}</h4>
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-1.5 text-[9px] font-black text-[#CCFF00] uppercase tracking-tighter">
+                                    <div className="flex items-center gap-1.5 text-[9px] font-black text-[#2DD4BF] uppercase tracking-tighter">
                                         <Trophy size={10} strokeWidth={3} /> {selectedQuest.aura_reward}
                                     </div>
                                     <div className="flex items-center gap-1.5 text-[10px] font-black text-white/30 uppercase tracking-tighter">
@@ -230,7 +230,7 @@ const QuestMap: React.FC<QuestMapProps> = ({ quests, onQuestClick, isFull = fals
 
                             <button
                                 onClick={() => onQuestClick(selectedQuest)}
-                                className="w-10 h-10 bg-[#CCFF00] rounded-xl flex items-center justify-center text-black active:scale-95 transition-transform"
+                                className="w-10 h-10 bg-[#2DD4BF] rounded-xl flex items-center justify-center text-black active:scale-95 transition-transform"
                             >
                                 <ChevronRight size={20} strokeWidth={3} />
                             </button>

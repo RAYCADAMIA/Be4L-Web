@@ -7,12 +7,17 @@ const currentWindow = dailyService.getWindowId(new Date());
 const prevWindow = (parseInt(currentWindow) - 1).toString();
 
 export const COLORS = {
-  PRIMARY: '#CCFF00',
+  PRIMARY: '#2DD4BF',
   BLACK: '#000000',
   SURFACE: '#1A1A1A',
   CARD: '#121212',
   WHITE: '#FFFFFF',
 };
+
+export const UNIVERSAL_CATEGORIES = ['All', 'Sports', 'Socials', 'Adventure', 'Travel', 'Train', 'Jobs', 'Others'];
+
+// PRE-LAUNCH CONFIG
+export const ALPHA_EVENT_ID = '0b6b0b6b-0b6b-0b6b-0b6b-0b6b0b6b0b6b'; // Replace with actual Event ID from Supabase
 
 // Helper to generate aura
 const mockAura = (score: number, trend: number) => ({
@@ -43,21 +48,44 @@ export const MOCK_USER: User = {
   level: 15,
   life_exp: 12500,
   life_streak: 5,
-  cover_url: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop'
+  cover_url: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop',
+  aura_history: [
+    { id: 'ath1', amount: 50, reason: 'Quest Completed: Buda Run', source: 'QUEST_COMPLETE', created_at: new Date(Date.now() - 86400000).toISOString() },
+    { id: 'ath2', amount: 20, reason: 'Positive Review from sarah_j', source: 'USER_REVIEW', created_at: new Date(Date.now() - 172800000).toISOString() },
+    { id: 'ath3', amount: -15, reason: 'Late Arrival for Matcha Run', source: 'SYSTEM', created_at: new Date(Date.now() - 259200000).toISOString() }
+  ]
+};
+
+export const MOCK_OPERATOR: User = {
+  ...MOCK_USER,
+  id: 'op1',
+  handle: 'Skyline_Venue',
+  username: 'Skyline Events',
+  name: 'Skyline Events',
+  is_operator: true,
+  bio: 'The premier event space in Davao.',
+  avatar_url: 'https://ui-avatars.com/api/?name=Skyline+Events&background=2DD4BF&color=000'
+};
+
+export const MOCK_ADMIN: User = {
+  ...MOCK_USER,
+  id: 'admin1',
+  handle: 'System_Admin',
+  username: 'SysAdmin',
+  name: 'System Administrator',
+  is_admin: true,
+  bio: 'System Overseer.',
+  avatar_url: 'https://ui-avatars.com/api/?name=Sys+Admin&background=000&color=2DD4BF'
 };
 
 export const OTHER_USERS: User[] = [
-  { id: 'u2', handle: 'sarah_j', username: 'sarah_j', name: 'Sarah Jenkins', avatar_url: 'https://picsum.photos/100/100?random=2', streak_count: 105, last_window_id: currentWindow, bio: 'Always moving.', aura: mockAura(3200, 150), reliability_score: 3200, life_exp: 18000, level: 22, life_streak: 45, followers_count: 500, following_count: 200, cover_url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2074&auto=format&fit=crop' },
-  { id: 'u3', handle: 'mike_runs', username: 'mike_runs', name: 'Mike Ross', avatar_url: 'https://picsum.photos/100/100?random=5', streak_count: 5, last_window_id: prevWindow, bio: 'Marathon training.', aura: mockAura(1100, -25), reliability_score: 1100, life_exp: 4200, level: 8, life_streak: 5, followers_count: 120, following_count: 80, cover_url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2071&auto=format&fit=crop' },
-  { id: 'u4', handle: 'dave_climbs', username: 'dave_climbs', name: 'Dave Miller', avatar_url: 'https://picsum.photos/100/100?random=8', streak_count: 12, last_window_id: currentWindow, bio: 'Climb higher.', aura: mockAura(1850, 42), reliability_score: 1850, life_exp: 9500, level: 12, life_streak: 12, followers_count: 300, following_count: 150, cover_url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop' },
-  { id: 'u5', handle: 'pickle_king', username: 'pickle_king', name: 'Roger F.', avatar_url: 'https://picsum.photos/100/100?random=9', streak_count: 110, last_window_id: currentWindow, bio: 'Pickleball is life.', aura: mockAura(4500, 205), reliability_score: 4500, life_exp: 25000, level: 30, life_streak: 110, followers_count: 1500, following_count: 300, cover_url: 'https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?q=80&w=2070&auto=format&fit=crop' },
-  { id: 'u6', handle: 'art_anna', username: 'art_anna', name: 'Anna K.', avatar_url: 'https://picsum.photos/100/100?random=10', streak_count: 3, bio: 'Painting the town.', aura: mockAura(900, 10), reliability_score: 900, life_exp: 2100, level: 5, life_streak: 3, followers_count: 45, following_count: 100 },
-  { id: 'u7', handle: 'bella_sky', username: 'bella_sky', name: 'Bella Luna', avatar_url: 'https://picsum.photos/100/100?random=11', streak_count: 24, bio: 'Moonlight dreamer.', aura: mockAura(2100, 85), reliability_score: 2100, life_exp: 8800, level: 11, life_streak: 24, followers_count: 210, following_count: 180 },
-  { id: 'u8', handle: 'the_grill_master', username: 'the_grill_master', name: 'Chris P.', avatar_url: 'https://picsum.photos/100/100?random=12', streak_count: 15, bio: 'BBQ and chill.', aura: mockAura(1500, -12), reliability_score: 1500, life_exp: 6500, level: 9, life_streak: 15, followers_count: 80, following_count: 40 },
-  { id: 'u9', handle: 'daisy_days', username: 'daisy_days', name: 'Daisy D.', avatar_url: 'https://picsum.photos/100/100?random=13', streak_count: 8, bio: 'Sunshine state of mind.', aura: mockAura(1250, 5), reliability_score: 1250, life_exp: 4800, level: 7, life_streak: 8, followers_count: 65, following_count: 30 },
-  { id: 'u10', handle: 'ethan_quest', username: 'ethan_quest', name: 'Ethan Hunt', avatar_url: 'https://picsum.photos/100/100?random=14', streak_count: 50, bio: 'Mission: Possible.', aura: mockAura(5200, 310), reliability_score: 5200, life_exp: 35000, level: 42, life_streak: 50, followers_count: 2500, following_count: 10 },
-  { id: 'u11', handle: 'fiona_fit', username: 'fiona_fit', name: 'Fiona G.', avatar_url: 'https://picsum.photos/100/100?random=15', streak_count: 30, bio: 'Pushing limits.', aura: mockAura(2800, 115), reliability_score: 2800, life_exp: 15000, level: 18, life_streak: 30, followers_count: 800, following_count: 400 },
+  { id: 'u2', handle: 'sarah_j', username: 'sarah_j', name: 'Sarah Jenkins', avatar_url: 'https://picsum.photos/100/100?random=2', streak_count: 105, last_window_id: currentWindow, bio: 'Always moving. Marathoner. Coffee enthusiast. Davao-based explorer.', aura: mockAura(3200, 150), reliability_score: 3200, life_exp: 18000, level: 22, life_streak: 45, followers_count: 500, following_count: 200, cover_url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2074&auto=format&fit=crop', aura_history: [{ id: 'h1', amount: 100, reason: 'Marathon Finisher', source: 'QUEST_COMPLETE', created_at: new Date().toISOString() }] },
+  { id: 'u3', handle: 'mike_runs', username: 'mike_runs', name: 'Mike Ross', avatar_url: 'https://picsum.photos/100/100?random=5', streak_count: 5, last_window_id: prevWindow, bio: 'Marathon training & recovery. Just here for the vibes.', aura: mockAura(1100, -25), reliability_score: 1100, life_exp: 4200, level: 8, life_streak: 5, followers_count: 120, following_count: 80, cover_url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2071&auto=format&fit=crop', aura_history: [] },
+  { id: 'u4', handle: 'dave_climbs', username: 'dave_climbs', name: 'Dave Miller', avatar_url: 'https://picsum.photos/100/100?random=8', streak_count: 12, last_window_id: currentWindow, bio: 'Climb higher. Adventure is out there.', aura: mockAura(1850, 42), reliability_score: 1850, life_exp: 9500, level: 12, life_streak: 12, followers_count: 300, following_count: 150, cover_url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
+  { id: 'u5', handle: 'pickle_king', username: 'pickle_king', name: 'Roger F.', avatar_url: 'https://picsum.photos/100/100?random=9', streak_count: 110, last_window_id: currentWindow, bio: 'Pickleball is life. Professional dinker. Join me at SuperSmasher!', aura: mockAura(4500, 205), reliability_score: 4500, life_exp: 25000, level: 30, life_streak: 110, followers_count: 1500, following_count: 300, cover_url: 'https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
+  { id: 'u10', handle: 'ethan_hunt', username: 'ethan_hunt', name: 'Ethan Hunt', avatar_url: 'https://picsum.photos/100/100?random=14', streak_count: 50, bio: 'Mission: Possible. Davao City. Adventure seeker.', aura: mockAura(5200, 310), reliability_score: 5200, life_exp: 35000, level: 42, life_streak: 50, followers_count: 2500, following_count: 10, cover_url: 'https://images.unsplash.com/photo-1516214104703-d870798883c5?auto=format&fit=crop&q=80&w=200', aura_history: [] },
 ];
+
 
 const MOCK_REACTIONS: Reaction[] = [
   { id: 'r1', user_id: 'u2', user: OTHER_USERS[0], image_url: 'https://picsum.photos/100/100?random=20', timestamp: '2m', reaction_type: 'fire', reacted_at: new Date().toISOString() },
@@ -422,4 +450,81 @@ export const MOCK_COMPETITIONS: Competition[] = [
     description: 'Inter-box competition.',
     organizer: 'CFM'
   }
+];
+
+// MOCK PARTNER POSTS
+export const MOCK_PARTNER_POSTS: import('./types').PartnerPost[] = [
+  {
+    id: 'pp1',
+    operator_id: 'op1', // Skyline Events
+    operator: {
+      ...MOCK_OPERATOR,
+    } as any,
+    caption: 'Big weekend ahead! 🏀 The Ballbreakers Invitational starts tomorrow. Who you got? #DavaoHoops #SkylineEvents',
+    media_urls: ['https://images.unsplash.com/photo-1546519638-68e109498ffc', 'https://images.unsplash.com/photo-1504450758481-7338eba7524a'],
+    likes_count: 142,
+    comments_count: 24,
+    created_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+  },
+  {
+    id: 'pp2',
+    operator_id: 'op1',
+    operator: { ...MOCK_OPERATOR } as any,
+    caption: 'New VIP lounge is open! 🥂 Book your private space now.',
+    media_urls: ['https://images.unsplash.com/photo-1561002417-195a3b7d1884'],
+    tagged_item_id: 'item_vip', // Mock ID
+    tagged_item: {
+      id: 'item_vip',
+      operator_id: 'op1',
+      title: 'VIP Lounge Access',
+      price: 2500,
+      image_url: 'https://images.unsplash.com/photo-1561002417-195a3b7d1884',
+      category: 'event',
+      description: 'Exclusive access',
+      available_slots: 5,
+      total_slots: 10,
+      is_active: true
+    },
+    likes_count: 89,
+    comments_count: 5,
+    created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+  }
+];
+
+// MOCK PLACES (For Discovery)
+export const MOCK_PLACES: any[] = [
+  {
+    ...MOCK_OPERATOR,
+    id: 'op1',
+    items: [
+      { id: 'i1', operator_id: 'op1', title: 'Private Court Rental', price: 1500, category: 'Venue', image_url: 'https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a', unit_label: 'hour', type: 'PLACE', available_slots: 5 },
+      { id: 'i2', operator_id: 'op1', title: 'Pickleball Pro Coaching', price: 2500, category: 'Service', image_url: 'https://images.unsplash.com/photo-1626245550578-8ae7f6368d49', unit_label: 'session', type: 'PLACE', available_slots: 2 }
+    ]
+  },
+  {
+    id: 'op2',
+    user_id: 'op2',
+    business_name: 'Davao Coffee Guild',
+    logo_url: 'https://images.unsplash.com/photo-1511920170033-f8396924c348',
+    category: 'Cafe',
+    items: [
+      { id: 'i3', operator_id: 'op2', title: 'Barista Workshop', price: 500, category: 'Event', image_url: 'https://images.unsplash.com/photo-1511920170033-f8396924c348', unit_label: 'pax', type: 'EVENT', event_date: new Date(Date.now() + 86400000).toISOString(), available_slots: 10 }
+    ]
+  },
+  {
+    id: 'op3',
+    user_id: 'op3',
+    business_name: 'SuperSmasher',
+    logo_url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc',
+    category: 'Sports',
+    items: [
+      { id: 'i4', operator_id: 'op3', title: 'Night League Registration', price: 3000, category: 'Competition', image_url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc', unit_label: 'team', type: 'EVENT', available_slots: 8 }
+    ]
+  }
+];
+
+export const MOCK_AURA_TRANSACTIONS: any[] = [
+  { id: '1', amount: 30, reason: 'Quest Completed: Morning Run', source: 'QUEST_COMPLETE', created_at: '2024-03-20T10:00:00Z' },
+  { id: '2', amount: 15, reason: 'Great Communication', source: 'USER_REVIEW', created_at: '2024-03-19T15:30:00Z' },
+  { id: '3', amount: -10, reason: 'Late Arrival', source: 'SYSTEM', created_at: '2024-03-18T09:00:00Z' }
 ];

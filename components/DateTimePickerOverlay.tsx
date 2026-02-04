@@ -187,106 +187,107 @@ export const CustomTimePicker: React.FC<TimePickerProps> = ({ value, onChange, o
         onClose();
     };
 
+    const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    const minutes = Array.from({ length: 60 }, (_, i) => i);
+
     return (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onClick={onClose}>
             <motion.div
                 onClick={(e) => e.stopPropagation()}
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-surface border border-white/10 rounded-3xl p-6 w-full max-w-sm shadow-2xl relative overflow-hidden"
+                className="bg-[#05050A] border border-white/10 rounded-[2.5rem] p-8 w-full max-w-sm shadow-3xl relative overflow-hidden"
             >
-                {/* Background Glow */}
-                <div className="absolute top-0 right-0 left-0 h-40 bg-blue-500/10 blur-3xl rounded-full pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-32 bg-primary/5 blur-3xl pointer-events-none" />
 
                 <div className="text-center mb-8 relative z-10">
-                    <h2 className="text-xl font-black text-white uppercase italic tracking-tighter mb-1">Select Time</h2>
-                    {/* Digital Display */}
-                    <div className="flex items-end justify-center gap-2 mt-4">
-                        <span className="text-6xl font-black text-white tracking-tighter">{hour12}</span>
-                        <span className="text-6xl font-black text-gray-600 tracking-tighter mb-2">:</span>
-                        <span className="text-6xl font-black text-white tracking-tighter">{minute.toString().padStart(2, '0')}</span>
-                        <button
-                            onClick={toggleAmPm}
-                            className="mb-3 ml-2 px-3 py-1 rounded-lg bg-white/10 border border-white/10 text-xs font-bold uppercase tracking-wider text-primary hover:bg-white/20 transition-colors"
-                        >
-                            {isPM ? 'PM' : 'AM'}
-                        </button>
+                    <h2 className="text-xl font-black text-white uppercase italic tracking-tighter mb-6">Set Mission Time</h2>
+                    <div className="flex items-center justify-center gap-2 bg-white/5 rounded-3xl py-6 border border-white/5">
+                        <span className="text-5xl font-black text-white tracking-tighter w-16 text-center">{hour12}</span>
+                        <span className="text-5xl font-black text-white/20 tracking-tighter animate-pulse">:</span>
+                        <span className="text-5xl font-black text-white tracking-tighter w-16 text-center">{minute.toString().padStart(2, '0')}</span>
+                        <span className="text-xl font-black text-primary ml-2 italic">{isPM ? 'PM' : 'AM'}</span>
                     </div>
                 </div>
 
-                {/* Selection Grids */}
-                <div className="grid grid-cols-2 gap-4 mb-8 h-48">
-                    {/* Hours */}
-                    <div className="space-y-2 overflow-y-auto no-scrollbar py-2 mask-linear">
-                        <p className="text-[10px] text-gray-500 uppercase tracking-widest text-center mb-2">Hour</p>
-                        <div className="flex flex-col gap-1 items-center">
-                            {[12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(h => {
-                                // Convert to 24h for comparison
-                                let h24 = h;
-                                if (isPM && h !== 12) h24 = h + 12;
-                                if (!isPM && h === 12) h24 = 0;
+                <div className="grid grid-cols-3 gap-2 h-64 relative z-10">
+                    {/* HOURS */}
+                    <div className="flex flex-col items-center overflow-y-auto no-scrollbar mask-fade-vertical">
+                        <span className="text-[9px] font-black text-gray-600 uppercase mb-4 tracking-widest">Hour</span>
+                        {hours.map(h => {
+                            let h24 = h;
+                            if (isPM && h !== 12) h24 = h + 12;
+                            if (!isPM && h === 12) h24 = 0;
+                            const isPast = isToday && h24 < currentHour;
+                            const isSelected = hour12 === h;
 
-                                const isPastHour = isToday && h24 < currentHour;
+                            return (
+                                <button
+                                    key={h}
+                                    onClick={() => !isPast && handleHourSelect(h)}
+                                    className={`shrink-0 w-12 h-12 flex items-center justify-center rounded-2xl text-base font-black transition-all mb-1
+                                        ${isSelected ? 'bg-primary text-black' : isPast ? 'text-gray-800 pointer-events-none opacity-20' : 'text-white/40 hover:text-white hover:bg-white/5'}
+                                    `}
+                                >
+                                    {h}
+                                </button>
+                            );
+                        })}
+                        <div className="h-20 shrink-0" /> {/* Padding for scroll */}
+                    </div>
 
-                                return (
-                                    <button
-                                        key={h}
-                                        onClick={() => !isPastHour && handleHourSelect(h)}
-                                        disabled={isPastHour}
-                                        className={`w-12 h-12 flex items-center justify-center rounded-full font-bold transition-all ${hour12 === h ? 'bg-primary text-black' : isPastHour ? 'text-gray-700 cursor-not-allowed' : 'text-gray-400 hover:text-white'}`}
-                                    >
-                                        {h}
-                                    </button>
-                                )
-                            })}
+                    {/* MINUTES */}
+                    <div className="flex flex-col items-center overflow-y-auto no-scrollbar mask-fade-vertical border-x border-white/5">
+                        <span className="text-[9px] font-black text-gray-600 uppercase mb-4 tracking-widest">Min</span>
+                        {minutes.map(m => {
+                            const isPast = isToday && hour24 === currentHour && m < currentMinute;
+                            const isSelected = minute === m;
+
+                            return (
+                                <button
+                                    key={m}
+                                    onClick={() => !isPast && handleMinuteSelect(m)}
+                                    className={`shrink-0 w-12 h-12 flex items-center justify-center rounded-2xl text-base font-black transition-all mb-1
+                                        ${isSelected ? 'bg-white/10 text-white border border-white/10' : isPast ? 'text-gray-800 pointer-events-none opacity-20' : 'text-white/40 hover:text-white hover:bg-white/5'}
+                                    `}
+                                >
+                                    {m.toString().padStart(2, '0')}
+                                </button>
+                            );
+                        })}
+                        <div className="h-20 shrink-0" />
+                    </div>
+
+                    {/* AM/PM */}
+                    <div className="flex flex-col items-center">
+                        <span className="text-[9px] font-black text-gray-600 uppercase mb-4 tracking-widest">Zone</span>
+                        <div className="flex flex-col gap-2 w-full px-2">
+                            <button
+                                onClick={() => isPM && toggleAmPm()}
+                                className={`h-20 rounded-2xl flex items-center justify-center text-sm font-black transition-all border
+                                    ${!isPM ? 'bg-primary text-black border-primary' : 'bg-white/5 text-white/40 border-white/5 hover:border-white/10'}
+                                `}
+                            >
+                                AM
+                            </button>
+                            <button
+                                onClick={() => !isPM && toggleAmPm()}
+                                className={`h-20 rounded-2xl flex items-center justify-center text-sm font-black transition-all border
+                                    ${isPM ? 'bg-primary text-black border-primary' : 'bg-white/5 text-white/40 border-white/5 hover:border-white/10'}
+                                `}
+                            >
+                                PM
+                            </button>
                         </div>
                     </div>
-
-                    {/* Minutes */}
-                    <div className="space-y-2 overflow-y-auto no-scrollbar py-2">
-                        <p className="text-[10px] text-gray-500 uppercase tracking-widest text-center mb-2">Minute</p>
-                        <div className="grid grid-cols-2 gap-1">
-                            {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(m => {
-                                const isPastMinute = isToday && hour24 === currentHour && m < currentMinute;
-
-                                return (
-                                    <button
-                                        key={m}
-                                        onClick={() => !isPastMinute && handleMinuteSelect(m)}
-                                        disabled={isPastMinute}
-                                        className={`h-12 flex items-center justify-center rounded-xl font-bold transition-all ${minute === m ? 'bg-white/20 text-white border border-white/20' : isPastMinute ? 'text-gray-700 cursor-not-allowed' : 'text-gray-400 hover:text-white'}`}
-                                    >
-                                        {m.toString().padStart(2, '0')}
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    </div>
                 </div>
 
-                <div className="flex flex-col gap-3">
-                    {isToday && (hour24 < currentHour || (hour24 === currentHour && minute < currentMinute)) && (
-                        <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest text-center animate-pulse">
-                            Cannot select a past time
-                        </p>
-                    )}
-                    <div className="flex gap-3">
-                        <button onClick={onClose} className="flex-1 py-3 rounded-xl font-bold uppercase text-xs tracking-widest text-gray-400 hover:text-white hover:bg-white/5 transition-colors">Cancel</button>
-                        <button
-                            onClick={handleSave}
-                            disabled={isToday && (hour24 < currentHour || (hour24 === currentHour && minute < currentMinute))}
-                            className={`flex-1 py-3 rounded-xl font-black uppercase text-xs tracking-widest transition-all shadow-lg ${isToday && (hour24 < currentHour || (hour24 === currentHour && minute < currentMinute))
-                                ? 'bg-gray-800 text-gray-600 cursor-not-allowed shadow-none'
-                                : 'bg-primary text-black hover:bg-primary/80 shadow-primary/20'
-                                }`}
-                        >
-                            Set Time
-                        </button>
-                    </div>
+                <div className="mt-8 flex gap-4">
+                    <button onClick={onClose} className="flex-1 py-4 text-[11px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors">Abort</button>
+                    <button onClick={handleSave} className="flex-1 py-4 bg-white text-black rounded-3xl text-[11px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all shadow-[0_10px_30px_rgba(255,255,255,0.1)]">Establish</button>
                 </div>
-
-            </motion.div >
-        </div >
+            </motion.div>
+        </div>
     );
 };

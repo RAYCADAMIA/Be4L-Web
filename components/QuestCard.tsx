@@ -1,224 +1,86 @@
 import React from 'react';
-import { MapPin, Users, Zap, Calendar, Star, Edit2, UserPlus, Clock, Check, Lock, Globe, AlertCircle } from 'lucide-react';
-import { Quest, QuestType, QuestStatus, User, QuestVisibilityScope } from '../types';
+import { MapPin, Users, Zap, Clock, Star, ArrowRight, Lock } from 'lucide-react';
+import { Quest, QuestType, QuestStatus, User } from '../types';
 
 interface Props {
     quest: Quest;
     currentUser: User;
-    onJoin: (id: string, q: Quest) => void;
-    onEdit?: (q: Quest) => void;
-    onDelete?: (q: Quest) => void;
     onOpenDetail?: (q: Quest) => void;
 }
 
-const QuestCard: React.FC<Props> = ({ quest, currentUser, onJoin, onEdit, onOpenDetail }) => {
-    const isHost = quest.host_id === currentUser.id;
-    const participants = quest.participants || [];
-    const isSquad = participants.some(p => p.id === currentUser.id);
-    const pendingParticipants = quest.pending_participants || [];
-    const isHunter = pendingParticipants.some(p => p.id === currentUser.id);
-
-    const spotsLeft = (quest.max_participants || 100) - (quest.current_participants || 0);
-    const isFull = spotsLeft <= 0;
-
+const QuestCard: React.FC<Props> = ({ quest, onOpenDetail }) => {
     // Time Logic
-    const startTime = new Date(quest.start_time);
-    const now = new Date();
-    const timeDiff = startTime.getTime() - now.getTime();
-    const minutesToStart = Math.floor(timeDiff / (1000 * 60));
-    const hoursToStart = Math.floor(minutesToStart / 60);
-    const daysToStart = Math.floor(hoursToStart / 24);
-
-    const isStartingSoon = minutesToStart > 0 && minutesToStart <= 60;
     const isLive = quest.status === QuestStatus.ACTIVE;
-    const isUpcoming = !isLive && timeDiff > 0;
 
-    // Styling based on mode & state
-    const getStyles = () => {
-        if (quest.mode === QuestType.SPONTY) {
-            return {
-                border: 'border-primary/10',
-                glow: 'shadow-[0_0_20px_rgba(204,255,0,0.05)]',
-                accentText: 'text-primary',
-                accentBg: 'bg-primary',
-                subtleBg: 'bg-primary/5'
-            };
-        }
-        return {
-            border: 'border-white/[0.02]',
-            glow: 'hover:shadow-[0_0_30px_rgba(168,85,247,0.15)]', // Purple glow on hover for Canon
-            accentText: 'text-purple-400',
-            accentBg: 'bg-purple-500',
-            subtleBg: 'bg-purple-500/10'
-        };
-    };
-
-    const s = getStyles();
-
-    // Contextual Badge
-    const renderStateBadge = () => {
-        if (isLive) {
-            return (
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/30 animate-pulse">
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                    <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">LIVE</span>
-                </div>
-            );
-        }
-        if (isStartingSoon) {
-            return (
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20">
-                    <Clock size={10} className="text-orange-500" />
-                    <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest">Starts in {minutesToStart}m</span>
-                </div>
-            );
-        }
-        if (isUpcoming) {
-            let timeLabel = '';
-            if (daysToStart > 0) timeLabel = `${daysToStart}D`;
-            else if (hoursToStart > 0) timeLabel = `${hoursToStart}h`;
-            else timeLabel = `${minutesToStart}m`;
-
-            return (
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
-                    <Clock size={10} className="text-blue-500" />
-                    <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">{timeLabel}</span>
-                </div>
-            );
-        }
-        if (quest.mode === QuestType.SPONTY) {
-            return (
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-                    <Zap size={10} className="text-primary" />
-                    <span className="text-[9px] font-black text-primary uppercase tracking-widest">Happening</span>
-                </div>
-            );
-        }
-        return null;
-    };
+    // Check if quest is starting soon (simulated for MVP)
+    const startTime = new Date(quest.start_time).getTime();
+    const now = new Date().getTime();
+    const isStartingSoon = !isLive && (startTime - now) < (60 * 60 * 1000) && (startTime - now) > 0;
 
     return (
         <div
             onClick={() => onOpenDetail?.(quest)}
-            className={`group relative w-full mb-4 bg-[#0a0a0a] rounded-[2rem] overflow-hidden border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer ${s.border} ${s.glow}`}
+            className="group flex flex-col w-full bg-white/[0.03] backdrop-blur-xl rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border border-white/5 cursor-pointer hover:border-primary/30 transition-all duration-500 shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] bg-gradient-to-br from-white/[0.05] to-transparent p-4 md:p-6 hover:translate-y-[-4px]"
         >
-            {/* Background Gradient Mesh */}
-            <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 bg-gradient-to-br from-transparent via-transparent to-${quest.mode === QuestType.SPONTY ? 'primary' : 'purple-500'}`} />
-
-            <div className="p-5 flex flex-col gap-3 relative z-10">
-
-                {/* Header Row: Category | Activity | Badges */}
-                <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{quest.category}</span>
-                        <div className="w-1 h-1 rounded-full bg-white/20" />
-                        <span className={`text-[9px] font-black uppercase tracking-widest ${s.accentText}`}>{quest.activity}</span>
-
-                        {quest.visibility_scope === QuestVisibilityScope.FRIENDS && (
-                            <div className="flex items-center gap-1 ml-2 text-gray-600">
-                                <Lock size={10} />
-                                <span className="text-[8px] font-black uppercase tracking-widest">Circle</span>
-                            </div>
-                        )}
-
-                        {quest.aura_req && quest.aura_req > 0 && (
-                            <div className="flex items-center gap-1 ml-2 text-primary/80">
-                                <Star size={10} fill="currentColor" />
-                                <span className="text-[8px] font-black uppercase tracking-widest">{quest.aura_req}+ Aura</span>
-                            </div>
-                        )}
+            {/* Header: Badges & Status */}
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+                <div className="flex gap-1.5 md:gap-2">
+                    <div className="px-2 py-0.5 md:px-3 md:py-1 bg-white/5 border border-white/10 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-widest text-primary">
+                        {quest.category}
                     </div>
-                    {renderStateBadge()}
-                </div>
-
-                {/* Main Content */}
-                <div>
-                    <h3 className="text-xl font-black italic text-white tracking-tighter leading-none mb-1.5 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-400 transition-all">
-                        {quest.title}
-                    </h3>
-                    <p className="text-xs text-gray-400 font-medium leading-relaxed line-clamp-2 mb-2">
-                        {/* Removed inline time from description per v1.2 spec */}
-                        {quest.description}
-                    </p>
-
-                    {/* Signals / Tags */}
-                    {((quest.signals?.social?.length || 0) + (quest.signals?.vibe?.length || 0)) > 0 && (
-                        <div className="flex flex-wrap gap-1.5 opacity-60">
-                            {quest.signals?.social?.map(tag => (
-                                <span key={tag} className="px-1.5 py-0.5 rounded border border-white/5 text-[7px] font-black uppercase tracking-widest text-gray-500">#{tag}</span>
-                            ))}
-                            {quest.signals?.vibe?.map(tag => (
-                                <span key={tag} className="px-1.5 py-0.5 rounded border border-primary/10 bg-primary/[0.02] text-[7px] font-black uppercase tracking-widest text-primary/70">#{tag}</span>
-                            ))}
+                    {isLive && (
+                        <div className="px-2 py-0.5 md:px-3 md:py-1 bg-red-500/10 text-red-500 border border-red-500/20 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-widest flex items-center gap-1 animate-pulse">
+                            <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-red-500 rounded-full" /> LIVE
+                        </div>
+                    )}
+                    {isStartingSoon && (
+                        <div className="px-2 py-0.5 md:px-3 md:py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-widest flex items-center gap-1">
+                            <Clock size={8} className="md:w-[10px]" /> SOON
                         </div>
                     )}
                 </div>
-
-                {/* Host & Avatars */}
-                <div className="flex items-center justify-between mt-1">
-                    <div className="flex-1 overflow-hidden mr-4">
-                        <div className="flex items-center gap-1.5 mb-1.5 text-[8px] font-black text-gray-700 uppercase tracking-[0.2em]">
-                            <MapPin size={10} className="text-gray-800" />
-                            <span className="truncate">{quest.location?.address_full || quest.location?.place_name || "Zone TBD"}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <img src={quest.host?.avatar_url} className="w-5 h-5 rounded-full border border-white/[0.05]" />
-                            <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest truncate">{quest.host?.username}</span>
-                        </div>
-                    </div>
-
-                    {/* Join Action / Status */}
-                    <div className="flex items-center">
-                        {isHost ? (
-                            <button onClick={(e) => { e.stopPropagation(); onEdit?.(quest) }} className="p-2 text-gray-500 hover:text-white transition-colors">
-                                <Edit2 size={14} />
-                            </button>
-                        ) : isSquad ? (
-                            <span className="text-[10px] font-black text-green-500 uppercase tracking-widest flex items-center gap-1">
-                                <Check size={12} /> Joined
-                            </span>
-                        ) : isHunter ? (
-                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Requested</span>
-                        ) : (
-                            !isFull && quest.status !== QuestStatus.CANCELLED && (
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); onJoin(quest.id, quest); }}
-                                    className={`px-4 py-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all text-[9px] font-black uppercase tracking-widest text-white flex items-center gap-1.5`}
-                                >
-                                    <UserPlus size={12} strokeWidth={3} />
-                                    <span>Hunt</span>
-                                </button>
-                            )
-                        )}
-                    </div>
+                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-primary group-hover:bg-primary/10 transition-all duration-300">
+                    <ArrowRight size={12} strokeWidth={3} className="md:w-[14px]" />
                 </div>
-
             </div>
 
-            {/* Info Strip (Footer) */}
-            <div className="px-5 py-2.5 bg-white/2 border-t border-white/5 flex items-center justify-between text-[9px] font-bold text-gray-500 uppercase tracking-widest">
-
-                {/* Time Proximity / Status */}
-                <div className="flex items-center gap-1.5">
-                    {isLive ? (
-                        <span className="text-white">Ends {quest.end_time ? new Date(quest.end_time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : 'Soon'}</span>
-                    ) : (
-                        <span>
-                            {new Date(quest.start_time).toDateString() === new Date().toDateString() ? 'Today' : new Date(quest.start_time).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                            , {new Date(quest.start_time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-                        </span>
-                    )}
+            {/* Content Section */}
+            <div className="flex flex-col gap-1.5 flex-1">
+                <div className="flex justify-between items-start">
+                    <h3 className="text-base md:text-xl font-black italic uppercase tracking-tighter text-white leading-tight group-hover:text-primary transition-colors">
+                        {quest.title}
+                    </h3>
                 </div>
 
-                {/* Join Rule & Capacity */}
-                <div className="flex items-center gap-3">
-                    <span className={quest.approval_required ? 'text-gray-500' : s.accentText}>
-                        {quest.approval_required ? 'Approval' : 'Instant'}
-                    </span>
-                    <div className="w-[1px] h-2 bg-white/10" />
-                    <span className={isFull ? 'text-red-500' : 'text-white'}>
-                        {quest.current_participants}/{quest.max_participants || '∞'} Spots
-                    </span>
+                <div className="flex flex-col gap-1 mt-0.5">
+                    <p className="text-gray-400 text-[10px] md:text-xs font-bold leading-relaxed line-clamp-2">
+                        {quest.description || 'Global Quest'}
+                    </p>
+                    <p className="text-gray-500 text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5 mt-0.5">
+                        <MapPin size={8} className="text-primary md:w-[10px]" /> {quest.location?.place_name || 'Davao City, PH'}
+                    </p>
+                </div>
+
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+                    <div className="flex items-center gap-1.5">
+                        <div className="relative">
+                            <img
+                                src={quest.host?.avatar_url || `https://ui-avatars.com/api/?name=${quest.host?.username || 'Hunter'}&background=random`}
+                                className="w-5 h-5 md:w-6 md:h-6 rounded-full border border-white/20 object-cover"
+                                alt="host"
+                            />
+                            <div className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full border border-deep-black" />
+                        </div>
+                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white/80 italic">
+                            <span className="animate-liquid-text">
+                                {quest.host?.username || 'user'}
+                            </span>
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-1 text-[9px] md:text-[10px] text-white font-bold bg-white/5 px-2 md:px-2.5 py-1 rounded-lg border border-white/5">
+                        <Users size={10} className="text-primary md:w-[12px]" />
+                        <span>{quest.current_participants || 0}/{quest.max_participants || '∞'}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -226,3 +88,4 @@ const QuestCard: React.FC<Props> = ({ quest, currentUser, onJoin, onEdit, onOpen
 };
 
 export default QuestCard;
+

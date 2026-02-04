@@ -1,101 +1,175 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Compass, MessageSquare, Ticket, ArrowRight, Zap } from 'lucide-react';
-import { GradientButton, GlowText, GlassCard } from './ui/AestheticComponents';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SplashScreen } from './Landing/SplashScreen';
+import { HeroSection } from './Landing/HeroSection';
+import { VisionSection } from './Landing/VisionSection';
+import { PhoneShowcaseSection } from './Landing/PhoneShowcaseSection';
+import { RoadmapSection } from './Landing/RoadmapSection';
+import { FeatureShowcase } from './Landing/FeatureShowcase';
+import { PartnerPitch, UserCTA, HUDMenu, Starfield, TeamRecruitment, PoweredBy } from './Landing/LandingComponents';
+import { AuthScreen } from './AuthScreen';
 
-interface LandingPageProps {
-    onEnter: () => void;
-}
+export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => void }> = ({ bypassSplash = false, onReset }) => {
+    const [showSplash, setShowSplash] = useState(!bypassSplash);
+    const [showAuth, setShowAuth] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
 
-const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 100);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
-        <div className="relative flex-1 h-full w-full flex flex-col overflow-hidden bg-deep-black">
-            {/* Background Effects */}
-            <div className="absolute inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[20%] left-[50%] -translate-x-1/2 w-[80%] h-[60%] rounded-full bg-primary/20 blur-[150px] animate-pulse opacity-50" />
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.2] mix-blend-overlay" />
-            </div>
-
-            <div className="relative z-10 flex-1 flex flex-col items-center justify-between p-8 pb-16 overflow-y-auto no-scrollbar">
-
-                {/* Hero Section */}
-                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6 mt-10">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                        <div className="inline-block px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-6">
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                                Web Portal Live
-                            </span>
-                        </div>
-                        <GlowText size="xl" className="tracking-tighter leading-[0.9] mb-4">
-                            REAL LIFE.<br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-lime-300">GAMIFIED.</span>
-                        </GlowText>
-                        <p className="text-gray-400 text-sm max-w-xs mx-auto font-medium leading-relaxed">
-                            The void is waiting. Complete quests, connect with your squad, and claim your dibs on the real world.
-                        </p>
-                    </motion.div>
-                </div>
-
-                {/* Features Grid */}
-                <div className="w-full max-w-sm grid grid-cols-1 gap-4 my-10">
-                    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-                        <GlassCard className="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors cursor-default group">
-                            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                <Compass size={24} strokeWidth={2.5} />
-                            </div>
-                            <div>
-                                <h3 className="text-white font-bold text-sm uppercase tracking-wider">Quests</h3>
-                                <p className="text-xs text-gray-500">Find real-world side missions.</p>
-                            </div>
-                        </GlassCard>
-                    </motion.div>
-
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
-                        <GlassCard className="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors cursor-default group">
-                            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
-                                <MessageSquare size={24} strokeWidth={2.5} />
-                            </div>
-                            <div>
-                                <h3 className="text-white font-bold text-sm uppercase tracking-wider">Echo</h3>
-                                <p className="text-xs text-gray-500">Encrypted squad comms.</p>
-                            </div>
-                        </GlassCard>
-                    </motion.div>
-
-                    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
-                        <GlassCard className="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors cursor-default group">
-                            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-                                <Ticket size={24} strokeWidth={2.5} />
-                            </div>
-                            <div>
-                                <h3 className="text-white font-bold text-sm uppercase tracking-wider">Dibs</h3>
-                                <p className="text-xs text-gray-500">Book venues and events.</p>
-                            </div>
-                        </GlassCard>
-                    </motion.div>
-                </div>
-
-                {/* Call to Action */}
+        <AnimatePresence>
+            {showSplash ? (
+                <SplashScreen key="splash" onComplete={() => setShowSplash(false)} />
+            ) : (
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
-                    className="w-full max-w-sm"
+                    key="landing"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    className="relative w-full flex flex-col min-h-screen text-white selection:bg-electric-teal/30"
                 >
-                    <GradientButton onClick={onEnter} fullWidth className="py-5 text-sm">
-                        ENTER WORLD <ArrowRight size={18} strokeWidth={3} />
-                    </GradientButton>
-                    <p className="text-center text-[10px] text-gray-600 mt-4 uppercase tracking-[0.2em] font-bold">
-                        Be4L v0.6 Web
-                    </p>
+                    <Starfield />
+                    <HUDMenu onJoinClick={() => setShowAuth(true)} isScrolled={scrolled} onReset={onReset} />
+
+                    <main className="relative">
+                        <HeroSection onJoinClick={() => setShowAuth(true)} />
+
+                        <UserCTA onJoinClick={() => setShowAuth(true)} />
+
+                        {/* 3D Phone Showcase Section */}
+                        <div id="phone-showcase">
+                            <PhoneShowcaseSection />
+                        </div>
+
+                        <div id="vision">
+                            <VisionSection />
+                        </div>
+
+                        <div id="features">
+                            <FeatureShowcase />
+                        </div>
+
+                        <div id="roadmap">
+                            <RoadmapSection />
+                        </div>
+
+                        <PartnerPitch />
+                        <TeamRecruitment />
+                        <PoweredBy />
+                    </main>
+
+                    {/* Footer - Precise Horizontal Layout (Matching Image 5) */}
+                    <footer className="relative py-24 px-6 border-t border-white/5 bg-black/40">
+                        <div className="max-w-7xl mx-auto">
+                            <div className="flex flex-row flex-wrap md:flex-nowrap items-start justify-between gap-12 md:gap-24">
+                                {/* 1. Brand Section */}
+                                <div className="space-y-8 min-w-[280px]">
+                                    <div className="flex items-center gap-4 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                                        <div className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 group-hover:border-electric-teal/40 transition-all shadow-lg shadow-black/20">
+                                            <svg viewBox="0 0 200 100" className="w-7 h-7">
+                                                <defs>
+                                                    <linearGradient id="footerLogoGradientV2" x1="0%" y1="0%" x2="200%" y2="0%">
+                                                        <stop offset="0%" stopColor="#2dd4bf" />
+                                                        <stop offset="50%" stopColor="#a855f7" />
+                                                        <stop offset="100%" stopColor="#2dd4bf" />
+                                                    </linearGradient>
+                                                </defs>
+                                                <path d="M100,30 C100,30 90,10 70,10 C50,10 40,30 40,50 C40,75 100,90 100,90 C100,90 160,75 160,50 C160,30 150,10 130,10 C110,10 100,30 100,30 Z" fill="url(#footerLogoGradientV2)" />
+                                            </svg>
+                                        </div>
+                                        <span className="text-3xl font-black tracking-tighter font-display text-white transition-all group-hover:text-electric-teal flex items-center gap-2">
+                                            Be4L
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-electric-teal/50">Beta</span>
+                                        </span>
+                                    </div>
+                                    <p className="text-cool-grey text-base font-medium leading-[1.8] max-w-xs opacity-70 italic font-sans">
+                                        The OS for life, love, lore, and lark. Join the giant friend group.
+                                    </p>
+                                    <div className="flex gap-4">
+                                        {['IG', 'TW', 'TK'].map(social => (
+                                            <a key={social} href="#" className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white/[0.03] border border-white/5 text-cool-grey hover:text-white hover:border-white/20 transition-all hover:-translate-y-1">
+                                                <div className="w-5 h-5 rounded-full bg-current opacity-20" />
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Link Columns Group - Fixed Horizontal side-by-side */}
+                                <div className="flex gap-16 md:gap-32">
+                                    {/* 2. Platform Column */}
+                                    <div className="space-y-8">
+                                        <h4 className="text-xs font-black uppercase tracking-[0.4em] text-white/50 font-display">Platform</h4>
+                                        <ul className="space-y-4">
+                                            <li><a href="/about" className="text-sm font-bold text-cool-grey hover:text-white transition-colors block">About</a></li>
+                                            <li><a href="/partner" className="text-sm font-bold text-cool-grey hover:text-white transition-colors block">Partner</a></li>
+                                            <li><a href="#vision" className="text-sm font-bold text-cool-grey hover:text-white transition-colors block">Vision</a></li>
+                                        </ul>
+                                    </div>
+
+                                    {/* 3. Legal Column */}
+                                    <div className="space-y-8">
+                                        <h4 className="text-xs font-black uppercase tracking-[0.4em] text-white/50 font-display">Legal</h4>
+                                        <ul className="space-y-4">
+                                            <li><a href="/privacy" className="text-sm font-bold text-cool-grey hover:text-white transition-colors block">Privacy Policy</a></li>
+                                            <li><a href="/terms" className="text-sm font-bold text-cool-grey hover:text-white transition-colors block">Terms of Service</a></li>
+                                            <li><a href="#" className="text-sm font-bold text-cool-grey hover:text-white transition-colors block">Cookie Policy</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 opacity-40">
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] font-fui">
+                                    BE4L | PLATFORM | LEGAL
+                                </p>
+                                <p className="text-[9px] font-bold uppercase tracking-widest font-fui">
+                                    © 2026 BE4L MISSION CONTROL. ALL SYSTEMS GO.
+                                </p>
+                            </div>
+                        </div>
+                    </footer>
+
+                    {/* Auth Modal Overlay */}
+                    <AnimatePresence>
+                        {showAuth && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-2xl bg-black/60"
+                                onClick={() => setShowAuth(false)}
+                            >
+                                <motion.div
+                                    initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                                    exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                                    className="w-full max-w-5xl mx-4"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <AuthScreen onClose={() => setShowAuth(false)} />
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    <style>{`
+                        html {
+                            scroll-behavior: smooth;
+                        }
+                        body {
+                            background-color: #05050A;
+                        }
+                    `}</style>
                 </motion.div>
-            </div>
-        </div>
+            )
+            }
+        </AnimatePresence >
     );
 };
 

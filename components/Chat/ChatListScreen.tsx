@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronLeft, Zap } from 'lucide-react';
+import { Search, ChevronLeft, Zap, MessageCircle, Users, Plus } from 'lucide-react';
 import { supabaseService } from '../../services/supabaseService';
 import { Message, User as UserType } from '../../types';
 import TopBar from '../TopBar';
 
-import { HeartbeatTransition, FloatingTabs } from '../ui/AestheticComponents';
+import { HeartbeatTransition } from '../ui/AestheticComponents';
+import { useNavigation } from '../../contexts/NavigationContext';
+import { ChatSidebar, ChatHeader } from './ChatFilters';
 
 interface ChatListScreenProps {
     onOpenChat: (chatId: string, name: string) => void;
@@ -16,132 +18,172 @@ interface ChatListScreenProps {
 }
 
 const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onOpenProfile, currentUser, onNavigate }) => {
-    const [activeTab, setActiveTab] = useState<'ECHOES' | 'LOBBIES'>('ECHOES');
+    const { setTabs, activeTab, setActiveTab } = useNavigation();
+    const [activeCat, setActiveCat] = useState('All');
     const [chats, setChats] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Scroll Logic for Sync Top Bar
-    const [topBarY, setTopBarY] = useState(0);
-    const lastScrollY = useRef(0);
     const containerRef = useRef<HTMLDivElement>(null);
-    const lastClickTimeRef = useRef(0);
 
-    const handleLogoClick = () => {
-        const now = Date.now();
-        if (now - lastClickTimeRef.current < 300) {
-            onNavigate('LANDING');
-        } else {
-            containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    // Register Tabs
+    useEffect(() => {
+        // We no longer set global tabs. Sidebar handles it locally.
+        // setTabs([...]);
+
+        if (!activeTab || (activeTab !== 'ECHOES' && activeTab !== 'LOBBIES')) {
+            setActiveTab('ECHOES');
         }
-        lastClickTimeRef.current = now;
-    };
+        setTabs([]); // Ensure global tabs are cleared
 
-    const handleScroll = () => {
-        const currentScrollY = containerRef.current?.scrollTop || 0;
-        const delta = currentScrollY - lastScrollY.current;
+        return () => setTabs([]);
+    }, []);
 
-        if (currentScrollY > 10) {
-            setTopBarY(prev => {
-                const newY = prev - delta;
-                return Math.max(-80, Math.min(0, newY));
-            });
-        } else {
-            setTopBarY(0);
-        }
-
-        lastScrollY.current = currentScrollY;
-    };
+    useEffect(() => {
+        setActiveCat('All');
+    }, [activeTab]);
 
     useEffect(() => {
         const loadChats = async () => {
             setLoading(true);
-            const data = await supabaseService.chat.getChats();
+            let data = await supabaseService.chat.getChats(currentUser.id);
+
             // Filter logic: Lobbies are explicitly type 'lobby' or have context
-            const echoes = data.filter((c: any) => c.type === 'personal' || c.context_type === 'NONE');
-            const lobbies = data.filter((c: any) => c.type === 'lobby' || c.context_type === 'QUEST' || c.context_type === 'SQUAD');
+            let echoes = data.filter((c: any) => c.type === 'personal' || c.context_type === 'NONE');
+            let lobbies = data.filter((c: any) => c.type === 'lobby' || c.context_type === 'QUEST' || c.context_type === 'SQUAD');
+
+            // Fallback to MOCK_CHATS as samples if no data found
+            if (data.length === 0) {
+                const { MOCK_CHATS } = await import('../../services/supabaseService');
+                echoes = MOCK_CHATS.filter(c => c.type === 'personal');
+                lobbies = MOCK_CHATS.filter(c => c.type === 'lobby');
+            }
+
+            let filtered = activeTab === 'ECHOES' ? echoes : lobbies;
+
+            // Apply category filter
+            if (activeCat === 'Unread') {
+                filtered = filtered.filter(c => c.unread > 0);
+            } else if (activeCat === 'Groups' && activeTab === 'ECHOES') {
+                filtered = filtered.filter(c => c.type === 'group');
+            }
 
             // Artificial delay
             setTimeout(() => {
-                setChats(activeTab === 'ECHOES' ? echoes : lobbies);
+                setChats(filtered);
                 setLoading(false);
             }, 500);
         };
         loadChats();
-    }, [activeTab]);
+    }, [activeTab, activeCat]);
+
+    const handleCreateGroup = async () => {
+        const groupName = prompt("Enter Squad Name:");
+        if (!groupName) return;
+
+        // In a real app, this would involve selecting members, but for MVP:
+        const { data: newChat } = await supabaseService.chat.createGroup(currentUser.id, groupName);
+        if (newChat) {
+            onOpenChat(newChat.id, newChat.name);
+        }
+    };
 
     return (
-        <div className="flex-1 h-full relative flex flex-col overflow-hidden">
-            <TopBar
-                translateY={topBarY}
-                onOpenProfile={onOpenProfile}
-                user={currentUser}
-                onLogoClick={handleLogoClick}
-                onSearchClick={() => onNavigate('SEARCH')}
-                onNotificationsClick={() => onNavigate('NOTIFICATIONS')}
-            />
+        <div className="flex-1 flex flex-col h-full bg-transparent">
+            {/* Minimalist Action Bar */}
+            <div className="pt-10 px-6 pb-2 shrink-0">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="relative flex-1 group">
+                        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-primary transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="Search comms..."
+                            className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-3 pl-12 pr-4 text-xs font-bold text-white placeholder:text-gray-700 focus:outline-none focus:border-primary/30 focus:bg-white/[0.05] transition-all"
+                        />
+                    </div>
+                    <button
+                        onClick={handleCreateGroup}
+                        className="w-11 h-11 shrink-0 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center active:scale-95 shadow-lg"
+                    >
+                        <Plus size={20} />
+                    </button>
+                </div>
+            </div>
 
-
-            {/* FLOATING TABS (Sticky/Fixed like Lore Feed) */}
-            <motion.div
-                animate={{ y: topBarY }}
-                transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="absolute top-[80px] left-0 right-0 z-30 flex items-center justify-center pt-2 pointer-events-none"
-            >
-                <FloatingTabs
-                    activeTab={activeTab}
-                    onChange={(val) => setActiveTab(val as 'ECHOES' | 'LOBBIES')}
-                    tabs={[
-                        { label: 'Echoes', value: 'ECHOES' },
-                        { label: 'Lobbies', value: 'LOBBIES' }
-                    ]}
-                />
-            </motion.div>
-
-            {/* List */}
-            <div
-                ref={containerRef}
-                onScroll={handleScroll}
-                className="flex-1 overflow-y-auto pt-[150px] pb-14 space-y-2 px-4 no-scrollbar flex flex-col"
-            >
-
-                <HeartbeatTransition loading={loading} label={activeTab === 'ECHOES' ? "Finding Friends..." : "Opening Lobbies..."}>
-                    {chats.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-center">
-                            <span className="text-gray-600 font-bold uppercase text-[10px] tracking-widest mb-2">Silence is golden</span>
-                            <p className="text-white/40 text-xs italic">{activeTab === 'ECHOES' ? 'Start a convo with a friend.' : 'Join a quest to enter a lobby.'}</p>
-                        </div>
-                    ) : chats.map(chat => (
-                        <div
-                            key={chat.id}
-                            onClick={() => onOpenChat(chat.id, chat.name)}
-                            className="flex items-center gap-4 p-4 bg-card rounded-2xl border border-white/5 active:bg-surface transition-colors cursor-pointer group"
-                        >
-                            <div className="relative">
-                                <div className={`w-14 h-14 rounded-full overflow-hidden border-2 ${activeTab === 'LOBBIES' ? 'border-primary/20 p-1' : 'border-transparent'} group-hover:border-primary transition-all`}>
-                                    <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-full object-cover" />
-                                </div>
-                                {chat.unread > 0 && <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full border-2 border-black flex items-center justify-center text-[10px] font-bold text-black">{chat.unread}</div>}
-                                {activeTab === 'LOBBIES' && (
-                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-black border border-white/10 rounded-full flex items-center justify-center text-primary">
-                                        <Zap size={10} strokeWidth={3} className="fill-current" />
-                                    </div>
+            <div className="flex-1 overflow-y-auto no-scrollbar pb-32">
+                {/* Categories */}
+                <div className="px-6 mb-6">
+                    <div className="flex items-center gap-6 border-b border-white/5 pb-1">
+                        {['All', 'Unread', 'Lobbies'].map(cat => (
+                            <button
+                                key={cat}
+                                onClick={() => {
+                                    if (cat === 'Lobbies') setActiveTab('LOBBIES');
+                                    else {
+                                        setActiveTab('ECHOES');
+                                        setActiveCat(cat);
+                                    }
+                                }}
+                                className={`text-[10px] font-black uppercase tracking-[0.2em] pb-3 relative transition-all ${(cat === 'Lobbies' && activeTab === 'LOBBIES') || (cat === activeCat && activeTab === 'ECHOES')
+                                    ? 'text-white' : 'text-gray-600 hover:text-gray-400'
+                                    }`}
+                            >
+                                {cat}
+                                {((cat === 'Lobbies' && activeTab === 'LOBBIES') || (cat === activeCat && activeTab === 'ECHOES')) && (
+                                    <motion.div layoutId="catUnderline" className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-primary" />
                                 )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Chat List */}
+                <div className="px-4 space-y-2">
+                    <HeartbeatTransition loading={loading} label="Tuning Frequency...">
+                        {chats.length === 0 ? (
+                            <div className="py-20 text-center opacity-20">
+                                <MessageCircle size={40} className="mx-auto mb-4" />
+                                <p className="text-xs font-bold uppercase tracking-widest">No signals found</p>
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-center mb-1">
-                                    <h3 className="font-bold text-white truncate pr-2 text-base uppercase tracking-tighter italic">{chat.name}</h3>
-                                    <span className="text-[10px] font-bold text-gray-600 whitespace-nowrap uppercase">{chat.time}</span>
-                                </div>
-                                <p className={`text-sm truncate ${chat.unread > 0 ? 'text-white font-medium' : 'text-gray-500'}`}>
-                                    {chat.lastMsg}
-                                </p>
-                            </div>
-                        </div>
-                    ))}
-                </HeartbeatTransition>
+                        ) : (
+                            chats.map(chat => (
+                                <motion.div
+                                    whileHover={{ x: 4 }}
+                                    key={chat.id}
+                                    onClick={() => onOpenChat(chat.id, chat.name)}
+                                    className="flex items-center gap-4 p-4 rounded-3xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all cursor-pointer group"
+                                >
+                                    <div className="relative">
+                                        <div className={`w-14 h-14 rounded-[1.8rem] overflow-hidden border border-white/10 p-0.5 bg-black`}>
+                                            <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-[1.6rem] object-cover" />
+                                        </div>
+                                        {chat.unread > 0 && (
+                                            <div className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-primary rounded-full border-2 border-black flex items-center justify-center px-1">
+                                                <span className="text-[10px] font-black text-black">{chat.unread}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <h3 className="text-sm font-black text-white group-hover:text-primary transition-colors tracking-tight uppercase truncate italic">
+                                                <span className="animate-liquid-text">
+                                                    {chat.name}
+                                                </span>
+                                            </h3>
+                                            <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{chat.time}</span>
+                                        </div>
+                                        <p className={`text-xs truncate ${chat.unread > 0 ? 'text-white font-bold' : 'text-gray-500 font-medium'}`}>
+                                            {chat.lastMsg}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            ))
+                        )}
+                    </HeartbeatTransition>
+                </div>
             </div>
         </div>
     );
 };
+
 
 export default ChatListScreen;

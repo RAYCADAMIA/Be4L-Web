@@ -82,6 +82,29 @@ const TIMES = [
     'Tomorrow, 5:00 PM', 'Tomorrow, 7:00 PM'
 ];
 
+const SPONTY_PROCEDURAL_TEMPLATES = [
+    {
+        activity: 'Social',
+        titles: ['Invite 2 Random People', 'Coffee with a Stranger', 'Street Photography Run'],
+        descriptions: ['Break the ice and invite 2 random people for a quick chat.', 'Buy a random person coffee and hear their story.', 'Walk through the city and capture 5 portraits of strangers.']
+    },
+    {
+        activity: 'Fitness',
+        titles: ['Go for a 3KM Run', 'Park HIIT Session', 'Sunset Cardio'],
+        descriptions: ['Hit the road and complete a 3KM loop around your area.', 'Find the nearest park and do a 15-min HIIT session.', 'Scenic cardio run before the sun goes down.']
+    },
+    {
+        activity: 'Adventures',
+        titles: ['Go Fishing @ Coastal', 'Nearest Peak Hike', 'Unknown Street Walk'],
+        descriptions: ['Grab your rod and head to the coast. (No rod? Post a CANON quest to find one!)', 'Locate the nearest elevation point and reach the top.', 'Walk down a street you have never been on before.']
+    },
+    {
+        activity: 'Utility',
+        titles: ['Declutter for 20 Mins', 'Learn 5 Local Words', 'Unplug for 1 Hour'],
+        descriptions: ['Help your future self by cleaning your space right now.', 'Master 5 new words in the local dialect today.', 'Switch off all screens and just exist for 60 minutes.']
+    }
+];
+
 function getRandomElement<T>(array: T[]): T {
     return array[Math.floor(Math.random() * array.length)];
 }
@@ -96,7 +119,9 @@ export function generateRandomQuests(category: string, date: Date, count: number
 
     // Choose templates based on type
     let templates: any[] = [];
-    if (specificType === QuestType.CANON) {
+    if (specificType === QuestType.RANDOM && category === 'All') {
+        templates = SPONTY_PROCEDURAL_TEMPLATES;
+    } else if (specificType === QuestType.CANON) {
         const canonBase = category === 'All'
             ? Object.values(CANON_TEMPLATES).flat()
             : CANON_TEMPLATES[category as keyof typeof CANON_TEMPLATES] || [];
@@ -116,30 +141,21 @@ export function generateRandomQuests(category: string, date: Date, count: number
     const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     for (let i = 0; i < count; i++) {
-        let template;
-
-        // Force specific templates for the first 5 cards if category is 'All' for presentation
-        if (category === 'All' && i < 5) {
-            const featuredActivities = ['Pickleball', 'Golf', 'Party', 'Flea Market', 'Matcha'];
-            const targetActivity = featuredActivities[i];
-            template = templates.find(t => t.activity === targetActivity);
-            if (!template) template = getRandomElement(templates);
-        } else {
-            template = getRandomElement(templates);
-        }
+        let template = getRandomElement(templates);
 
         const title = getRandomElement(template.titles) as string;
         const description = getRandomElement(template.descriptions) as string;
         const host = getRandomElement(OTHER_USERS) as User;
         const maxParticipants = getRandomInt(4, 12);
         const currentParticipants = getRandomInt(1, maxParticipants - 1);
-        const fee = Math.random() > 0.7 ? getRandomInt(5, 25) : 0;
+        const fee = 0;
 
         // Use specific type if provided, otherwise random between SPONTY and RANDOM
         const questType = specificType || (Math.random() > 0.7 ? QuestType.SPONTY : QuestType.RANDOM);
 
-        const auraReward = questType === QuestType.CANON ? getRandomInt(50, 100) : (questType === QuestType.SPONTY ? getRandomInt(20, 40) : getRandomInt(10, 25));
-        const expReward = questType === QuestType.CANON ? getRandomInt(300, 600) : (questType === QuestType.SPONTY ? getRandomInt(100, 250) : getRandomInt(50, 150));
+        // Rewards removed as per request
+        const auraReward = 0;
+        const expReward = 0;
 
         // Set time to be on the specified date
         const hours = getRandomInt(6, 21);
@@ -179,7 +195,7 @@ export function generateRandomQuests(category: string, date: Date, count: number
             source: 'SYSTEM_GENERATED',
             category: category === 'All' ? getRandomElement(['Sports', 'Adventures', 'Travel', 'Train', 'Social', 'Jobs', 'Others']) : category,
             title: title,
-            description: `${description}. ${Math.random() > 0.5 ? 'All skill levels welcome!' : 'Looking forward to meeting you!'}`,
+            description: `${description}`,
             start_time: questDate.toISOString(),
             max_participants: maxParticipants,
             capacity: maxParticipants,

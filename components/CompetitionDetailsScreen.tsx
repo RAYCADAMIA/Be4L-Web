@@ -33,7 +33,7 @@ const CompetitionDetailsScreen: React.FC<CompetitionDetailsScreenProps> = ({ com
             <div className="px-6 grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-card border border-white/10 p-4 rounded-2xl">
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Prize Pool</p>
-                    <p className="text-primary font-black italic text-xl">{competition.prize_pool}</p>
+                    <p className="text-electric-teal font-black italic text-xl">{competition.prize_pool}</p>
                 </div>
                 <div className="bg-card border border-white/10 p-4 rounded-2xl">
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Organizer</p>
@@ -73,7 +73,7 @@ const CompetitionDetailsScreen: React.FC<CompetitionDetailsScreenProps> = ({ com
 
             {/* Footer */}
             <div className="absolute bottom-0 left-0 right-0 p-6 bg-black border-t border-white/10 safe-area-bottom">
-                <button className="w-full bg-lime-400 text-black font-black py-4 rounded-xl text-md uppercase tracking-widest hover:bg-lime-300 transition-colors shadow-[0_0_20px_rgba(204,255,0,0.4)]">
+                <button className="w-full bg-white text-black font-black py-4 rounded-xl text-md uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(45,212,191,0.4)]">
                     Register Now
                 </button>
             </div>

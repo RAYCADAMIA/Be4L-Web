@@ -111,7 +111,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
             // --- WATERMARK: Be4L ---
             ctx.shadowColor = 'rgba(0,0,0,0.5)';
             ctx.shadowBlur = 10 * scaleFactor;
-            ctx.fillStyle = '#CCFF00'; // Brand Primary
+            ctx.fillStyle = '#2DD4BF'; // Brand Primary
             ctx.font = `italic black ${Math.round(24 * scaleFactor)}px Inter, sans-serif`;
             ctx.textAlign = 'center';
             const watermarkY = canvas.height - (30 * scaleFactor);
@@ -233,7 +233,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                     <div>
                         {capture.quest && (
                             <div className="flex items-center gap-1.5 mb-1 animate-in slide-in-from-left-2 fade-in duration-300">
-                                <div className="bg-primary/20 text-primary p-0.5 rounded-[4px] shadow-[0_0_8px_rgba(204,255,0,0.3)]">
+                                <div className="bg-primary/20 text-primary p-0.5 rounded-[4px] shadow-[0_0_8px_rgba(45,212,191,0.3)]">
                                     <Zap size={10} fill="currentColor" />
                                 </div>
                                 <span className="text-[9px] font-black text-primary uppercase tracking-widest leading-none drop-shadow-sm line-clamp-1 max-w-[150px]">
@@ -242,7 +242,11 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                             </div>
                         )}
                         <div className="flex items-center">
-                            <p className="font-black text-white text-[13px] mr-1 cursor-pointer hover:underline" onClick={(e) => { e.stopPropagation(); capture.user && onUserClick?.(capture.user); }}>{capture.user?.username || 'Unknown User'}</p>
+                            <p className="font-black italic text-[13px] mr-1 cursor-pointer hover:underline" onClick={(e) => { e.stopPropagation(); capture.user && onUserClick?.(capture.user); }}>
+                                <span className="animate-liquid-text">
+                                    {capture.user?.username || 'Unknown User'}
+                                </span>
+                            </p>
                             {capture.tagged_users && capture.tagged_users.length > 0 && (
                                 <span className="text-[11px] text-gray-400">
                                     {capture.tagged_users.length === 1 ? (
@@ -295,7 +299,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                             if (isOwnPost || isLocked) return; // Don't allow own post reacts or locked reacts
                             startReactionCamera();
                         }}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-white/90 transition-all shadow-sm ${(isOwnPost || isLocked) ? 'bg-white/5 opacity-40 cursor-default' : 'bg-white/10 hover:bg-white/20 active:scale-90'}`}
+                        className={`w-11 h-11 rounded-full flex items-center justify-center text-white/90 transition-all shadow-sm ${(isOwnPost || isLocked) ? 'bg-white/5 opacity-40 cursor-default' : 'bg-white/10 hover:bg-white/20 active:scale-90'}`}
                     >
                         {isLocked ? <Lock size={16} className="text-gray-500" /> : <Smile size={20} />}
                     </button>
@@ -350,7 +354,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                     />
                     <div
                         onClick={(e) => e.stopPropagation()}
-                        className="absolute right-4 top-14 bg-[#0A0A0A]/95 backdrop-blur-xl border border-white/10 rounded-2xl w-52 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                        className="absolute right-4 top-14 bg-deep-void/95 backdrop-blur-xl border border-white/10 rounded-2xl w-52 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
                     >
                         <div className="p-1.5 flex flex-col gap-0.5">
                             {isOwnPost ? (
@@ -436,7 +440,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
             {showReactionCam && (
                 <div className="absolute bottom-24 left-4 z-50 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-300">
                     <div className="relative">
-                        <div className="w-32 h-32 sm:w-40 sm:h-40 bg-black rounded-full border-4 border-primary relative overflow-hidden shadow-[0_0_30px_rgba(204,255,0,0.3)]">
+                        <div className="w-32 h-32 sm:w-40 sm:h-40 bg-black rounded-full border-4 border-primary relative overflow-hidden shadow-[0_0_30px_rgba(45,212,191,0.3)]">
                             <video ref={reactionVideoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover transform scale-x-[-1]" />
                             <button onClick={handleCaptureReaction} className="absolute inset-0 z-10" />
                         </div>
@@ -464,7 +468,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
                         onClick={() => setShowDeleteConfirm(false)}
                     />
-                    <div className="relative w-full max-w-[320px] bg-[#121212] border border-white/10 rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95 duration-300">
+                    <div className="relative w-full max-w-[320px] bg-surface border border-white/10 rounded-[1.5rem] md:rounded-[2.5rem] p-8 shadow-2xl animate-in zoom-in-95 duration-300">
                         <div className="flex flex-col items-center text-center">
                             <div className="w-16 h-16 rounded-3xl bg-red-500/10 flex items-center justify-center mb-6">
                                 <Trash2 size={32} className="text-red-500" />

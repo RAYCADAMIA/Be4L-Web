@@ -2,41 +2,198 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Birthstone+Bounce:wght@400;500&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 
-  /* Theme Variables - Dark Mode (Default) */
-  --bg-primary: #121417;
-  /* Greyish Black */
-  --bg-surface: #1C1F26;
-  --bg-card: #252A33;
-  --text-primary: #FFFFFF;
-  --text-secondary: #94A3B8;
-  --primary: #CCFF00;
-  --primary-glow: rgba(204, 255, 0, 0.3);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --input-bg: rgba(255, 255, 255, 0.05);
-}
+  /* Official Theme Palette - Hyper-Futuristic Dark */
+  --bg-deep: #05050A;
+  /* Deep Void Black */
+  --bg-surface: #09090B;
+  /* Surface Dark */
+  --bg-card: #1C1F26;
+  /* Card Background */
+  --bg-glass: rgba(255, 255, 255, 0.02);
 
-[data-theme='light'] {
-  --bg-primary: #F8FAFC;
-  --bg-surface: #FFFFFF;
-  --bg-card: #F1F5F9;
-  --text-primary: #0F172A;
-  --text-secondary: #64748B;
-  --primary: #CCFF00;
-  /* Reverting to signature lime */
-  --primary-glow: rgba(204, 255, 0, 0.4);
-  --border-color: rgba(0, 0, 0, 0.1);
-  --input-bg: rgba(0, 0, 0, 0.05);
+  --text-primary: #FFFFFF;
+  /* Pure White */
+  --text-secondary: #94A3B8;
+  /* Cool Grey */
+
+  --electric-teal: #2DD4BF;
+
+  --primary: var(--electric-teal);
+  --primary-glow: rgba(45, 212, 191, 0.3);
+  --border-glass: rgba(255, 255, 255, 0.05);
+  --border-tech: rgba(45, 212, 191, 0.2);
+
+  --input-bg: rgba(255, 255, 255, 0.05);
+
+  /* Liquid Gradient Tokens */
+  --liquid-gradient-text: linear-gradient(90deg,
+      #2dd4bf 0%,
+      #06b6d4 25%,
+      #a855f7 50%,
+      #06b6d4 75%,
+      #2dd4bf 100%);
+  --liquid-gradient-bg: linear-gradient(-45deg,
+      #10b981,
+      #06b6d4,
+      #8b5cf6,
+      #ec4899);
 }
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: #05050A;
+  color: #FFFFFF;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --text-scale: 0.9;
+  }
+
+  body {
+    font-size: 14px;
+  }
+}
+
+/* Vibrant Mesh Background System - Ultra Vibrant Clout Kitchen Vibes */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 80% 0%, rgba(6, 182, 212, 0.30) 0%, transparent 60%),
+    radial-gradient(circle at 20% 100%, rgba(139, 92, 246, 0.20) 0%, transparent 60%),
+    #05080a;
+}
+
+/* Dynamic Vibrant Blobs - Increased Opacity and Scale */
+.vibrant-glow {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.6;
+  filter: blur(80px);
+  /* Slightly sharper blur for more "shape" */
+}
+
+.blob {
+  position: absolute;
+  width: 70vw;
+  height: 70vw;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  animation: blob-float 25s infinite alternate ease-in-out;
+}
+
+.blob-1 {
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.6) 0%, transparent 70%);
+  top: -20%;
+  left: -20%;
+  animation-duration: 20s;
+}
+
+.blob-2 {
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.5) 0%, transparent 70%);
+  bottom: -20%;
+  right: -20%;
+  animation-duration: 25s;
+  animation-delay: -5s;
+}
+
+.blob-3 {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%);
+  top: 30%;
+  left: 20%;
+  width: 50vw;
+  height: 50vw;
+  animation-duration: 18s;
+  animation-delay: -10s;
+}
+
+/* 3D Graphic Text Utilities */
+.text-3d-white {
+  color: white;
+  text-shadow:
+    1px 1px 0px rgba(45, 212, 191, 0.8),
+    2px 2px 0px rgba(45, 212, 191, 0.6),
+    3px 3px 0px rgba(45, 212, 191, 0.4),
+    4px 4px 0px rgba(45, 212, 191, 0.2),
+    5px 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.text-3d-primary {
+  color: var(--primary);
+  text-shadow:
+    1px 1px 0px rgba(255, 255, 255, 0.3),
+    2px 2px 0px rgba(255, 255, 255, 0.2),
+    3px 3px 0px rgba(255, 255, 255, 0.1),
+    4px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.text-3d-chunky {
+  color: white;
+  letter-spacing: -0.05em;
+  text-shadow:
+    0 1px 0 #fff,
+    0 2px 0 rgba(45, 212, 191, 0.4),
+    0 3px 0 rgba(45, 212, 191, 0.3),
+    0 4px 0 rgba(45, 212, 191, 0.2),
+    0 5px 0 rgba(45, 212, 191, 0.1),
+    0 6px 1px rgba(0, 0, 0, .1),
+    0 0 5px rgba(45, 212, 191, .2),
+    0 1px 3px rgba(0, 0, 0, .3),
+    0 3px 5px rgba(0, 0, 0, .2),
+    0 5px 10px rgba(0, 0, 0, .25),
+    0 10px 10px rgba(0, 0, 0, .2),
+    0 20px 20px rgba(0, 0, 0, .15);
+}
+
+@keyframes blob-float {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+
+  33% {
+    transform: translate(10%, 10%) scale(1.1) rotate(120deg);
+  }
+
+  66% {
+    transform: translate(-5%, 15%) scale(0.9) rotate(240deg);
+  }
+
+  100% {
+    transform: translate(0, 0) scale(1) rotate(360deg);
+  }
+}
+
+.font-display {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.font-fui {
+  font-family: 'Orbitron', sans-serif;
+}
+
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(45, 212, 191, 0.2);
+  box-shadow: 0 0 30px rgba(45, 212, 191, 0.1);
 }
 
 h1,
@@ -45,7 +202,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 /* Hide scrollbar for cleaner mobile look */
@@ -109,11 +266,11 @@ select {
 
   0%,
   100% {
-    box-shadow: 0 0 10px rgba(204, 255, 0, 0.2), 0 0 20px rgba(204, 255, 0, 0.1);
+    box-shadow: 0 0 10px rgba(45, 212, 191, 0.2), 0 0 20px rgba(45, 212, 191, 0.1);
   }
 
   50% {
-    box-shadow: 0 0 25px rgba(204, 255, 0, 0.5), 0 0 50px rgba(204, 255, 0, 0.2);
+    box-shadow: 0 0 25px rgba(45, 212, 191, 0.5), 0 0 50px rgba(45, 212, 191, 0.2);
   }
 }
 
@@ -140,12 +297,24 @@ select {
 }
 
 .neon-border {
-  border: 1px solid rgba(204, 255, 0, 0.2);
-  box-shadow: 0 0 10px rgba(204, 255, 0, 0.1);
+  border: 1px solid rgba(45, 212, 191, 0.2);
+  box-shadow: 0 0 10px rgba(45, 212, 191, 0.1);
 }
 
 .neon-text {
-  text-shadow: 0 0 15px rgba(204, 255, 0, 0.3);
+  text-shadow: 0 0 15px rgba(45, 212, 191, 0.3);
+}
+
+.text-primary-brand {
+  color: #2DD4BF;
+}
+
+.bg-primary-brand {
+  background-color: #2DD4BF;
+}
+
+.border-primary-brand {
+  border-color: #2DD4BF;
 }
 
 @keyframes heartbeat {
@@ -245,6 +414,11 @@ select {
   perspective: 1000px;
 }
 
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
 .no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -257,4 +431,75 @@ select {
 /* Aesthetic - Thinner Icons */
 .lucide {
   stroke-width: 1.5px;
+}
+
+@keyframes text-gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.animate-text-gradient {
+  background: linear-gradient(to right,
+      #2DD4BF,
+      #06B6D4,
+      #5EEAD4,
+      #2DD4BF);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+  animation: text-gradient-flow 6s linear infinite;
+
+  /* Prevent Clipping Fixes */
+  padding-bottom: 0.1em;
+  line-height: 1.2;
+}
+
+/* Liquid Animations */
+@keyframes liquid-bg-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-liquid-bg {
+  background: var(--liquid-gradient-bg);
+  background-size: 400% 400%;
+  animation: liquid-bg-flow 8s ease-in-out infinite;
+}
+
+@keyframes liquid-text-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.animate-liquid-text {
+  background: var(--liquid-gradient-text);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #2dd4bf;
+  display: inline-block;
+  vertical-align: baseline;
+  animation: liquid-text-flow 4s linear infinite;
 }
