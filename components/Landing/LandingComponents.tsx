@@ -110,25 +110,16 @@ export const PoweredBy: React.FC = () => {
             <div className="max-w-7xl mx-auto flex flex-col items-center gap-6 text-center">
                 <h4 className="text-xs md:text-sm font-black uppercase tracking-[0.6em] text-white/30">In Partnership With</h4>
 
-                {/* Curved Glassy-morphic Frame - Adjusted to Fit */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    className="relative px-10 py-8 md:px-14 md:py-10 rounded-[2rem] md:rounded-[3rem] bg-white/[0.02] backdrop-blur-xl border border-white/5 shadow-[0_0_80px_rgba(0,0,0,0.4)] group hover:border-blue-500/30 transition-all duration-700 w-fit flex items-center justify-center overflow-hidden"
+                    className="group"
                 >
-                    {/* Royal Blue Ambient Glow */}
-                    <div className="absolute inset-0 bg-blue-600/5 group-hover:bg-blue-600/10 transition-colors pointer-events-none" />
-
                     <img
-                        src="/assets/landing/partnership_multi_logo.png"
+                        src="/assets/landing/partnership_v2.jpg"
                         alt="Partnership Logos"
-                        className="h-28 md:h-40 w-auto object-contain transition-all duration-500 scale-100 group-hover:scale-105 filter drop-shadow-[0_0_20px_rgba(30,64,175,0.4)]"
-                        style={{
-                            // Applying Royal Blue color via hue-rotate and brightness/contrast 
-                            // #1e40af is royal blue. Since original is likely blue/black, balancing it.
-                            filter: 'brightness(1.2) contrast(1.2)'
-                        }}
+                        className="h-24 md:h-36 w-auto object-contain rounded-2xl md:rounded-[2rem] transition-all duration-500 hover:scale-105 shadow-[0_0_30px_rgba(30,64,175,0.2)] hover:shadow-[0_0_50px_rgba(30,64,175,0.4)]"
                     />
                 </motion.div>
             </div>

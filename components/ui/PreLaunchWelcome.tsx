@@ -41,8 +41,9 @@ export const PreLaunchWelcome = () => {
                                 </div>
                             </div>
 
-                            <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white mb-2 leading-none">
-                                What's up <br /> <span className="text-electric-teal animate-liquid-text">Chat?</span>
+                            <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white mb-2 leading-none">
+                                <span className="animate-liquid-text">Be4L</span> <br />
+                                <span className="text-xs font-black bg-white/10 text-white px-2 py-0.5 rounded-md border border-white/10 ml-1 vertical-middle inline-block not-italic animate-liquid-text">BETA</span>
                             </h2>
 
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6 border-b border-white/5 pb-6 w-full">
