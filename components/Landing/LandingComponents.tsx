@@ -184,7 +184,7 @@ export const HUDMenu: React.FC<HUDMenuProps> = ({ onJoinClick, isScrolled = true
                 </div>
                 <div className="flex flex-col leading-none">
                     <span className="text-sm md:text-base font-black tracking-tighter font-display animate-liquid-text">Be4L</span>
-                    <span className="text-[6px] md:text-[8px] font-black uppercase tracking-widest animate-liquid-text opacity-70">Beta</span>
+                    <span className="text-[6px] md:text-[8px] font-black uppercase tracking-widest animate-liquid-text opacity-50">Beta</span>
                 </div>
             </motion.div>
             <div className="hidden md:flex items-center gap-6">

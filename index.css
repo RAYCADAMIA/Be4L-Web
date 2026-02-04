@@ -30,12 +30,13 @@
 
   --input-bg: rgba(255, 255, 255, 0.05);
 
-  /* Liquid Gradient Tokens */
+  /* Liquid Gradient Tokens - Enhanced Vibrancy */
   --liquid-gradient-text: linear-gradient(90deg,
       #2dd4bf 0%,
-      #06b6d4 25%,
-      #a855f7 50%,
-      #06b6d4 75%,
+      #06b6d4 15%,
+      #a855f7 40%,
+      #ec4899 60%,
+      #a855f7 80%,
       #2dd4bf 100%);
   --liquid-gradient-bg: linear-gradient(-45deg,
       #10b981,
@@ -494,12 +495,13 @@ select {
 
 .animate-liquid-text {
   background: var(--liquid-gradient-text);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: #2dd4bf;
+  background-size: 300% auto;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
   display: inline-block;
   vertical-align: baseline;
-  animation: liquid-text-flow 4s linear infinite;
+  animation: liquid-text-flow 6s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(45, 212, 191, 0.2));
 }

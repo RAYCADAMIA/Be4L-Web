@@ -129,9 +129,10 @@ const RotatingPhoneCarousel = ({ isPaused }: { isPaused: boolean }) => {
     const angleRef = useRef(0);
     const phoneRefs = useRef<THREE.Group[]>([]);
 
-    // Adjust radius and scale based on viewport - Optimized for clarity
-    const radius = isMobile ? 1.4 : 3.8; // Further reduced to prevent overlapping
-    const basePhoneScale = isMobile ? 0.8 : 1.35; // Reduced from 1.65 to 1.35 to avoid massive overlapping
+    // Adjust radius and scale based on viewport - Widened to prevent slice-through
+    const radiusX = isMobile ? 2.2 : 5.8;
+    const radiusZ = isMobile ? 1.0 : 2.0;
+    const basePhoneScale = isMobile ? 0.7 : 1.25;
 
     // Use a group for positioning, but update children positions manually
     useFrame((state, delta) => {
@@ -146,15 +147,13 @@ const RotatingPhoneCarousel = ({ isPaused }: { isPaused: boolean }) => {
                 const offset = index * ((Math.PI * 2) / 3);
                 const currentAngle = angleRef.current + offset;
 
-                // Orbit logic (standard circular motion)
-                // Use a wider oval to separate them horizontally
-                ref.position.x = Math.sin(currentAngle) * radius;
-                ref.position.z = Math.cos(currentAngle) * (radius * 0.45) - 1.0;
+                // Orbit logic - Ellipse to prevent center overlap
+                ref.position.x = Math.sin(currentAngle) * radiusX;
+                ref.position.z = Math.cos(currentAngle) * radiusZ - 2.5;
 
-                // Dynamic Scaling: Larger at front (cos(angle) ~ 1), smaller at back
-                // Normalize cos value from [-1, 1] to [0, 1] for smoother lerp
+                // Dynamic Scaling: Larger at front
                 const depthFactor = (Math.cos(currentAngle) + 1) / 2;
-                // Scale ranges from 0.7x to 1.3x of base scale
+                // Scale ranges from 0.8x to 1.3x of base scale
                 const dynamicScale = basePhoneScale * (0.8 + 0.4 * depthFactor);
 
                 ref.scale.setScalar(dynamicScale);
