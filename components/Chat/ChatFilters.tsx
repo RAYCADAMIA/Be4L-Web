@@ -72,29 +72,34 @@ export const ChatSidebar: React.FC<ChatFiltersProps> = ({
     );
 };
 
-export const ChatHeader: React.FC<ChatFiltersProps> = ({
-    activeTab,
-    setActiveTab,
-    activeCat,
-    setActiveCat
-}) => {
+const HEADER_FILTERS = ['All', 'Unread', 'Lobbies'];
+
+export const ChatHeader: React.FC<{
+    activeHeading: string;
+    setActiveHeading: (h: string) => void;
+}> = ({ activeHeading, setActiveHeading }) => {
     return (
-        <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
-            {/* Categories */}
+        <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-700">
             <div className="px-4">
-                <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-2">
-                    {CHAT_CATEGORIES.map(cat => {
-                        const isActive = activeCat === cat;
+                <div className="flex gap-2 items-center overflow-x-auto no-scrollbar pb-1">
+                    {HEADER_FILTERS.map(filter => {
+                        const isActive = activeHeading === filter;
                         return (
                             <button
-                                key={cat}
-                                onClick={() => setActiveCat(cat)}
+                                key={filter}
+                                onClick={() => setActiveHeading(filter)}
                                 className={`
-                                    relative h-9 px-5 rounded-full whitespace-nowrap text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 shrink-0
-                                    ${isActive ? 'bg-primary text-black shadow-[0_0_15px_rgba(204,255,0,0.4)]' : 'bg-white/5 text-gray-400 border border-white/10'}
+                                    relative h-7 px-4 rounded-full whitespace-nowrap text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 shrink-0
+                                    ${isActive ? 'bg-electric-teal text-black' : 'bg-white/[0.08] backdrop-blur-md text-gray-400 border border-white/10 hover:bg-white/10'}
                                 `}
                             >
-                                {cat}
+                                {filter}
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="chatFilterActive"
+                                        className="absolute inset-0 bg-white/20 rounded-full blur-md -z-10"
+                                    />
+                                )}
                             </button>
                         );
                     })}

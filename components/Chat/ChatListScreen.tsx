@@ -87,57 +87,80 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
         }
     };
 
+    // Simplified state to match the UI: 'All' | 'Unread' | 'Lobbies'
+    const [activeHeading, setActiveHeading] = useState('All');
+
+    // Scroll handling for floating header
+    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+    const lastScrollY = useRef(0);
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const currentScrollY = e.currentTarget.scrollTop;
+        const scrollDiff = currentScrollY - lastScrollY.current;
+        if (scrollDiff > 10 && currentScrollY > 50) setIsHeaderVisible(false);
+        else if (scrollDiff < -10 || currentScrollY < 50) setIsHeaderVisible(true);
+        lastScrollY.current = currentScrollY;
+    };
+
+    // Sync complex state with simplified UI state
+    useEffect(() => {
+        if (activeHeading === 'Lobbies') {
+            setActiveTab('LOBBIES');
+        } else {
+            setActiveTab('ECHOES');
+            setActiveCat(activeHeading);
+        }
+    }, [activeHeading, setActiveTab]);
+
     return (
         <div className="flex-1 flex flex-col h-full bg-transparent">
-            {/* Minimalist Action Bar */}
-            <div className="pt-10 px-6 pb-2 shrink-0">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="relative flex-1 group">
-                        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-primary transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="Search comms..."
-                            className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-3 pl-12 pr-4 text-xs font-bold text-white placeholder:text-gray-700 focus:outline-none focus:border-primary/30 focus:bg-white/[0.05] transition-all"
-                        />
+            <div
+                onScroll={handleScroll}
+                className="flex-1 overflow-y-auto no-scrollbar relative flex flex-col"
+            >
+                {/* Search Bar - Part of scrollable content but stays at top initially */}
+                <div className="pt-24 px-6 pb-2">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="relative flex-1 group">
+                            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-electric-teal transition-colors" />
+                            <input
+                                type="text"
+                                placeholder="Search comms..."
+                                className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-3 pl-11 pr-4 text-[11px] font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-electric-teal/50 focus:bg-white/[0.05] transition-all uppercase tracking-wide"
+                            />
+                        </div>
+                        <button
+                            onClick={handleCreateGroup}
+                            className="w-11 h-11 shrink-0 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center active:scale-95 shadow-lg"
+                        >
+                            <Plus size={18} />
+                        </button>
                     </div>
-                    <button
-                        onClick={handleCreateGroup}
-                        className="w-11 h-11 shrink-0 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center active:scale-95 shadow-lg"
-                    >
-                        <Plus size={20} />
-                    </button>
                 </div>
-            </div>
 
-            <div className="flex-1 overflow-y-auto no-scrollbar pb-32">
-                {/* Categories */}
-                <div className="px-6 mb-6">
-                    <div className="flex items-center gap-6 border-b border-white/5 pb-1">
-                        {['All', 'Unread', 'Lobbies'].map(cat => (
-                            <button
-                                key={cat}
-                                onClick={() => {
-                                    if (cat === 'Lobbies') setActiveTab('LOBBIES');
-                                    else {
-                                        setActiveTab('ECHOES');
-                                        setActiveCat(cat);
-                                    }
-                                }}
-                                className={`text-[10px] font-black uppercase tracking-[0.2em] pb-3 relative transition-all ${(cat === 'Lobbies' && activeTab === 'LOBBIES') || (cat === activeCat && activeTab === 'ECHOES')
-                                    ? 'text-white' : 'text-gray-600 hover:text-gray-400'
-                                    }`}
-                            >
-                                {cat}
-                                {((cat === 'Lobbies' && activeTab === 'LOBBIES') || (cat === activeCat && activeTab === 'ECHOES')) && (
-                                    <motion.div layoutId="catUnderline" className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-primary" />
-                                )}
-                            </button>
-                        ))}
-                    </div>
+                <div className="h-[10px] w-full shrink-0" />
+
+                {/* Sticky Header */}
+                <div className="md:hidden pb-4 sticky top-[70px] z-30 pointer-events-none transition-all duration-300">
+                    <motion.div
+                        initial={{ y: -20, opacity: 0 }}
+                        animate={{
+                            y: isHeaderVisible ? 0 : -20,
+                            opacity: isHeaderVisible ? 1 : 0,
+                            pointerEvents: isHeaderVisible ? 'auto' : 'none'
+                        }}
+                        transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                        className="pointer-events-auto"
+                    >
+                        <ChatHeader
+                            activeHeading={activeHeading}
+                            setActiveHeading={setActiveHeading}
+                        />
+                    </motion.div>
                 </div>
 
                 {/* Chat List */}
-                <div className="px-4 space-y-2">
+                <div className="px-4 space-y-2 pb-32">
                     <HeartbeatTransition loading={loading} label="Tuning Frequency...">
                         {chats.length === 0 ? (
                             <div className="py-20 text-center opacity-20">
@@ -153,28 +176,27 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                                     className="flex items-center gap-4 p-4 rounded-3xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all cursor-pointer group"
                                 >
                                     <div className="relative">
-                                        <div className={`w-14 h-14 rounded-[1.8rem] overflow-hidden border border-white/10 p-0.5 bg-black`}>
-                                            <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-[1.6rem] object-cover" />
+                                        <div className={`w-12 h-12 rounded-[1.4rem] overflow-hidden border border-white/10 p-0.5 bg-black`}>
+                                            <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-[1.2rem] object-cover" />
                                         </div>
                                         {chat.unread > 0 && (
-                                            <div className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-primary rounded-full border-2 border-black flex items-center justify-center px-1">
-                                                <span className="text-[10px] font-black text-black">{chat.unread}</span>
+                                            <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-electric-teal rounded-full border-2 border-black flex items-center justify-center px-0.5">
+                                                <span className="text-[9px] font-black text-black">{chat.unread}</span>
                                             </div>
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-center mb-1">
-                                            <h3 className="text-sm font-black text-white group-hover:text-primary transition-colors tracking-tight uppercase truncate italic">
+                                        <div className="flex justify-between items-center mb-0.5">
+                                            <h3 className="text-sm font-black text-white group-hover:text-electric-teal transition-colors tracking-tight uppercase truncate italic">
                                                 <span className="animate-liquid-text">
                                                     {chat.name}
                                                 </span>
                                             </h3>
                                             <div className="flex items-center gap-2">
-                                                <span className="px-1 py-0.5 rounded border border-white/10 bg-white/5 text-[6px] font-bold text-white/30 uppercase tracking-widest">Prototype</span>
                                                 <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{chat.time}</span>
                                             </div>
                                         </div>
-                                        <p className={`text-xs truncate ${chat.unread > 0 ? 'text-white font-bold' : 'text-gray-500 font-medium'}`}>
+                                        <p className={`text-[11px] truncate ${chat.unread > 0 ? 'text-white font-bold' : 'text-gray-500 font-medium'}`}>
                                             {chat.lastMsg}
                                         </p>
                                     </div>

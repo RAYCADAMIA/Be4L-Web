@@ -244,39 +244,39 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
 }) => {
     // Re-implement simplified MissionTimeline for Mobile Header
     return (
-        <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-700">
             {/* Tab Switcher */}
-            <div className="px-4 pt-2">
-                <div className="flex p-1 bg-white/[0.03] rounded-2xl border border-white/5 backdrop-blur-md">
+            <div className="px-4 pt-1">
+                <div className="flex p-0.5 bg-white/[0.08] rounded-full border border-white/10 backdrop-blur-3xl shadow-lg">
                     <button
                         onClick={() => setActiveTab('CANON')}
                         className={`
-                            flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all duration-500 relative
+                            flex-1 flex items-center justify-center gap-2 py-2 rounded-full transition-all duration-500 relative
                             ${activeTab === 'CANON' ? 'text-primary' : 'text-gray-500 hover:text-white'}
                         `}
                     >
-                        <Compass size={14} strokeWidth={activeTab === 'CANON' ? 2.5 : 2} className="relative z-10" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] relative z-10">Canon</span>
+                        <Compass size={13} strokeWidth={activeTab === 'CANON' ? 2.5 : 2} className="relative z-10" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] relative z-10">Canon</span>
                         {activeTab === 'CANON' && (
                             <motion.div
                                 layoutId="questTabActiveMobile"
-                                className="absolute inset-0 bg-white/[0.05] rounded-xl border border-white/10 shadow-[0_4px_15px_rgba(0,0,0,0.3)]"
+                                className="absolute inset-0 bg-white/[0.05] rounded-full border border-white/10 shadow-[0_4px_15px_rgba(0,0,0,0.3)]"
                             />
                         )}
                     </button>
                     <button
                         onClick={() => setActiveTab('SPONTY')}
                         className={`
-                            flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all duration-500 relative
+                            flex-1 flex items-center justify-center gap-2 py-2 rounded-full transition-all duration-500 relative
                             ${activeTab === 'SPONTY' ? 'text-electric-teal' : 'text-gray-500 hover:text-white'}
                         `}
                     >
-                        <Zap size={14} strokeWidth={activeTab === 'SPONTY' ? 2.5 : 2} className="relative z-10" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] relative z-10">Sponty</span>
+                        <Zap size={13} strokeWidth={activeTab === 'SPONTY' ? 2.5 : 2} className="relative z-10" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] relative z-10">Sponty</span>
                         {activeTab === 'SPONTY' && (
                             <motion.div
                                 layoutId="questTabActiveMobile"
-                                className="absolute inset-0 bg-white/[0.05] rounded-xl border border-white/10 shadow-[0_4px_15px_rgba(0,0,0,0.3)]"
+                                className="absolute inset-0 bg-white/[0.05] rounded-full border border-white/10 shadow-[0_4px_15px_rgba(0,0,0,0.3)]"
                             />
                         )}
                     </button>
@@ -285,7 +285,7 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
 
             {/* Categories */}
             <div className="px-4">
-                <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-2">
+                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                     {UNIVERSAL_CATEGORIES.map(cat => {
                         const isActive = activeCat === cat;
                         return (
@@ -293,11 +293,17 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
                                 key={cat}
                                 onClick={() => setActiveCat(cat)}
                                 className={`
-                                    relative h-9 px-5 rounded-full whitespace-nowrap text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 shrink-0
-                                    ${isActive ? 'bg-primary text-black shadow-[0_0_15px_rgba(204,255,0,0.4)]' : 'bg-white/5 text-gray-400 border border-white/10'}
+                                    relative h-7 px-4 rounded-full whitespace-nowrap text-[9px] font-black uppercase tracking-[0.15em] transition-all duration-300 shrink-0
+                                    ${isActive ? 'bg-primary text-black' : 'bg-white/[0.08] backdrop-blur-md text-gray-400 border border-white/10 hover:bg-white/10'}
                                 `}
                             >
                                 {cat}
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="questCatActiveMobile"
+                                        className="absolute inset-0 bg-primary/20 rounded-full blur-md -z-10"
+                                    />
+                                )}
                             </button>
                         );
                     })}
@@ -306,48 +312,50 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
 
             {/* Simple Date Strip for Mobile (Canon Only) */}
             <AnimatePresence>
-                {activeTab === 'CANON' && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                        animate={{ opacity: 1, height: 'auto', marginBottom: 8 }}
-                        exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                        className="px-4 border-b border-white/5 pb-4 overflow-hidden"
-                    >
-                        <div className="flex justify-between items-center bg-white/[0.02] rounded-2xl p-1.5 border border-white/5">
-                            <button
-                                onClick={() => {
-                                    const d = new Date(selectedDate);
-                                    d.setDate(d.getDate() - 1);
-                                    if (d >= new Date(new Date().setHours(0, 0, 0, 0))) onDateChange(d);
-                                }}
-                                className="p-2 text-gray-500 hover:text-white"
-                            >
-                                <ChevronLeft size={16} />
-                            </button>
+                {
+                    activeTab === 'CANON' && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                            animate={{ opacity: 1, height: 'auto', marginBottom: 8 }}
+                            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                            className="px-4 border-b border-white/5 pb-4 overflow-hidden"
+                        >
+                            <div className="flex justify-between items-center bg-white/[0.02] rounded-2xl p-1.5 border border-white/5">
+                                <button
+                                    onClick={() => {
+                                        const d = new Date(selectedDate);
+                                        d.setDate(d.getDate() - 1);
+                                        if (d >= new Date(new Date().setHours(0, 0, 0, 0))) onDateChange(d);
+                                    }}
+                                    className="p-2 text-gray-500 hover:text-white"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
 
-                            <div className="flex flex-col items-center">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-primary">
-                                    {selectedDate.toDateString() === new Date().toDateString() ? 'TODAY' : selectedDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}
-                                </span>
-                                <span className="text-xs text-white/60 font-medium">
-                                    {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                </span>
+                                <div className="flex flex-col items-center">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary">
+                                        {selectedDate.toDateString() === new Date().toDateString() ? 'TODAY' : selectedDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}
+                                    </span>
+                                    <span className="text-xs text-white/60 font-medium">
+                                        {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                    </span>
+                                </div>
+
+                                <button
+                                    onClick={() => {
+                                        const d = new Date(selectedDate);
+                                        d.setDate(d.getDate() + 1);
+                                        onDateChange(d);
+                                    }}
+                                    className="p-2 text-gray-500 hover:text-white"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
                             </div>
-
-                            <button
-                                onClick={() => {
-                                    const d = new Date(selectedDate);
-                                    d.setDate(d.getDate() + 1);
-                                    onDateChange(d);
-                                }}
-                                className="p-2 text-gray-500 hover:text-white"
-                            >
-                                <ChevronRight size={16} />
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+                        </motion.div>
+                    )
+                }
+            </AnimatePresence >
+        </div >
     );
 }

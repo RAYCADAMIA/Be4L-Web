@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Briefcase, ArrowRight, Sparkles } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useNavigation } from '../contexts/NavigationContext';
@@ -135,6 +136,26 @@ const BookScreen: React.FC<{
         return true;
     });
 
+    // Scroll handling for floating header
+    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+    const lastScrollY = React.useRef(0);
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const currentScrollY = e.currentTarget.scrollTop;
+        const scrollDiff = currentScrollY - lastScrollY.current;
+
+        // If scrolling down significantly, hide header
+        if (scrollDiff > 10 && currentScrollY > 50) {
+            setIsHeaderVisible(false);
+        }
+        // If scrolling up significantly or at top, show header
+        else if (scrollDiff < -10 || currentScrollY < 50) {
+            setIsHeaderVisible(true);
+        }
+
+        lastScrollY.current = currentScrollY;
+    };
+
     return (
         <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-transparent">
             <div className="flex-1 h-full overflow-hidden flex flex-col md:flex-row max-w-[1600px] mx-auto w-full">
@@ -152,22 +173,39 @@ const BookScreen: React.FC<{
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 h-full overflow-y-auto no-scrollbar relative flex flex-col">
+                <div
+                    onScroll={handleScroll}
+                    className="flex-1 h-full overflow-y-auto no-scrollbar relative flex flex-col"
+                >
+
+                    {/* Header Spacer for Floating Nav */}
+                    <div className="h-[20px] md:h-0 w-full shrink-0" />
 
                     {/* Mobile Header (Filters) */}
-                    <div className="md:hidden pt-6 pb-2 sticky top-0 z-30 bg-black/40 backdrop-blur-xl">
-                        <DibsHeader
-                            activeCat={activeCat}
-                            setActiveCat={setActiveCat}
-                            priceRange={priceRange}
-                            setPriceRange={setPriceRange}
-                            locationFilter={locationFilter}
-                            setLocationFilter={setLocationFilter}
-                        />
+                    <div className="md:hidden pb-2 sticky top-[70px] z-30 pointer-events-none transition-all duration-300">
+                        <motion.div
+                            initial={{ y: -20, opacity: 0 }}
+                            animate={{
+                                y: isHeaderVisible ? 0 : -20,
+                                opacity: isHeaderVisible ? 1 : 0,
+                                pointerEvents: isHeaderVisible ? 'auto' : 'none'
+                            }}
+                            transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                            className="pointer-events-auto"
+                        >
+                            <DibsHeader
+                                activeCat={activeCat}
+                                setActiveCat={setActiveCat}
+                                priceRange={priceRange}
+                                setPriceRange={setPriceRange}
+                                locationFilter={locationFilter}
+                                setLocationFilter={setLocationFilter}
+                            />
+                        </motion.div>
                     </div>
 
                     {/* Feed Grid */}
-                    <div className="flex-1 overflow-y-auto pt-4 md:pt-8 pb-32 space-y-16 px-4 no-scrollbar">
+                    <div className="flex-1 overflow-y-auto pt-4 md:pt-8 pb-0 space-y-16 px-4 no-scrollbar">
 
                         {/* Discovery Row (Items) */}
                         {!loading && filteredItems.length > 0 && (

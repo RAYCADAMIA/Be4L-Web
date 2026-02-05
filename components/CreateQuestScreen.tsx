@@ -147,7 +147,7 @@ const SlideToLaunch: React.FC<{ onLaunch: () => void, loading: boolean }> = ({ o
         return () => window.removeEventListener('resize', updateWidth);
     }, []);
 
-    const maxDrag = Math.max(containerWidth - 72, 100);
+    const maxDrag = Math.max(containerWidth - 60, 100);
     const progress = useTransform(x, [0, maxDrag], [0, 1]);
     const textOpacity = useTransform(x, [0, maxDrag * 0.3], [1, 0]);
     const iconRotate = useTransform(x, [0, maxDrag], [0, 360]);
@@ -158,12 +158,12 @@ const SlideToLaunch: React.FC<{ onLaunch: () => void, loading: boolean }> = ({ o
     };
 
     return (
-        <div ref={containerRef} className="w-full h-18 rounded-[2.2rem] bg-white/5 border border-white/10 relative flex items-center px-1.5 overflow-hidden backdrop-blur-3xl group shadow-2xl">
+        <div ref={containerRef} className="w-full h-14 rounded-full bg-white/5 border border-white/10 relative flex items-center px-1 overflow-hidden backdrop-blur-3xl group shadow-xl">
             <motion.div style={{ opacity: useTransform(x, [0, maxDrag], [0.05, 0.4]), width: x, background: 'linear-gradient(90deg, transparent, rgba(204,255,0,0.6))' }} className="absolute inset-y-0 left-0 pointer-events-none rounded-l-full" />
             <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="flex items-center gap-3">
-                    <span className="text-[11px] font-black text-white/40 uppercase tracking-[0.6em] ml-14 italic">{loading ? 'LAUNCHING...' : 'SLIDE TO DEPLOY'}</span>
-                    {!loading && <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}><ArrowRight size={14} className="text-primary/30" /></motion.div>}
+                <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] ml-12 italic">{loading ? 'LAUNCHING...' : 'SLIDE TO DEPLOY'}</span>
+                    {!loading && <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}><ArrowRight size={12} className="text-primary/30" /></motion.div>}
                 </div>
             </motion.div>
             <motion.div
@@ -172,9 +172,9 @@ const SlideToLaunch: React.FC<{ onLaunch: () => void, loading: boolean }> = ({ o
                 dragElastic={0.05}
                 style={{ x }}
                 onDragEnd={handleDragEnd}
-                className="w-14 h-14 rounded-[1.4rem] bg-white flex items-center justify-center text-black z-20 shadow-xl cursor-grab active:cursor-grabbing border-2 border-white/40 relative"
+                className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-black z-20 shadow-lg cursor-grab active:cursor-grabbing border-2 border-white/40 relative"
             >
-                {loading ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} className="w-7 h-7 border-3 border-black border-t-transparent rounded-full" /> : <Zap size={26} fill="black" strokeWidth={2.5} />}
+                {loading ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} className="w-6 h-6 border-2 border-black border-t-transparent rounded-full" /> : <Zap size={20} fill="black" strokeWidth={2.5} />}
             </motion.div>
         </div>
     );
@@ -268,132 +268,132 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                className="relative w-full max-w-xl bg-[#050505] border border-white/10 rounded-[3rem] overflow-hidden flex flex-col shadow-3xl h-[80vh] max-h-[800px]"
+                className="relative w-full max-w-md bg-zinc-900/80 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] overflow-hidden flex flex-col shadow-3xl h-auto max-h-[85vh]"
             >
                 {/* Header */}
-                <div className="px-8 pt-8 pb-4 flex justify-between items-center bg-gradient-to-b from-white/[0.02] to-transparent">
-                    <div className="flex items-center gap-4">
-                        <button onClick={step === 1 ? onClose : () => setStep(step - 1)} className="p-3 rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-all">
-                            <ChevronLeft size={20} />
+                <div className="px-6 pt-6 pb-2 flex justify-between items-center bg-gradient-to-b from-white/[0.02] to-transparent shrink-0">
+                    <div className="flex items-center gap-3">
+                        <button onClick={step === 1 ? onClose : () => setStep(step - 1)} className="p-2.5 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-all">
+                            <ChevronLeft size={18} />
                         </button>
                         <div>
-                            <h2 className="text-xl font-black italic uppercase tracking-tighter text-white">New Activity</h2>
-                            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Stage {step} of {totalSteps}</p>
+                            <h2 className="text-lg font-black italic uppercase tracking-tighter text-white">New Activity</h2>
+                            <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Stage {step} of {totalSteps}</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto no-scrollbar px-8 py-6">
+                <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-4">
                     <AnimatePresence mode="wait">
                         {step === 1 && (
-                            <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest ml-1">Title</label>
-                                    <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Mission Title..." className="w-full bg-transparent text-4xl font-black italic uppercase text-white placeholder-white/5 outline-none border-b border-white/5 pb-4 focus:border-primary/50 transition-all" autoFocus />
+                            <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                                <div className="space-y-1">
+                                    <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-1">Title</label>
+                                    <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Mission Title..." className="w-full bg-transparent text-2xl font-black italic uppercase text-white placeholder-white/10 outline-none border-b border-white/5 pb-2 focus:border-primary/50 transition-all" autoFocus />
                                 </div>
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest ml-1">Category</label>
-                                    <div className="flex gap-3 overflow-x-auto no-scrollbar">
+                                <div className="space-y-3">
+                                    <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-1">Category</label>
+                                    <div className="flex gap-2 overflow-x-auto no-scrollbar scroll-smooth">
                                         {categories.map(cat => (
-                                            <button key={cat.name} onClick={() => setCategory(cat.name)} className={`flex-none w-24 h-28 rounded-3xl border flex flex-col items-center justify-center gap-2 transition-all ${category === cat.name ? 'bg-primary/10 border-primary text-primary' : 'bg-white/5 border-white/5 text-gray-500'}`}>
-                                                <cat.icon size={22} />
-                                                <span className="text-[10px] font-black uppercase tracking-widest">{cat.name}</span>
+                                            <button key={cat.name} onClick={() => setCategory(cat.name)} className={`flex-none w-20 h-24 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all ${category === cat.name ? 'bg-primary/10 border-primary text-primary' : 'bg-white/5 border-white/5 text-gray-500 hover:bg-white/10'}`}>
+                                                <cat.icon size={20} />
+                                                <span className="text-[9px] font-black uppercase tracking-widest">{cat.name}</span>
                                             </button>
                                         ))}
                                     </div>
                                 </div>
                                 {category && (
-                                    <div className="space-y-3 animate-in fade-in">
-                                        <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest ml-1">Activity</label>
+                                    <div className="space-y-2 animate-in fade-in">
+                                        <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-1">Activity</label>
                                         <div className="flex flex-wrap gap-2 text-white">
                                             {activities[category].map(act => (
-                                                <button key={act} onClick={() => setActivity(act)} className={`px-5 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${activity === act ? 'bg-white text-black border-white' : 'bg-white/5 border-white/5 text-gray-500 hover:text-white'}`}>{act}</button>
+                                                <button key={act} onClick={() => setActivity(act)} className={`px-4 py-2 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${activity === act ? 'bg-white text-black border-white' : 'bg-white/5 border-white/5 text-gray-500 hover:text-white hover:bg-white/10'}`}>{act}</button>
                                             ))}
                                         </div>
                                     </div>
                                 )}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest ml-1">Description</label>
-                                    <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What's the plan?..." className="w-full bg-white/5 border border-white/5 rounded-3xl p-6 text-sm text-gray-300 min-h-[120px] outline-none focus:border-white/10" />
+                                    <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest ml-1">Description</label>
+                                    <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What's the plan?..." className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-xs text-gray-300 min-h-[100px] outline-none focus:border-white/10 resize-none" />
                                 </div>
                             </motion.div>
                         )}
 
                         {step === 2 && (
-                            <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                                <div onClick={() => setShowMapPicker(true)} className="h-48 rounded-[2.5rem] bg-white/5 border border-white/5 relative overflow-hidden group cursor-pointer">
+                            <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                                <div onClick={() => setShowMapPicker(true)} className="h-40 rounded-[2rem] bg-white/5 border border-white/5 relative overflow-hidden group cursor-pointer hover:border-white/20 transition-all">
                                     {locationCoords ? (
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 bg-primary/5">
-                                            <MapPin size={32} className="text-primary mb-2" />
-                                            <p className="text-sm font-black text-white uppercase text-center">{locationName}</p>
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-primary/5">
+                                            <MapPin size={28} className="text-primary mb-2" />
+                                            <p className="text-xs font-black text-white uppercase text-center max-w-[80%] truncate">{locationName}</p>
                                         </div>
                                     ) : (
                                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                            <MapPin size={32} className="text-gray-700 opacity-50 mb-2" />
-                                            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Select Location</p>
+                                            <MapPin size={28} className="text-gray-700 opacity-50 mb-2" />
+                                            <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Select Location</p>
                                         </div>
                                     )}
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div onClick={() => setShowDatePicker(true)} className="col-span-2 p-5 rounded-3xl bg-white/5 border border-white/5 cursor-pointer flex justify-between items-center group">
-                                        <div className="flex items-center gap-3">
-                                            <Calendar size={18} className="text-gray-500 group-hover:text-primary" />
-                                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Date</span>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div onClick={() => setShowDatePicker(true)} className="col-span-2 p-4 rounded-2xl bg-white/5 border border-white/5 cursor-pointer flex justify-between items-center group hover:bg-white/10 transition-all">
+                                        <div className="flex items-center gap-2.5">
+                                            <Calendar size={16} className="text-gray-500 group-hover:text-primary transition-colors" />
+                                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Date</span>
                                         </div>
-                                        <span className="text-white font-black">{selectedDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                        <span className="text-white text-xs font-black">{selectedDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                                     </div>
-                                    <div onClick={() => setShowStartTimePicker(true)} className="p-5 rounded-3xl bg-white/5 border border-white/5 cursor-pointer flex justify-between items-center group">
-                                        <div className="flex items-center gap-3">
-                                            <ShieldCheck size={18} className="text-gray-500 group-hover:text-primary" />
-                                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Start</span>
+                                    <div onClick={() => setShowStartTimePicker(true)} className="p-4 rounded-2xl bg-white/5 border border-white/5 cursor-pointer flex justify-between items-center group hover:bg-white/10 transition-all">
+                                        <div className="flex items-center gap-2.5">
+                                            <ShieldCheck size={16} className="text-gray-500 group-hover:text-primary transition-colors" />
+                                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Start</span>
                                         </div>
-                                        <span className="text-white font-black">{startTime}</span>
+                                        <span className="text-white text-xs font-black">{startTime}</span>
                                     </div>
-                                    <div onClick={() => setShowEndTimePicker(true)} className="p-5 rounded-3xl bg-white/5 border border-white/5 cursor-pointer flex justify-between items-center group">
-                                        <div className="flex items-center gap-3">
-                                            <Clock size={18} className="text-gray-500 group-hover:text-primary" />
-                                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">End</span>
+                                    <div onClick={() => setShowEndTimePicker(true)} className="p-4 rounded-2xl bg-white/5 border border-white/5 cursor-pointer flex justify-between items-center group hover:bg-white/10 transition-all">
+                                        <div className="flex items-center gap-2.5">
+                                            <Clock size={16} className="text-gray-500 group-hover:text-primary transition-colors" />
+                                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">End</span>
                                         </div>
-                                        <span className="text-white font-black">{endTime}</span>
+                                        <span className="text-white text-xs font-black">{endTime}</span>
                                     </div>
                                 </div>
                             </motion.div>
                         )}
 
                         {step === 3 && (
-                            <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                                <div className="p-6 rounded-[2.5rem] bg-white/5 border border-white/5 space-y-6">
+                            <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                                <div className="p-5 rounded-[2rem] bg-white/5 border border-white/5 space-y-5">
                                     <div className="flex justify-between items-center">
                                         <div>
-                                            <p className="text-white font-black uppercase italic tracking-widest">Private Activity</p>
-                                            <p className="text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em]">Hidden from discovery</p>
+                                            <p className="text-white text-xs font-black uppercase italic tracking-widest">Private Activity</p>
+                                            <p className="text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em] mt-0.5">Hidden from discovery</p>
                                         </div>
-                                        <button onClick={() => setVisibility(visibility === QuestVisibilityScope.PUBLIC ? QuestVisibilityScope.FRIENDS : QuestVisibilityScope.PUBLIC)} className={`w-12 h-7 rounded-full transition-all relative ${visibility === QuestVisibilityScope.FRIENDS ? 'bg-primary' : 'bg-white/10'}`}>
-                                            <div className={`absolute top-1 left-1 w-5 h-5 bg-black rounded-full transition-all ${visibility === QuestVisibilityScope.FRIENDS ? 'translate-x-5' : 'translate-x-0'}`} />
+                                        <button onClick={() => setVisibility(visibility === QuestVisibilityScope.PUBLIC ? QuestVisibilityScope.FRIENDS : QuestVisibilityScope.PUBLIC)} className={`w-10 h-6 rounded-full transition-all relative ${visibility === QuestVisibilityScope.FRIENDS ? 'bg-primary' : 'bg-white/10'}`}>
+                                            <div className={`absolute top-1 left-1 w-4 h-4 bg-black rounded-full transition-all ${visibility === QuestVisibilityScope.FRIENDS ? 'translate-x-4' : 'translate-x-0'}`} />
                                         </button>
                                     </div>
-                                    <div className="flex justify-between items-center pt-6 border-t border-white/5">
+                                    <div className="flex justify-between items-center pt-5 border-t border-white/5">
                                         <div>
-                                            <p className="text-white font-black uppercase italic tracking-widest">Approval Hub</p>
-                                            <p className="text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em]">Manually review joiners</p>
+                                            <p className="text-white text-xs font-black uppercase italic tracking-widest">Approval Hub</p>
+                                            <p className="text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em] mt-0.5">Manually review joiners</p>
                                         </div>
-                                        <button onClick={() => setRequiresApproval(!requiresApproval)} className={`w-12 h-7 rounded-full transition-all relative ${requiresApproval ? 'bg-primary' : 'bg-white/10'}`}>
-                                            <div className={`absolute top-1 left-1 w-5 h-5 bg-black rounded-full transition-all ${requiresApproval ? 'translate-x-5' : 'translate-x-0'}`} />
+                                        <button onClick={() => setRequiresApproval(!requiresApproval)} className={`w-10 h-6 rounded-full transition-all relative ${requiresApproval ? 'bg-primary' : 'bg-white/10'}`}>
+                                            <div className={`absolute top-1 left-1 w-4 h-4 bg-black rounded-full transition-all ${requiresApproval ? 'translate-x-4' : 'translate-x-0'}`} />
                                         </button>
                                     </div>
-                                    <div className="flex justify-between items-center pt-6 border-t border-white/5">
+                                    <div className="flex justify-between items-center pt-5 border-t border-white/5">
                                         <div>
-                                            <p className="text-white font-black uppercase italic tracking-widest">Squad Size</p>
-                                            <p className="text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em]">Max participants</p>
+                                            <p className="text-white text-xs font-black uppercase italic tracking-widest">Squad Size</p>
+                                            <p className="text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em] mt-0.5">Max participants</p>
                                         </div>
-                                        <div className="flex items-center gap-3 bg-black/40 rounded-2xl p-1 border border-white/5">
-                                            <button onClick={() => setCapacity(Math.max(2, capacity - 1))} className="p-2 text-gray-500 hover:text-white"><Minus size={16} /></button>
-                                            <span className="text-white font-black w-8 text-center">{capacity}</span>
-                                            <button onClick={() => setCapacity(Math.min(50, capacity + 1))} className="p-2 text-gray-500 hover:text-white"><Plus size={16} /></button>
+                                        <div className="flex items-center gap-2 bg-black/40 rounded-xl p-1 border border-white/5">
+                                            <button onClick={() => setCapacity(Math.max(2, capacity - 1))} className="p-1.5 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg"><Minus size={14} /></button>
+                                            <span className="text-white text-xs font-black w-6 text-center">{capacity}</span>
+                                            <button onClick={() => setCapacity(Math.min(50, capacity + 1))} className="p-1.5 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg"><Plus size={14} /></button>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="pt-10">
+                                <div className="pt-4">
                                     <SlideToLaunch onLaunch={handleLaunch} loading={loading} />
                                 </div>
                             </motion.div>
@@ -402,16 +402,16 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                 </div>
 
                 {/* Footer Nav */}
-                <div className="p-8 bg-gradient-to-t from-white/[0.02] to-transparent">
+                <div className="p-6 bg-gradient-to-t from-white/[0.02] to-transparent shrink-0">
                     {step < totalSteps && (
                         <button
                             onClick={() => {
                                 if (step === 1 && (!title || !category || !activity)) { showToast("Complete all fields.", "info"); return; }
                                 setStep(step + 1);
                             }}
-                            className="w-full py-5 rounded-[1.8rem] bg-white text-black font-black uppercase italic tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] transition-all shadow-2xl"
+                            className="w-full py-4 rounded-2xl bg-white text-black font-black uppercase italic tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] transition-all shadow-xl text-xs"
                         >
-                            Next Stage <ArrowRight size={20} />
+                            Next Stage <ArrowRight size={18} />
                         </button>
                     )}
                 </div>

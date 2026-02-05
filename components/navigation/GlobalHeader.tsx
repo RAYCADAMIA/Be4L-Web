@@ -33,13 +33,35 @@ export const GlobalHeader: React.FC = () => {
                         </div>
                     </button>
 
-                    <div className="hidden sm:flex relative items-center h-[52px]">
+                    {!isSearchOpen && (
+                        <div className="flex sm:hidden relative items-center ml-2">
+                            <button
+                                onClick={() => {
+                                    setIsSearchOpen(true);
+                                    setTimeout(() => searchInputRef.current?.focus(), 100);
+                                }}
+                                className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white transition-colors"
+                            >
+                                <Search size={22} strokeWidth={2.5} />
+                            </button>
+                        </div>
+                    )}
+
+                    {isSearchOpen && (
+                        /* Invisible Backdrop for click-outside/blur behavior on mobile */
+                        <div
+                            className="fixed inset-0 z-40 bg-transparent"
+                            onClick={() => setIsSearchOpen(false)}
+                        />
+                    )}
+
+                    <div className={`${isSearchOpen ? 'flex absolute left-[70px] right-[60px] top-1/2 -translate-y-1/2 z-50' : 'hidden sm:flex'} items-center h-[40px] sm:h-[52px]`}>
                         <motion.div
                             initial={false}
                             animate={{
-                                width: isSearchOpen ? '260px' : '52px',
+                                width: '100%',
                             }}
-                            className={`flex items-center h-[52px] overflow-hidden transition-all duration-300 ${isSearchOpen ? 'bg-white/[0.08] backdrop-blur-3xl border border-white/10 rounded-full p-1.5 pr-3 shadow-xl' : ''}`}
+                            className={`flex items-center h-full sm:h-[52px] w-full overflow-hidden transition-all duration-300 ${isSearchOpen ? 'bg-white/[0.08] backdrop-blur-3xl border border-white/10 rounded-full p-1 pr-3 shadow-xl' : 'sm:w-[52px]'}`}
                         >
                             <button
                                 onClick={() => {
@@ -48,7 +70,7 @@ export const GlobalHeader: React.FC = () => {
                                         setTimeout(() => searchInputRef.current?.focus(), 100);
                                     }
                                 }}
-                                className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${isSearchOpen ? 'text-white' : 'text-gray-400 hover:text-primary hover:bg-white/5'}`}
+                                className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full shrink-0 transition-colors ${isSearchOpen ? 'text-white' : 'text-gray-400 hover:text-primary hover:bg-white/5'}`}
                             >
                                 <Search size={20} strokeWidth={2.5} />
                             </button>
@@ -56,8 +78,8 @@ export const GlobalHeader: React.FC = () => {
                             <input
                                 ref={searchInputRef}
                                 type="text"
-                                placeholder="Search Cosmos..."
-                                className={`bg-transparent border-none outline-none text-sm font-bold w-full text-white placeholder-gray-500 ml-1 ${isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                                placeholder="Search..."
+                                className={`bg-transparent border-none outline-none text-xs sm:text-sm font-bold w-full text-white placeholder-gray-500 ml-1 ${isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                             />
 
                             <AnimatePresence>
@@ -70,7 +92,7 @@ export const GlobalHeader: React.FC = () => {
                                             e.stopPropagation();
                                             setIsSearchOpen(false);
                                         }}
-                                        className="shrink-0 p-1.5 hover:bg-white/10 rounded-full text-gray-400 hover:text-white ml-1"
+                                        className="shrink-0 p-1 hover:bg-white/10 rounded-full text-gray-400 hover:text-white ml-0.5"
                                     >
                                         <X size={14} />
                                     </motion.button>

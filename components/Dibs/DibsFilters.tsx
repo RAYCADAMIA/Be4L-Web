@@ -158,39 +158,45 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
     const MAX_VAL = 10000;
 
     return (
-        <div className="px-4 mb-4 relative">
-            <div className="flex gap-2 items-center overflow-x-auto no-scrollbar pb-2">
-                {/* Mobile Filter Toggle */}
-                <button
-                    onClick={() => setIsFilterOpen(!isFilterOpen)}
-                    className={`
-                        h-10 w-10 flex items-center justify-center rounded-full shrink-0 border transition-all duration-300
-                        ${isFilterOpen ? 'bg-electric-teal border-electric-teal text-black shadow-[0_0_15px_rgba(45,212,191,0.4)]' : 'bg-white/5 border-white/10 text-gray-400'}
-                    `}
-                >
-                    <ListFilter size={16} strokeWidth={3} />
-                </button>
+        <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-700">
+            {/* Categories & Filter Toggle */}
+            <div className="px-4">
+                <div className="flex gap-2 items-center overflow-x-auto no-scrollbar pb-1">
+                    {/* Mobile Filter Toggle */}
+                    <button
+                        onClick={() => setIsFilterOpen(!isFilterOpen)}
+                        className={`
+                            h-7 w-7 flex items-center justify-center rounded-full shrink-0 border transition-all duration-300
+                            ${isFilterOpen ? 'bg-electric-teal border-electric-teal text-black shadow-[0_0_15px_rgba(45,212,191,0.4)]' : 'bg-white/[0.08] backdrop-blur-md border-white/10 text-gray-400 hover:bg-white/10'}
+                        `}
+                    >
+                        <ListFilter size={12} strokeWidth={2.5} />
+                    </button>
 
-                <div className="h-4 w-px bg-white/10 shrink-0 mx-1" />
+                    <div className="h-3 w-px bg-white/10 shrink-0 mx-1" />
 
-                {DIB_CATEGORIES.map(cat => {
-                    const isActive = activeCat === cat.id;
-                    return (
-                        <button
-                            key={cat.id}
-                            onClick={() => setActiveCat(cat.id)}
-                            className={`
-                                h-10 px-6 rounded-full whitespace-nowrap text-[9px] font-black uppercase tracking-[0.15em] transition-all duration-300 shrink-0 border
-                                ${isActive
-                                    ? 'bg-white/10 text-white border-white/20 shadow-[0_4px_12px_rgba(255,255,255,0.1)]'
-                                    : 'bg-white/5 text-gray-400 border-white/5'
-                                }
-                            `}
-                        >
-                            {cat.label}
-                        </button>
-                    );
-                })}
+                    {DIB_CATEGORIES.map(cat => {
+                        const isActive = activeCat === cat.id;
+                        return (
+                            <button
+                                key={cat.id}
+                                onClick={() => setActiveCat(cat.id)}
+                                className={`
+                                    relative h-7 px-4 rounded-full whitespace-nowrap text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 shrink-0
+                                    ${isActive ? 'bg-electric-teal text-black' : 'bg-white/[0.08] backdrop-blur-md text-gray-400 border border-white/10 hover:bg-white/10'}
+                                `}
+                            >
+                                {cat.label}
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="dibsCatActiveMobile"
+                                        className="absolute inset-0 bg-white/20 rounded-full blur-md -z-10"
+                                    />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* Mobile Filter Dropdown */}
@@ -211,21 +217,21 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
                             initial={{ opacity: 0, y: -20, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                            className="fixed top-20 left-4 right-4 z-[101] md:hidden"
+                            className="fixed top-24 left-4 right-4 z-[101] md:hidden"
                         >
-                            <div className="bg-[#0A0A0A]/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 shadow-3xl space-y-8">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white">Refine Sector</h3>
+                            <div className="bg-[#0A0A0A]/95 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-6 shadow-3xl space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Refine Sector</h3>
                                     <button
                                         onClick={() => setIsFilterOpen(false)}
-                                        className="text-[10px] font-black uppercase text-gray-500 hover:text-white transition-colors"
+                                        className="text-[9px] font-black uppercase text-gray-500 hover:text-white transition-colors"
                                     >
                                         Done
                                     </button>
                                 </div>
 
                                 {/* Price Range */}
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     <div className="flex items-center justify-between">
                                         <label className="text-[9px] font-black uppercase text-white/20 tracking-widest flex items-center gap-1.5">
                                             <DollarSign size={10} /> Maximum Price
@@ -241,16 +247,12 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
                                         step="100"
                                         value={priceRange[1]}
                                         onChange={(e) => setPriceRange?.([priceRange[0], Number(e.target.value)])}
-                                        className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-electric-teal"
+                                        className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-electric-teal"
                                     />
-                                    <div className="flex justify-between text-[7px] font-bold text-white/10 uppercase tracking-widest">
-                                        <span>Budget</span>
-                                        <span>Premium</span>
-                                    </div>
                                 </div>
 
                                 {/* Location */}
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     <label className="text-[9px] font-black uppercase text-white/20 tracking-widest flex items-center gap-1.5">
                                         <MapPin size={10} /> Location
                                     </label>
@@ -259,7 +261,7 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
                                         <input
                                             type="text"
                                             placeholder="WHERE ARE YOU?"
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-4 text-[11px] font-black text-white placeholder:text-white/10 outline-none focus:border-electric-teal transition-all uppercase italic"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-[10px] font-black text-white placeholder:text-white/10 outline-none focus:border-electric-teal transition-all uppercase italic"
                                             value={locationFilter}
                                             onChange={(e) => setLocationFilter?.(e.target.value)}
                                         />

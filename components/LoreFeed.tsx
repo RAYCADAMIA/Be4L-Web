@@ -201,7 +201,7 @@ export const LoreFeed: React.FC<{
                         onPointerMove={handlePointerMove}
                         onPointerUp={handlePointerUp}
                         onWheel={handleWheel}
-                        className="flex-1 h-full overflow-y-auto pb-14 pt-[80px] px-4 no-scrollbar flex flex-col lore-feed-container"
+                        className="flex-1 h-full overflow-y-auto pb-0 pt-[80px] px-4 no-scrollbar flex flex-col lore-feed-container"
                     >
                         <HeartbeatTransition loading={isLoading}>
                             <div className="flex-1 flex flex-col min-h-full">

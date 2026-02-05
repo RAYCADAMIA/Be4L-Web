@@ -55,6 +55,18 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
     const [showCalendar, setShowCalendar] = useState(false);
     const [activeDrop, setActiveDrop] = useState<any>(null);
     const [isMapFull, setIsMapFull] = useState(false);
+    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+    const lastScrollY = useRef(0);
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const currentScrollY = e.currentTarget.scrollTop;
+        if (currentScrollY > lastScrollY.current && currentScrollY > 20) {
+            setIsHeaderVisible(false); // Scrolling down - hide
+        } else {
+            setIsHeaderVisible(true);  // Scrolling up - show
+        }
+        lastScrollY.current = currentScrollY;
+    };
 
     const MOCK_DROPS = [
         {
@@ -188,23 +200,39 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                 </div>
 
                 {/* Main Feed Content (Right / Center) */}
-                <div className="flex-1 h-full overflow-y-auto pb-32 no-scrollbar relative">
+                <div
+                    onScroll={handleScroll}
+                    className="flex-1 h-full overflow-y-auto pb-0 no-scrollbar relative"
+                >
+                    {/* Header Spacer for Floating Nav */}
+                    <div className="h-[72px] md:h-0 w-full shrink-0" />
 
                     {/* Mobile Header (Filters) */}
-                    <div className="md:hidden pt-6 pb-2 sticky top-0 z-30">
-                        <QuestHeader
-                            selectedDate={selectedDate}
-                            onDateChange={(d) => {
-                                setSelectedDate(d);
-                                setLoading(true);
-                                setTimeout(() => setLoading(false), 400);
+                    <div className="md:hidden pb-2 sticky top-[60px] z-30 pointer-events-none transition-all duration-300">
+                        <motion.div
+                            initial={{ y: -20, opacity: 0 }}
+                            animate={{
+                                y: isHeaderVisible ? 0 : -20,
+                                opacity: isHeaderVisible ? 1 : 0,
+                                pointerEvents: isHeaderVisible ? 'auto' : 'none'
                             }}
-                            onOpenCalendar={() => setShowCalendar(true)}
-                            activeCat={activeCat}
-                            setActiveCat={setActiveCat}
-                            activeTab={activeTab}
-                            setActiveTab={setActiveTab}
-                        />
+                            transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                            className="pointer-events-auto"
+                        >
+                            <QuestHeader
+                                selectedDate={selectedDate}
+                                onDateChange={(d) => {
+                                    setSelectedDate(d);
+                                    setLoading(true);
+                                    setTimeout(() => setLoading(false), 400);
+                                }}
+                                onOpenCalendar={() => setShowCalendar(true)}
+                                activeCat={activeCat}
+                                setActiveCat={setActiveCat}
+                                activeTab={activeTab}
+                                setActiveTab={setActiveTab}
+                            />
+                        </motion.div>
                     </div>
 
                     {activeTab === 'CANON' && (
@@ -316,6 +344,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                                 setShowCreate(false);
                                 showToast(`Quest "${title}" deployed!`, "success");
                             }}
+                        // Force update
                         />
                     )}
                 </AnimatePresence>

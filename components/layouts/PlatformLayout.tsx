@@ -72,10 +72,7 @@ export const PlatformLayout: React.FC = () => {
                     )}
                 </AnimatePresence>
 
-                <main className={`
-                    flex-1 relative h-full overflow-y-auto no-scrollbar z-10 flex flex-col pb-32 md:pb-0 
-                    ${tabs.length > 0 ? 'pt-32 md:pt-24 md:pl-20' : 'pt-20 md:pt-24'}
-                `}>
+                <main className="flex-1 relative h-full overflow-y-auto no-scrollbar z-10 flex flex-col pt-0 pb-0">
                     <Outlet />
                 </main>
             </div>
