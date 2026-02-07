@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Search, CheckCircle, AlertCircle, Loader2, X, Clock, ExternalLink } from 'lucide-react';
 import { GradientButton } from '../ui/AestheticComponents';
 
@@ -47,8 +48,6 @@ const VerifyBooking = () => {
     };
 
     const handleRedeem = async () => {
-        // In a real app, this would call supabaseService.dibs.redeemBooking(code)
-        // Here we simulate the API call and voiding
         if (bookingData) {
             setBookingData({ ...bookingData, status: 'REDEEMED' });
         }
@@ -57,23 +56,28 @@ const VerifyBooking = () => {
     return (
         <div className="flex flex-col items-center justify-center max-w-md mx-auto py-10">
             <div className="text-center mb-8">
-                <h2 className="text-2xl font-black italic uppercase text-white mb-2">Verify Booking</h2>
+                <h2 className="text-2xl font-black uppercase text-white mb-2">Verify Booking</h2>
                 <p className="text-gray-400 text-sm">Enter the customer's 6-character booking reference.</p>
             </div>
 
-            <div className="w-full bg-white/[0.03] border border-white/5 rounded-3xl p-6 relative overflow-hidden">
+            <div className="w-full bg-white/[0.03] border border-white/5 rounded-[2.5rem] p-8 relative overflow-hidden shadow-2xl backdrop-blur-xl">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-electric-teal/5 blur-3xl rounded-full" />
 
-                {/* Search Input */}
-                <div className="relative mb-6">
-                    <input
-                        type="text"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value.toUpperCase())}
-                        placeholder="DIB-XXXX"
-                        className="w-full bg-black/50 border border-white/10 rounded-xl px-12 py-4 text-white font-mono text-xl tracking-widest text-center focus:outline-none focus:border-electric-teal/50 transition-colors uppercase placeholder:text-gray-700"
-                        maxLength={8}
-                    />
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                <div className="relative mb-8 text-center">
+                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600 block mb-6 px-4">
+                        Awaiting Scannable or Manual Entry
+                    </label>
+                    <div className="relative">
+                        <input
+                            type="text"
+                            value={code}
+                            onChange={(e) => setCode(e.target.value.toUpperCase())}
+                            placeholder="CODE-XXXX"
+                            className="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-mono text-2xl tracking-[0.4em] text-center focus:outline-none focus:border-electric-teal shadow-inner transition-all uppercase placeholder:text-gray-800"
+                            maxLength={8}
+                        />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-700" size={20} />
+                    </div>
                 </div>
 
                 {status === 'IDLE' && (
@@ -106,30 +110,34 @@ const VerifyBooking = () => {
                 )}
 
                 {status === 'FOUND' && bookingData && (
-                    <div className="animate-in fade-in zoom-in duration-300">
-                        <div className="text-center mb-6">
-                            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${bookingData.status === 'REDEEMED' ? 'bg-gray-500/20 text-gray-500' :
-                                bookingData.status === 'VOIDED' ? 'bg-red-500/20 text-red-500' :
-                                    bookingData.status === 'PENDING' ? 'bg-yellow-500/20 text-yellow-500' :
-                                        'bg-electric-teal/20 text-electric-teal'
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="animate-in fade-in zoom-in duration-300"
+                    >
+                        <div className="text-center mb-8">
+                            <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border transition-all ${bookingData.status === 'REDEEMED' ? 'bg-white/5 border-white/10 text-gray-500' :
+                                bookingData.status === 'VOIDED' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
+                                    bookingData.status === 'PENDING' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500' :
+                                        'bg-electric-teal/10 border-electric-teal/20 text-electric-teal shadow-[0_0_30px_rgba(45,212,191,0.1)]'
                                 }`}>
-                                {bookingData.status === 'VOIDED' ? <X size={32} /> :
-                                    bookingData.status === 'PENDING' ? <Clock size={32} /> :
-                                        <CheckCircle size={32} />}
+                                {bookingData.status === 'VOIDED' ? <X size={40} /> :
+                                    bookingData.status === 'PENDING' ? <Clock size={40} /> :
+                                        <CheckCircle size={40} />}
                             </div>
-                            <h3 className="text-xl font-black uppercase text-white mb-1">
-                                {bookingData.status === 'REDEEMED' ? 'Already Redeemed' :
-                                    bookingData.status === 'VOIDED' ? 'Booking Voided' :
-                                        bookingData.status === 'PENDING' ? 'Awaiting Payment' :
-                                            'Valid Booking'}
+                            <h3 className="text-2xl font-black uppercase tracking-tighter text-white mb-2 leading-none">
+                                {bookingData.status === 'REDEEMED' ? 'Redeemed' :
+                                    bookingData.status === 'VOIDED' ? 'Voided' :
+                                        bookingData.status === 'PENDING' ? 'Pending' :
+                                            'Confirmed'}
                             </h3>
-                            <p className={`font-mono font-bold ${bookingData.status === 'VOIDED' ? 'text-red-500' :
+                            <p className={`font-mono font-black text-lg tracking-[0.2em] ${bookingData.status === 'VOIDED' ? 'text-red-500' :
                                 bookingData.status === 'PENDING' ? 'text-yellow-500' :
                                     'text-electric-teal'
                                 }`}>{bookingData.ref}</p>
                         </div>
 
-                        <div className="bg-white/5 rounded-xl p-4 mb-6 space-y-4 border border-white/10">
+                        <div className="bg-white/5 border border-white/5 rounded-3xl p-6 mb-8 space-y-5">
                             <div className="flex justify-between items-center border-b border-white/5 pb-2">
                                 <span className="text-gray-500 text-xs font-bold uppercase tracking-wider">Customer</span>
                                 <div className="text-right">
@@ -149,7 +157,6 @@ const VerifyBooking = () => {
                                 <span className="text-white text-xs font-mono font-bold bg-white/5 px-2 py-1 rounded-md">{bookingData.date}</span>
                             </div>
 
-                            {/* Payment Proof Link */}
                             {bookingData.proof_url && (
                                 <div className="pt-2 border-t border-white/5">
                                     <a href={bookingData.proof_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-gray-400 hover:text-white underline decoration-gray-600 underline-offset-4 flex items-center gap-2 justify-end">
@@ -171,7 +178,7 @@ const VerifyBooking = () => {
                                 Verify Next
                             </button>
                         )}
-                    </div>
+                    </motion.div>
                 )}
             </div>
         </div>

@@ -16,7 +16,7 @@ const CANON_TEMPLATES = {
     Travel: [
         { activity: 'Island', titles: ['Samal Island Traverse', 'Talikud Island Escape', 'Island Hopping Adventure'], descriptions: ['Cross-island trekking expedition.', 'Hidden beach discovery.', 'Epic Samal sea loop.'] }
     ],
-    Social: [
+    Socials: [
         { activity: 'Party', titles: ['Psyched House Party', 'Secret Society Elite Social', 'Groundead Underground'], descriptions: ['Davao\'s wildest house party.', 'An exclusive night out.', 'Underground vibes only.'] }
     ],
     Train: [
@@ -45,7 +45,7 @@ const QUEST_TEMPLATES = {
     Travel: [
         { activity: 'Road Trip', titles: ['Budda Matcha Run', 'Highlands Cafe Escape', 'Foggy Buda Drive'], descriptions: ['Driving to Buda for the best matcha', 'Escaping the heat at the highlands', 'Cool breeze and foggy mountain views'] },
     ],
-    Social: [
+    Socials: [
         { activity: 'Matcha', titles: ['Matcha Coffee Run', 'The Matcha Spot Meetup', 'Obrero Matcha Hangout', 'Morning Matcha'], descriptions: ['Testing the new matcha spot', 'Brunch and matcha lattes', 'Quick caffeine fix in Obrero', 'Davao\'s best matcha crawl'] },
         { activity: 'Cafe Meet', titles: ['Out of Boredom Cafe Meet', 'Steep Coffee Hangout', 'Glasshouse Session', 'Creative Cafe Work'], descriptions: ['Meeting up just because we\'re bored', 'Coffee and chill at Steep', 'Productive vibes at the Glasshouse', 'Work session at my favorite cafe'] },
         { activity: 'Party', titles: ['Psyched House Party', 'Secret Society Social', 'Apartment Vibe Session'], descriptions: ['Ultimate house party vibes', 'An exclusive night out.', 'Chill apartment hangout'] },
@@ -82,7 +82,7 @@ const TIMES = [
 
 const SPONTY_PROCEDURAL_TEMPLATES = [
     {
-        activity: 'Social',
+        activity: 'Socials',
         titles: ['Invite 2 Random People', 'Coffee with a Stranger', 'Street Photography Run'],
         descriptions: ['Break the ice and invite 2 random people for a quick chat.', 'Buy a random person coffee and hear their story.', 'Walk through the city and capture 5 portraits of strangers.']
     },
@@ -191,7 +191,7 @@ export function generateRandomQuests(category: string, date: Date, count: number
             host: host,
             mode: questType as any,
             source: 'SYSTEM_GENERATED',
-            category: category === 'All' ? getRandomElement(['Sports', 'Adventures', 'Travel', 'Train', 'Social', 'Jobs', 'Others']) : category,
+            category: category === 'All' ? getRandomElement(['Sports', 'Adventures', 'Travel', 'Train', 'Socials', 'Jobs', 'Others']) : category,
             title: title,
             description: `${description}`,
             start_time: questDate.toISOString(),
@@ -207,7 +207,8 @@ export function generateRandomQuests(category: string, date: Date, count: number
             location: {
                 lat: locationCoords?.latitude || 7.0707,
                 lng: locationCoords?.longitude || 125.6087,
-                place_name: getRandomElement(LOCATIONS)
+                place_name: getRandomElement(LOCATIONS),
+                address_full: 'Davao City, PH'
             },
             location_coords: locationCoords,
             host_capture_url: questType === QuestType.SPONTY ? getRandomElement(sampleCaptures) : undefined,

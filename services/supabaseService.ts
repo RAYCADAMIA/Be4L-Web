@@ -51,38 +51,38 @@ const awardQuestRewardsImpl = async (userId: string, auraAmount: number, expAmou
 };
 
 export const MOCK_CHATS = [
-  { id: '1', type: 'personal', name: 'Sarah Cameron', lastMsg: 'See you at the Wreck?', time: '10:30 AM', unread: 2, avatar: 'https://tse2.mm.bing.net/th?q=Madelyn%20Cline%20Headshot&w=500&h=500&c=7' },
-  { id: '2', type: 'personal', name: 'John B. Routledge', lastMsg: 'I found something in the marsh.', time: '9:45 AM', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Chase%20Stokes%20Headshot&w=500&h=500&c=7' },
-  { id: '3', type: 'personal', name: 'JJ Maybank', lastMsg: 'Bad idea? Probably.', time: 'Yesterday', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Rudy%20Pankow%20Headshot&w=500&h=500&c=7' },
+  { id: 'u2', type: 'personal', name: 'Sarah Cameron', lastMsg: 'See you at the Wreck?', time: '10:30 AM', unread: 2, avatar: OTHER_USERS[0].avatar_url },
+  { id: 'u3', type: 'personal', name: 'John B. Routledge', lastMsg: 'I found something in the marsh.', time: '9:45 AM', unread: 0, avatar: OTHER_USERS[1].avatar_url },
+  { id: 'u4', type: 'personal', name: 'JJ Maybank', lastMsg: 'Bad idea? Probably.', time: 'Yesterday', unread: 0, avatar: OTHER_USERS[2].avatar_url },
   { id: '4', type: 'group', name: 'The Pogues', lastMsg: 'Pope: We need a plan.', time: 'Yesterday', unread: 12, avatar: 'https://tse2.mm.bing.net/th?q=Outer%20Banks%20Cast%20Group&w=500&h=500&c=7' },
-  { id: '5', type: 'personal', name: 'Kiara', lastMsg: 'Save the turtles! 🐢', time: 'Monday', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Madison%20Bailey%20Headshot&w=500&h=500&c=7' },
-  { id: '6', type: 'personal', name: 'Pope Heyward', lastMsg: 'Statistically speaking...', time: 'Monday', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Jonathan%20Daviss%20Headshot&w=500&h=500&c=7' },
+  { id: 'u5', type: 'personal', name: 'Kiara Carrera', lastMsg: 'Save the turtles! 🐢', time: 'Monday', unread: 0, avatar: OTHER_USERS[3].avatar_url },
+  { id: 'u6', type: 'personal', name: 'Pope Heyward', lastMsg: 'Statistically speaking...', time: 'Monday', unread: 0, avatar: OTHER_USERS[4].avatar_url },
   { id: 'lobby_q1', type: 'lobby', context_type: 'QUEST', name: 'Treasure Hunt', lastMsg: 'John B: X marks the spot.', time: '9:15 AM', unread: 5, avatar: 'https://tse2.mm.bing.net/th?q=Outer%20Banks%20Map&w=500&h=500&c=7' },
   { id: 'lobby_q2', type: 'lobby', context_type: 'QUEST', name: 'Midsummer Party', lastMsg: 'Rafe: Who invited them?', time: 'Live', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Outer%20Banks%20Party&w=500&h=500&c=7' },
   { id: 'lobby_q3', type: 'lobby', context_type: 'QUEST', name: 'Surf Competition', lastMsg: 'JJ: I am gonna win this.', time: '2:30 PM', unread: 1, avatar: 'https://tse2.mm.bing.net/th?q=Outer%20Banks%20Surfing&w=500&h=500&c=7' },
-  { id: '10', type: 'personal', name: 'Rafe Cameron', lastMsg: 'Stay out of my way.', time: '11:20 AM', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Drew%20Starkey%20Headshot&w=500&h=500&c=7' },
-  { id: '11', type: 'personal', name: 'Cleo', lastMsg: 'Watch your back.', time: 'Yesterday', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Carlacia%20Grant%20Headshot&w=500&h=500&c=7' },
-  { id: '12', type: 'personal', name: 'Topper', lastMsg: 'Have you seen Sarah?', time: 'Sat', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Austin%20North%20Headshot&w=500&h=500&c=7' },
-  { id: '13', type: 'personal', name: 'Barry (Peeler)', lastMsg: 'Money first.', time: 'Fri', unread: 0, avatar: 'https://tse2.mm.bing.net/th?q=Nicholas%20Cirillo%20Headshot&w=500&h=500&c=7' }
+  { id: 'u7', type: 'personal', name: 'Rafe Cameron', lastMsg: 'Stay out of my way.', time: '11:20 AM', unread: 0, avatar: OTHER_USERS[5].avatar_url },
+  { id: 'u8', type: 'personal', name: 'Cleo', lastMsg: 'Watch your back.', time: 'Yesterday', unread: 0, avatar: OTHER_USERS[6].avatar_url },
+  { id: 'u9', type: 'personal', name: 'Topper Thornton', lastMsg: 'Have you seen Sarah?', time: 'Sat', unread: 0, avatar: OTHER_USERS[7].avatar_url },
+  { id: 'u10', type: 'personal', name: 'Barry', lastMsg: 'Money first.', time: 'Fri', unread: 0, avatar: OTHER_USERS[8].avatar_url }
 ];
 
 const localMockMessages: Record<string, Message[]> = {
-  '1': [
-    { id: 'm1', echo_id: '1', sender_id: 'sarah_c', content: 'Hey! Are we going to the Wreck later?', timestamp: '10:25 AM', created_at: '2025-12-31T10:25:00Z', is_me: false, type: 'text', content_type: 'text' },
-    { id: 'm2', echo_id: '1', sender_id: 'me', content: 'Yeah, I will meet you there.', timestamp: '10:28 AM', created_at: '2025-12-31T10:28:00Z', is_me: true, type: 'text', content_type: 'text' }
+  'u2': [
+    { id: 'm1', echo_id: 'u2', sender_id: 'u2', content: 'Hey! Are we going to the Wreck later?', timestamp: '10:25 AM', created_at: '2025-12-31T10:25:00Z', is_me: false, type: 'text', content_type: 'text' },
+    { id: 'm2', echo_id: 'u2', sender_id: 'me', content: 'Yeah, I will meet you there.', timestamp: '10:28 AM', created_at: '2025-12-31T10:28:00Z', is_me: true, type: 'text', content_type: 'text' }
   ],
-  '2': [
-    { id: 'm3', echo_id: '2', sender_id: 'john_b', content: 'Did you see the Royal Merchant manifest?', timestamp: '9:40 AM', created_at: '2025-12-31T09:40:00Z', is_me: false, type: 'text', content_type: 'text' },
-    { id: 'm4', echo_id: '2', sender_id: 'me', content: 'That is insane!!', timestamp: '9:45 AM', created_at: '2025-12-31T09:45:00Z', is_me: true, type: 'text', content_type: 'text' }
+  'u3': [
+    { id: 'm3', echo_id: 'u3', sender_id: 'u3', content: 'Did you see the Royal Merchant manifest?', timestamp: '9:40 AM', created_at: '2025-12-31T09:40:00Z', is_me: false, type: 'text', content_type: 'text' },
+    { id: 'm4', echo_id: 'u3', sender_id: 'me', content: 'That is insane!!', timestamp: '9:45 AM', created_at: '2025-12-31T09:45:00Z', is_me: true, type: 'text', content_type: 'text' }
   ],
   'lobby_q1': [
-    { id: 'm5', echo_id: 'lobby_q1', sender_id: 'john_b', content: 'X marks the spot.', timestamp: '9:10 AM', created_at: '2025-12-31T09:10:00Z', is_me: false, type: 'text', content_type: 'text' },
-    { id: 'm6', echo_id: 'lobby_q1', sender_id: 'pope', content: 'We need to be careful.', timestamp: '9:12 AM', created_at: '2025-12-31T09:12:00Z', is_me: false, type: 'text', content_type: 'text' },
+    { id: 'm5', echo_id: 'lobby_q1', sender_id: 'u3', content: 'X marks the spot.', timestamp: '9:10 AM', created_at: '2025-12-31T09:10:00Z', is_me: false, type: 'text', content_type: 'text' },
+    { id: 'm6', echo_id: 'lobby_q1', sender_id: 'u3', content: 'We need to be careful.', timestamp: '9:12 AM', created_at: '2025-12-31T09:12:00Z', is_me: false, type: 'text', content_type: 'text' },
     { id: 'm7', echo_id: 'lobby_q1', sender_id: 'me', content: 'I am ready.', timestamp: '9:15 AM', created_at: '2025-12-31T09:15:00Z', is_me: true, type: 'text', content_type: 'text' }
   ],
-  '4': [
-    { id: 'm8', echo_id: '4', sender_id: 'pope', content: 'We need a plan.', timestamp: 'Yesterday', created_at: '2025-12-30T10:00:00Z', is_me: false, type: 'text', content_type: 'text' },
-    { id: 'm9', echo_id: '4', sender_id: 'jj', content: 'I say we just go for it.', timestamp: 'Yesterday', created_at: '2025-12-30T10:05:00Z', is_me: false, type: 'text', content_type: 'text' }
+  'u4': [
+    { id: 'm8', echo_id: 'u4', sender_id: 'u3', content: 'We need a plan.', timestamp: 'Yesterday', created_at: '2025-12-30T10:00:00Z', is_me: false, type: 'text', content_type: 'text' },
+    { id: 'm9', echo_id: 'u4', sender_id: 'u5', content: 'I say we just go for it.', timestamp: 'Yesterday', created_at: '2025-12-30T10:05:00Z', is_me: false, type: 'text', content_type: 'text' }
   ]
 };
 
@@ -130,13 +130,51 @@ export const supabaseService = {
       }
       return { user: null, error: "Verification failed." };
     },
+    sendEmailOtp: async (email: string): Promise<{ success: boolean; error?: string }> => {
+      const { error } = await supabase.auth.signInWithOtp({ email });
+      return error ? { success: false, error: error.message } : { success: true };
+    },
+    verifyEmailOtp: async (email: string, otp: string): Promise<{ user: User | null; error?: string }> => {
+      const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'email' });
+      if (error) return { user: null, error: error.message };
+      if (data.user) {
+        return await supabaseService.auth.getCurrentUser().then(user => ({ user, error: undefined }));
+      }
+      return { user: null, error: "Verification failed" };
+    },
+    updatePassword: async (password: string): Promise<{ success: boolean; error?: string }> => {
+      const { error } = await supabase.auth.updateUser({ password });
+      return error ? { success: false, error: error.message } : { success: true };
+    },
     checkUsernameAvailability: async (username: string): Promise<boolean> => {
       const { data } = await supabase.from('profiles').select('username').eq('username', username).single();
       return !data;
     },
+    getEmailByUsername: async (username: string): Promise<string | null> => {
+      const { data } = await supabase.from('profiles').select('email').eq('username', username).single();
+      return data?.email || null;
+    },
     updateProfile: async (userId: string, data: Partial<User>): Promise<boolean> => {
       const { error } = await supabase.from('profiles').update(data).eq('id', userId);
       return !error;
+    },
+    claimBrandAccess: async (code: string): Promise<{ success: boolean; error?: string }> => {
+      try {
+        const cleanCode = code.replace(/\s/g, '').toUpperCase();
+        if (cleanCode !== 'BE4L-BRAND-ACCESS') {
+          return { success: false, error: 'Invalid or Expired Access Code' };
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: 'User not logged in' };
+
+        const { error } = await supabase.from('profiles').update({ is_operator: true }).eq('id', user.id);
+        if (error) throw error;
+
+        return { success: true };
+      } catch (e: any) {
+        return { success: false, error: e.message || 'Verification failed' };
+      }
     },
     getCurrentUser: async (): Promise<User | null> => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -175,7 +213,26 @@ export const supabaseService = {
   },
   profiles: {
     getProfile: async (id: string) => {
-      if (!isValidUUID(id)) return { data: null };
+      if (!id) return { data: null };
+
+      // Priority 1: Check mock users if ID is not a UUID or starts with 'u' or is a legacy number
+      const isMockId = !isValidUUID(id) || id.startsWith('u') || /^\d+$/.test(id);
+
+      if (isMockId) {
+        // Direct match check (e.g., 'u2', 'u3', 'guest_1234')
+        const mock = [...OTHER_USERS, MOCK_USER, MOCK_ADMIN, MOCK_OPERATOR].find(u => u.id === id);
+        if (mock) return { data: mock, error: null };
+
+        // Handle numeric legacy mock IDs
+        const legacyMap: Record<string, string> = { '1': 'u2', '2': 'u3', '3': 'u4', '5': 'u6', '6': 'u7' };
+        if (legacyMap[id]) {
+          const legacyMock = OTHER_USERS.find(u => u.id === legacyMap[id]);
+          if (legacyMock) return { data: legacyMock, error: null };
+        }
+
+        return { data: null, error: { message: `Profile not found for ID: ${id}` } };
+      }
+
       const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
       return { data, error };
     },
@@ -260,6 +317,22 @@ export const supabaseService = {
     }
   },
   quests: {
+    getQuestParticipants: async (qid: string) => {
+      if (!isValidUUID(qid)) return [];
+      const { data } = await supabase.from('user_quests')
+        .select('user_id, status, user:profiles(*)')
+        .eq('quest_id', qid)
+        .in('status', [QuestParticipantStatus.ACCEPTED, QuestParticipantStatus.REQUESTED]); // Get accepted and pending
+
+      return (data || []).map((p: any) => ({
+        ...p.user,
+        participant_status: p.status
+      }));
+    },
+    removeQuestParticipant: async (qid: string, uid: string) => {
+      const { error } = await supabase.from('user_quests').delete().match({ quest_id: qid, user_id: uid });
+      return !error;
+    },
     getQuestById: async (id: string) => {
       if (!isValidUUID(id)) return { data: null };
       const { data, error } = await supabase.from('quests').select(`*, host:profiles!host_id(*)`).eq('id', id).single();
@@ -291,8 +364,32 @@ export const supabaseService = {
     createQuest: async (d: any) => {
       const { data: { user: au } } = await supabase.auth.getUser();
       const hid = au?.id || d.host_id;
-      if (!hid) return { success: false };
-      const { data: nq, error } = await supabase.from('quests').insert({ ...d, host_id: hid, created_by: hid, status: QuestStatus.DISCOVERABLE }).select().single();
+      if (!hid) return { success: false, error: "User not authenticated." };
+
+      // sanitize payload to match DB schema strictly
+      const cleanData = {
+        title: d.title,
+        description: d.description,
+        category: d.category,
+        activity: d.activity,
+        start_time: d.start_time,
+        end_time: d.end_time,
+        location: d.location, // JSONB
+        max_participants: d.max_participants,
+        requires_approval: d.requires_approval,
+        type: d.type,
+        status: QuestStatus.DISCOVERABLE,
+        aura_reward: d.aura_reward,
+        exp_reward: d.exp_reward,
+        host_id: hid
+        // source: 'USER_CREATED' // Column doesn't exist yet
+      };
+
+      const { data: nq, error } = await supabase.from('quests')
+        .insert(cleanData)
+        .select()
+        .single();
+
       if (nq) await supabase.from('echoes').insert({ type: 'lobby', context_type: 'QUEST', context_id: nq.id, name: nq.title, participant_ids: [hid] });
       return error ? { success: false, error: error.message } : { success: true, questId: nq.id };
     },
@@ -314,6 +411,16 @@ export const supabaseService = {
       }
 
       return { success: true };
+    },
+    startQuest: async (qid: string) => {
+      if (!isValidUUID(qid)) return { success: true };
+      const { error } = await supabase.from('quests').update({ status: QuestStatus.ACTIVE }).eq('id', qid);
+      return !error;
+    },
+    cancelQuest: async (qid: string) => {
+      if (!isValidUUID(qid)) return { success: true };
+      const { error } = await supabase.from('quests').delete().eq('id', qid);
+      return !error;
     }
   },
   chat: {
@@ -382,7 +489,17 @@ export const supabaseService = {
         { user_id: 'op5', business_name: 'Pickletown', slug: 'pickletown', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1599586120429-48281b6f0ece?q=80&w=1000', logo_url: '/brands/pickletown.png', bio: 'Your neighborhood pickleball community. Play, dink, repeat.', location_text: 'Obrero, Davao City', gcash_name: 'Pickletown Davao', gcash_number: '0917-555-6666', followers_count: 1250, is_verified: true, rating: 4.9 },
         { user_id: 'op6', business_name: 'Homecourt', slug: 'homecourt', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=1000', logo_url: '/brands/homecourt.png', bio: 'The heart of Davao basketball. Where legends are born.', location_text: 'Torres, Davao City', gcash_name: 'Homecourt Ph', gcash_number: '0917-666-7777', followers_count: 4500, is_verified: true, rating: 4.8 },
         { user_id: 'op7', business_name: 'Quinspot', slug: 'quinspot', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000', logo_url: '/brands/quinspot.png', bio: 'Fitness, Billiards, and community. Your daily grind spot.', location_text: 'Bajada, Davao City', gcash_name: 'Quinspot Ph', gcash_number: '0917-777-8888', followers_count: 2100, is_verified: true, rating: 4.8 },
-        { user_id: 'op8', business_name: 'SM Bowling Center', slug: 'sm-bowling', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1538510114873-1d3a41e9c93a?q=80&w=1000', logo_url: '/brands/sm_bowling.png', bio: 'Ultimate leisure destination. Bowling, Archery, and Pool.', location_text: 'SM Lanang, Davao City', gcash_name: 'SM Leisure', gcash_number: '0917-888-9999', followers_count: 8900, is_verified: true, rating: 4.6 }
+        { user_id: 'op8', business_name: 'SM Bowling Center', slug: 'sm-bowling', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1538510114873-1d3a41e9c93a?q=80&w=1000', logo_url: '/brands/sm_bowling.png', bio: 'Ultimate leisure destination. Bowling, Archery, and Pool.', location_text: 'SM Lanang, Davao City', gcash_name: 'SM Leisure', gcash_number: '0917-888-9999', followers_count: 8900, is_verified: true, rating: 4.6 },
+        { user_id: 'op9', business_name: 'Cloud29', slug: 'cloud29', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=Cloud+29&background=6366f1&color=fff', bio: 'High-altitude house parties. Elevate your nightlife experience.', location_text: 'Davao City', gcash_name: 'Cloud 29 Events', gcash_number: '0917-999-0000', followers_count: 4200, is_verified: true, rating: 5.0 },
+        // Manila Brands
+        { user_id: 'op-m1', business_name: 'The Palace', slug: 'the-palace', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=The+Palace&background=E11D48&color=fff', bio: 'The premier nightlife destination in Manila.', location_text: 'BGC, Manila', followers_count: 12500, is_verified: true, rating: 4.9 },
+        { user_id: 'op-m2', business_name: 'Manila Padel Club', slug: 'manila-padel', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=MPC&background=059669&color=fff', bio: 'Exclusive Padel & Lifestyle club in the heart of BGC.', location_text: 'Manila', followers_count: 8400, is_verified: true, rating: 4.8 },
+        // Cebu Brands
+        { user_id: 'op-c1', business_name: 'Cebu Padel', slug: 'cebu-padel', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1599586120429-48281b6f0ece?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=Cebu+Padel&background=2563EB&color=fff', bio: 'Bringing the Padel craze to the Queen City of the South.', location_text: 'Cebu City', followers_count: 3200, is_verified: true, rating: 4.7 },
+        { user_id: 'op-c2', business_name: 'Island Rave', slug: 'island-rave', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=Cebu+Rave&background=7C3AED&color=fff', bio: 'Cebu\'s most anticipated beach and island music festivals.', location_text: 'Lapu-Lapu, Cebu', followers_count: 6700, is_verified: true, rating: 4.9 },
+        // Makati Brands
+        { user_id: 'op-mk1', business_name: 'Poblacion Sessions', slug: 'pob-sessions', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1514525253361-bee1a1bb441f?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=Pob+Sessions&background=F59E0B&color=fff', bio: 'Curated underground beats in the heart of Makati.', location_text: 'Makati', followers_count: 2800, is_verified: true, rating: 4.8 },
+        { user_id: 'op-mk2', business_name: 'The Loft Makati', slug: 'the-loft-makati', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=The+Loft&background=111827&color=fff', bio: 'Upscale fitness and social club with a view of the Makati skyline.', location_text: 'Makati City', followers_count: 4100, is_verified: true, rating: 4.9 }
       ];
 
       // Dynamically add operators from localItems who aren't in the static list
@@ -426,7 +543,59 @@ export const supabaseService = {
         { id: 'i7', operator_id: 'op7', title: 'Pool Table', description: 'Quality billiards table at Quinspot.', price: 150, category: 'Table', image_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48', unit_label: 'hour', type: 'PLACE', is_active: true },
         { id: 'i8', operator_id: 'op8', title: 'Bowling Lanes', description: 'World-class bowling experience at SM.', price: 500, category: 'Lane', image_url: 'https://images.unsplash.com/photo-1538510114873-1d3a41e9c93a', unit_label: 'game', type: 'PLACE', is_active: true },
         { id: 'i9', operator_id: 'op8', title: 'Archery', description: 'Test your aim at the SM Archery range.', price: 350, category: 'Target', image_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb', unit_label: 'session', type: 'PLACE', is_active: true },
-        { id: 'i10', operator_id: 'op8', title: 'Pool Table', description: 'Leisure billiards at SM Bowling Center.', price: 200, category: 'Table', image_url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd', unit_label: 'hour', type: 'PLACE', is_active: true }
+        { id: 'i10', operator_id: 'op8', title: 'Pool Table', description: 'Leisure billiards at SM Bowling Center.', price: 200, category: 'Table', image_url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd', unit_label: 'hour', type: 'PLACE', is_active: true },
+        {
+          id: 'i11',
+          operator_id: 'op9',
+          title: 'Second Chance To Cupid',
+          description: 'A valentines masquerade house party. Find your match.',
+          price: 500,
+          category: 'Event',
+          image_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3',
+          unit_label: 'ticket',
+          type: 'EVENT',
+          event_date: '2025-02-14',
+          is_active: true,
+          tiers: [
+            { id: 't1', name: 'Early Bird', price: 500, perks: ['1 Free Drink', 'Mask Included'], capacity: 50, available: 12 },
+            { id: 't2', name: 'Standard', price: 800, perks: ['1 Free Drink'], capacity: 100, available: 80 },
+            { id: 't3', name: 'VIP Table', price: 5000, perks: ['Bottle Service', 'Private Area', '6 Pax'], capacity: 5, available: 2 }
+          ]
+        },
+        {
+          id: 'i12',
+          operator_id: 'op9',
+          title: 'First Wave',
+          description: 'High energy rave-like house party. Electronic vibes only.',
+          price: 1000,
+          category: 'Event',
+          image_url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745',
+          unit_label: 'ticket',
+          type: 'EVENT',
+          event_date: '2025-03-01',
+          is_active: true,
+          tiers: [
+            { id: 't1', name: 'General Admission', price: 1000, perks: ['Entry'], capacity: 200, available: 150 },
+            { id: 't2', name: 'Rave Pack', price: 1500, perks: ['Glow Kit', 'Unlimited Mixes'], capacity: 50, available: 5 }
+          ]
+        },
+        {
+          id: 'i13',
+          operator_id: 'op9',
+          title: 'Murder on the Dancefloor',
+          description: 'Mystery themed party. Dress to kill.',
+          price: 600,
+          category: 'Event',
+          image_url: 'https://images.unsplash.com/photo-1514525253361-bee1a1bb441f',
+          unit_label: 'ticket',
+          type: 'EVENT',
+          event_date: '2025-03-15',
+          is_active: true,
+          tiers: [
+            { id: 't1', name: 'Detective', price: 600, perks: ['Entry', 'Case File'], capacity: 100, available: 40 },
+            { id: 't2', name: 'Suspect (VIP)', price: 1200, perks: ['Front Row', 'Main Suspect Role'], capacity: 10, available: 1 }
+          ]
+        }
       ];
 
       return [...STATIC_ITEMS, ...localItems];
@@ -500,6 +669,7 @@ export const supabaseService = {
       saveToStorage('be4l_local_items', localItems);
       return { success: true };
     },
+
     getMyBookings: async (userId?: string): Promise<any[]> => {
       const { data: { user } } = await supabase.auth.getUser();
       const uid = userId || user?.id;
@@ -575,6 +745,26 @@ export const supabaseService = {
       const b = localBookings.find(bk => bk.booking_ref === ref);
       if (b) b.status = 'RECLAIMED';
       return true;
+    },
+    createManualBlock: async (operatorId: string, itemId: string, quantity: number, notes: string, bookingDate: string, slots: { date: string, time: string }[]) => {
+      const nb = {
+        id: `blk-${Date.now()}`,
+        status: 'BLOCKED',
+        user_id: operatorId, // Owner blocking their own slot
+        operator_id: operatorId,
+        item_id: itemId,
+        quantity: quantity,
+        total_amount: 0,
+        booking_date: bookingDate,
+        slot_times: slots,
+        created_at: new Date().toISOString(),
+        metadata: { notes },
+        user: { name: 'Manual Block', username: 'operator' },
+        item: { title: 'Blocked Slot' }
+      };
+      localBookings.unshift(nb);
+      saveToStorage('be4l_local_bookings', localBookings);
+      return { success: true };
     }
   }
 };

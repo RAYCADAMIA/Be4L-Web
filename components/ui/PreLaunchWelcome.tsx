@@ -43,31 +43,32 @@ export const PreLaunchWelcome = () => {
                             </div>
 
                             <h2 className="text-3xl font-black font-fui uppercase tracking-tighter mb-4 text-center">
-                                <span className="animate-liquid-text">Campus <br /> Pre-Launch Access</span>
+                                <span className="animate-liquid-text">Pre-Launch Access</span>
                             </h2>
 
                             <div className="space-y-4 w-full">
                                 {/* Warning Box */}
-                                <div className="p-5 rounded-3xl bg-white/5 border border-white/10 space-y-3">
+                                <div className="p-5 rounded-3xl bg-white/5 border border-white/10 flex flex-col items-center text-center space-y-3">
                                     <div className="flex items-center gap-3 text-electric-teal">
                                         <AlertCircle size={18} />
                                         <h4 className="text-[11px] font-black uppercase tracking-widest leading-none">Beta Testing</h4>
                                     </div>
                                     <p className="text-[11px] text-gray-400 font-medium leading-relaxed">
-                                        You are exploring a <span className="text-white">mock up version</span> of the platform. Core features like <span className="animate-liquid-text font-black italic">Dibs</span> and <span className="animate-liquid-text font-black italic">Quests</span> currently utilize mock data for demonstration purposes.
+                                        You are exploring a <span className="text-white">mock up version</span> of the platform. Core features like <span className="animate-liquid-text font-black">Dibs</span> and <span className="animate-liquid-text font-black">Quests</span> currently utilize mock data for demonstration purposes. <br />
+                                        <span className="text-white/60">Some features may not work yet.</span>
                                     </p>
                                 </div>
 
                                 {/* Timer/Info Box */}
-                                <div className="p-5 rounded-3xl bg-white/5 border border-white/10 space-y-3">
+                                <div className="p-5 rounded-3xl bg-white/5 border border-white/10 flex flex-col items-center text-center space-y-3">
                                     <div className="flex items-center gap-3 text-cyan-400">
                                         <Rocket size={18} />
                                         <h4 className="text-[11px] font-black uppercase tracking-widest leading-none">
-                                            <span className="animate-liquid-text">MVP Launch: Feb 6, 2026</span>
+                                            <span className="animate-liquid-text">MVP Launch: Feb 10, 2026</span>
                                         </h4>
                                     </div>
                                     <p className="text-[11px] text-gray-400 font-medium leading-relaxed">
-                                        The full ecosystem with real-time functionality drops this Friday, Feb 6, 2026. <span className="text-white italic">Accounts created before launch will receive Aura Points.</span>
+                                        The full ecosystem with real-time functionality drops this Tuesday, Feb 10, 2026. <span className="text-white">Accounts created before launch will receive Aura Points.</span>
                                     </p>
                                 </div>
 
@@ -84,7 +85,7 @@ export const PreLaunchWelcome = () => {
                                                 <Instagram size={16} className="text-white" />
                                             </div>
                                             <span className="text-[10px] font-black uppercase tracking-widest text-white/50 group-hover:text-white transition-colors">
-                                                Follow our IG Page
+                                                Follow Be4L on IG
                                             </span>
                                         </div>
                                         <ChevronRight size={16} className="text-white/20" />
@@ -98,6 +99,9 @@ export const PreLaunchWelcome = () => {
                                         <img
                                             src="/assets/partners_lockup.jpg"
                                             alt="Partners: AdDU and DDVentures"
+                                            width={150}
+                                            height={36}
+                                            loading="lazy"
                                             className="h-9 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity rounded-lg"
                                         />
                                     </div>
@@ -108,7 +112,7 @@ export const PreLaunchWelcome = () => {
                                 onClick={handleDismiss}
                                 className="w-full py-4 mt-8 bg-white text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] hover:bg-electric-teal transition-all active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.1)]"
                             >
-                                <span className="animate-liquid-text text-black">Enter Be4L</span>
+                                <span className="animate-liquid-text text-black">Enter <span className="normal-case">Be4L</span></span>
                             </button>
                         </div>
                     </motion.div>

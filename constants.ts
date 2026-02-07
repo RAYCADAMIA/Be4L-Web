@@ -14,7 +14,21 @@ export const COLORS = {
   WHITE: '#FFFFFF',
 };
 
-export const UNIVERSAL_CATEGORIES = ['All', 'Sports', 'Socials', 'Adventure', 'Travel', 'Train', 'Jobs', 'Others'];
+export const UNIVERSAL_CATEGORIES = ['All', 'Sports', 'Socials', 'Adventures', 'Travel', 'Train', 'Jobs', 'Others'];
+
+export const QUEST_VIBE_PRESETS = [
+  'Ladies Only',
+  'The Boys',
+  'Couples',
+  'Solo Friendly',
+  '18+',
+  '21+',
+  'Students',
+  'Chill',
+  'High Energy',
+  'Competitive',
+  'Beginner Friendly'
+];
 
 // PRE-LAUNCH CONFIG
 export const ALPHA_EVENT_ID = '0b6b0b6b-0b6b-0b6b-0b6b-0b6b0b6b0b6b'; // Replace with actual Event ID from Supabase
@@ -79,15 +93,16 @@ export const MOCK_ADMIN: User = {
 };
 
 export const OTHER_USERS: User[] = [
-  { id: 'u2', handle: 'sarah_j', username: 'sarah_j', name: 'Sarah Jenkins', avatar_url: 'https://picsum.photos/100/100?random=2', streak_count: 105, last_window_id: currentWindow, bio: 'Always moving. Marathoner. Coffee enthusiast. Davao-based explorer.', aura: mockAura(3200, 150), reliability_score: 3200, life_exp: 18000, level: 22, life_streak: 45, followers_count: 500, following_count: 200, cover_url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2074&auto=format&fit=crop', aura_history: [{ id: 'h1', amount: 100, reason: 'Marathon Finisher', source: 'QUEST_COMPLETE', created_at: new Date().toISOString() }] },
-  { id: 'u3', handle: 'mike_runs', username: 'mike_runs', name: 'Mike Ross', avatar_url: 'https://picsum.photos/100/100?random=5', streak_count: 5, last_window_id: prevWindow, bio: 'Marathon training & recovery. Just here for the vibes.', aura: mockAura(1100, -25), reliability_score: 1100, life_exp: 4200, level: 8, life_streak: 5, followers_count: 120, following_count: 80, cover_url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2071&auto=format&fit=crop', aura_history: [] },
-  { id: 'u4', handle: 'dave_climbs', username: 'dave_climbs', name: 'Dave Miller', avatar_url: 'https://picsum.photos/100/100?random=8', streak_count: 12, last_window_id: currentWindow, bio: 'Climb higher. Adventure is out there.', aura: mockAura(1850, 42), reliability_score: 1850, life_exp: 9500, level: 12, life_streak: 12, followers_count: 300, following_count: 150, cover_url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
-  { id: 'u5', handle: 'pickle_king', username: 'pickle_king', name: 'Roger F.', avatar_url: 'https://picsum.photos/100/100?random=9', streak_count: 110, last_window_id: currentWindow, bio: 'Pickleball is life. Professional dinker. Join me at SuperSmasher!', aura: mockAura(4500, 205), reliability_score: 4500, life_exp: 25000, level: 30, life_streak: 110, followers_count: 1500, following_count: 300, cover_url: 'https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
-  { id: 'u6', handle: 'bella_v', username: 'bella_v', name: 'Bella Valencia', avatar_url: 'https://picsum.photos/100/100?random=10', streak_count: 45, bio: 'Travel is the only thing you buy that makes you richer.', aura: mockAura(2800, 85), reliability_score: 2800, life_exp: 15000, level: 18, life_streak: 45, followers_count: 800, following_count: 400, cover_url: 'https://images.unsplash.com/photo-1488085061387-422e29b40080?q=80&w=2031&auto=format&fit=crop', aura_history: [] },
-  { id: 'u7', handle: 'marc_fit', username: 'marc_fit', name: 'Marcus Chen', avatar_url: 'https://picsum.photos/100/100?random=11', streak_count: 30, bio: 'Ironman in the making. Train hard, recover harder.', aura: mockAura(2100, 30), reliability_score: 2100, life_exp: 11000, level: 14, life_streak: 30, followers_count: 450, following_count: 200, cover_url: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
-  { id: 'u8', handle: 'leo_gamer', username: 'leo_gamer', name: 'Leo Smith', avatar_url: 'https://picsum.photos/100/100?random=12', streak_count: 12, bio: 'Grinding ranks. MLBB Enthusiast.', aura: mockAura(1500, 10), reliability_score: 1500, life_exp: 7000, level: 9, life_streak: 12, followers_count: 200, following_count: 100, cover_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
-  { id: 'u9', handle: 'sophie_h', username: 'sophie_h', name: 'Sophie Hernandez', avatar_url: 'https://picsum.photos/100/100?random=13', streak_count: 80, bio: 'Matcha is my personality trait.', aura: mockAura(3500, 180), reliability_score: 3500, life_exp: 20000, level: 25, life_streak: 80, followers_count: 1100, following_count: 500, cover_url: 'https://images.unsplash.com/photo-1515442261905-ccfbdccd1741?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
-  { id: 'u10', handle: 'ethan_hunt', username: 'ethan_hunt', name: 'Ethan Hunt', avatar_url: 'https://picsum.photos/100/100?random=14', streak_count: 50, bio: 'Mission: Possible. Davao City. Adventure seeker.', aura: mockAura(5200, 310), reliability_score: 5200, life_exp: 35000, level: 42, life_streak: 50, followers_count: 2500, following_count: 10, cover_url: 'https://images.unsplash.com/photo-1516214104703-d870798883c5?auto=format&fit=crop&q=80&w=200', aura_history: [] },
+  { id: 'u2', handle: 'sarah_cameron', username: 'sarah_cameron', name: 'Sarah Cameron', avatar_url: 'https://tse2.mm.bing.net/th?q=Madelyn%20Cline%20Headshot&w=500&h=500&c=7', streak_count: 45, last_window_id: currentWindow, bio: 'Kook turned Pogue. The Wreck is home. Always on the run.', aura: mockAura(2800, 150), reliability_score: 2800, life_exp: 15000, level: 18, life_streak: 45, followers_count: 5200, following_count: 400, cover_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2073&auto=format&fit=crop', aura_history: [] },
+  { id: 'u3', handle: 'jb_routledge', username: 'jb_routledge', name: 'John B. Routledge', avatar_url: 'https://tse2.mm.bing.net/th?q=Chase%20Stokes%20Headshot&w=500&h=500&c=7', streak_count: 12, last_window_id: prevWindow, bio: 'P4L. Searching for the Royal Merchant and my dad. No kooks allowed.', aura: mockAura(3200, 42), reliability_score: 3200, life_exp: 18000, level: 20, life_streak: 12, followers_count: 4500, following_count: 300, cover_url: 'https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?q=80&w=2073&auto=format&fit=crop', aura_history: [] },
+  { id: 'u4', handle: 'jj_maybank', username: 'jj_maybank', name: 'JJ Maybank', avatar_url: 'https://tse2.mm.bing.net/th?q=Rudy%20Pankow%20Headshot&w=500&h=500&c=7', streak_count: 5, last_window_id: currentWindow, bio: 'Full send or no send. I got a hot tub. Good vibes only.', aura: mockAura(1100, -25), reliability_score: 1100, life_exp: 4200, level: 8, life_streak: 5, followers_count: 2100, following_count: 1500, cover_url: 'https://images.unsplash.com/photo-1544526226-d4568090ffb8?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
+  { id: 'u5', handle: 'kiara_c', username: 'kiara_c', name: 'Kiara Carrera', avatar_url: 'https://tse2.mm.bing.net/th?q=Madison%20Bailey%20Headshot&w=500&h=500&c=7', streak_count: 110, last_window_id: currentWindow, bio: 'Save the turtles. Equality for Pogues. Catch me at the marsh.', aura: mockAura(4500, 205), reliability_score: 4500, life_exp: 25000, level: 30, life_streak: 110, followers_count: 3800, following_count: 600, cover_url: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
+  { id: 'u6', handle: 'pope_heyward', username: 'pope_heyward', name: 'Pope Heyward', avatar_url: 'https://tse2.mm.bing.net/th?q=Jonathan%20Daviss%20Headshot&w=500&h=500&c=7', streak_count: 80, bio: 'Scholarship or bust. The brains of the operation. P4L.', aura: mockAura(3500, 180), reliability_score: 3500, life_exp: 20000, level: 25, life_streak: 80, followers_count: 2400, following_count: 400, cover_url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2071&auto=format&fit=crop', aura_history: [] },
+  { id: 'u7', handle: 'rafe_cameron', username: 'rafe_cameron', name: 'Rafe Cameron', avatar_url: 'https://tse2.mm.bing.net/th?q=Drew%20Starkey%20Headshot&w=500&h=500&c=7', streak_count: 30, bio: 'Top of the food chain. Figure 8 is mine. Get out of my way.', aura: mockAura(2100, 30), reliability_score: 2100, life_exp: 11000, level: 14, life_streak: 30, followers_count: 8900, following_count: 100, cover_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
+  { id: 'u8', handle: 'cleo_caribbean', username: 'cleo_caribbean', name: 'Cleo', avatar_url: 'https://tse2.mm.bing.net/th?q=Carlacia%20Grant%20Headshot&w=500&h=500&c=7', streak_count: 12, bio: 'No house, no rules. Just the sea and the crew.', aura: mockAura(1500, 10), reliability_score: 1500, life_exp: 7000, level: 9, life_streak: 12, followers_count: 1200, following_count: 50, cover_url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
+  { id: 'u9', handle: 'topper_t', username: 'topper_t', name: 'Topper Thornton', avatar_url: 'https://tse2.mm.bing.net/th?q=Austin%20North%20Headshot&w=500&h=500&c=7', streak_count: 12, bio: 'Figure 8 royalty. Just trying to protect Sarah.', aura: mockAura(1850, 42), reliability_score: 1850, life_exp: 9500, level: 12, life_streak: 12, followers_count: 3200, following_count: 500, cover_url: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
+  { id: 'u10', handle: 'barry_peeler', username: 'barry_peeler', name: 'Barry', avatar_url: 'https://tse2.mm.bing.net/th?q=Nicholas%20Cirillo%20Headshot&w=500&h=500&c=7', streak_count: 50, bio: 'Peeler. Business first. Stay away from the cut.', aura: mockAura(1500, 310), reliability_score: 1500, life_exp: 8000, level: 10, life_streak: 50, followers_count: 850, following_count: 10, cover_url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2074&auto=format&fit=crop', aura_history: [] },
+  { id: 'op9', handle: 'cloud29', username: 'cloud29', name: 'Cloud29 Events', avatar_url: 'https://ui-avatars.com/api/?name=Cloud+29&background=6366f1&color=fff', streak_count: 102, is_operator: true, bio: 'High-altitude house parties. Elevate your nightlife experience.', aura: mockAura(5000, 450), reliability_score: 5000, life_exp: 50000, level: 50, life_streak: 102, followers_count: 4200, following_count: 150, cover_url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
 ];
 
 
@@ -244,6 +259,166 @@ export const MOCK_CAPTURES: Capture[] = [
     state: 'active',
     reaction_count: 10,
     comment_count: 1
+  },
+  {
+    id: 'c29-1',
+    user_id: 'op9',
+    user: OTHER_USERS[9],
+    media_type: 'image',
+    front_media_url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=200',
+    back_media_url: 'https://images.unsplash.com/photo-1514525253361-bee1a1bb441f?q=80&w=400',
+    caption: 'Cloud29: Where the vibes are higher. ☁️',
+    created_at: new Date(Date.now() - 3600000 * 24 * 1).toISOString(),
+    captured_at: new Date(Date.now() - 3600000 * 24 * 1).toISOString(),
+    location_name: 'Cloud29 Rooftop',
+    visibility: 'public',
+    state: 'active',
+    reaction_count: 540,
+    comment_count: 12
+  },
+  {
+    id: 'c29-2',
+    user_id: 'op9',
+    user: OTHER_USERS[9],
+    media_type: 'image',
+    front_media_url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=200',
+    back_media_url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=400',
+    caption: 'Neon dreams at Cloud29. 🌌',
+    created_at: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
+    captured_at: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
+    location_name: 'Cloud29 Rooftop',
+    visibility: 'public',
+    state: 'active',
+    reaction_count: 320,
+    comment_count: 8
+  },
+  {
+    id: 'c29-3',
+    user_id: 'op9',
+    user: OTHER_USERS[9],
+    media_type: 'image',
+    front_media_url: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=200',
+    back_media_url: 'https://images.unsplash.com/photo-1429962714451-bb934ecbb4ec?q=80&w=400',
+    caption: 'The floor is lava. 🔥',
+    created_at: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
+    captured_at: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
+    location_name: 'Cloud29 Lounge',
+    visibility: 'public',
+    state: 'active',
+    reaction_count: 410,
+    comment_count: 15
+  },
+  {
+    id: 'c29-4',
+    user_id: 'op9',
+    user: OTHER_USERS[9],
+    media_type: 'image',
+    front_media_url: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?q=80&w=200',
+    back_media_url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=400',
+    caption: 'Sky high spirits. 🍸',
+    created_at: new Date(Date.now() - 3600000 * 24 * 4).toISOString(),
+    captured_at: new Date(Date.now() - 3600000 * 24 * 4).toISOString(),
+    location_name: 'Cloud29 Balcony',
+    visibility: 'public',
+    state: 'active',
+    reaction_count: 280,
+    comment_count: 5
+  },
+  {
+    id: 'c29-5',
+    user_id: 'op9',
+    user: OTHER_USERS[9],
+    media_type: 'image',
+    front_media_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=200',
+    back_media_url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=400',
+    caption: 'First Wave prep. Are you ready? 🌊',
+    created_at: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
+    captured_at: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
+    location_name: 'Cloud29 Main',
+    visibility: 'public',
+    state: 'active',
+    reaction_count: 670,
+    comment_count: 42
+  },
+  {
+    id: 'c29-6',
+    user_id: 'op9',
+    user: OTHER_USERS[9],
+    media_type: 'image',
+    front_media_url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=200',
+    back_media_url: 'https://images.unsplash.com/photo-1505236858219-8359eb29e329?q=80&w=400',
+    caption: 'Shadows and lights. 🕯️',
+    created_at: new Date(Date.now() - 3600000 * 24 * 6).toISOString(),
+    captured_at: new Date(Date.now() - 3600000 * 24 * 6).toISOString(),
+    location_name: 'Secret Spot',
+    visibility: 'public',
+    state: 'active',
+    reaction_count: 190,
+    comment_count: 2
+  },
+  {
+    id: 'c29-7',
+    user_id: 'op9',
+    user: OTHER_USERS[9],
+    media_type: 'image',
+    front_media_url: 'https://images.unsplash.com/photo-1514525253361-bee1a1bb441f?q=80&w=200',
+    back_media_url: 'https://images.unsplash.com/photo-1541339907198-e08756ebafe3?q=80&w=400',
+    caption: 'Morning after Cloud29. 🌅',
+    created_at: new Date(Date.now() - 3600000 * 24 * 7).toISOString(),
+    captured_at: new Date(Date.now() - 3600000 * 24 * 7).toISOString(),
+    location_name: 'Cloud29 Rooftop',
+    visibility: 'public',
+    state: 'active',
+    reaction_count: 850,
+    comment_count: 55
+  },
+  {
+    id: 'c29-8',
+    user_id: 'op9',
+    user: OTHER_USERS[9],
+    media_type: 'image',
+    front_media_url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=200',
+    back_media_url: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=400',
+    caption: 'Be4L community taking over. 👑',
+    created_at: new Date(Date.now() - 3600000 * 24 * 8).toISOString(),
+    captured_at: new Date(Date.now() - 3600000 * 24 * 8).toISOString(),
+    location_name: 'Cloud29 VIP',
+    visibility: 'public',
+    state: 'active',
+    reaction_count: 1200,
+    comment_count: 102
+  },
+  {
+    id: 'c29-9',
+    user_id: 'op9',
+    user: OTHER_USERS[9],
+    media_type: 'image',
+    front_media_url: 'https://images.unsplash.com/photo-1429962714451-bb934ecbb4ec?q=80&w=200',
+    back_media_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=400',
+    caption: 'The golden hour at Cloud29. ✨',
+    created_at: new Date(Date.now() - 3600000 * 24 * 9).toISOString(),
+    captured_at: new Date(Date.now() - 3600000 * 24 * 9).toISOString(),
+    location_name: 'Cloud29 Rooftop',
+    visibility: 'public',
+    state: 'active',
+    reaction_count: 440,
+    comment_count: 14
+  },
+  {
+    id: 'c29-10',
+    user_id: 'op9',
+    user: OTHER_USERS[9],
+    media_type: 'image',
+    front_media_url: 'https://images.unsplash.com/photo-1505236858219-8359eb29e329?q=80&w=200',
+    back_media_url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=400',
+    caption: 'Last night was a movie. 🎥',
+    created_at: new Date(Date.now() - 3600000 * 24 * 10).toISOString(),
+    captured_at: new Date(Date.now() - 3600000 * 24 * 10).toISOString(),
+    location_name: 'Cloud29 Main',
+    visibility: 'public',
+    state: 'active',
+    reaction_count: 980,
+    comment_count: 75
   }
 ];
 
@@ -257,7 +432,7 @@ export const MOCK_QUESTS: Quest[] = [
     host: OTHER_USERS[0],
     mode: QuestType.CANON,
     source: 'USER_CREATED',
-    category: 'Social',
+    category: 'Socials',
     title: 'Any solo goers for psyched?',
     description: 'Looking for a crew to vibe with at the Psyched event. No one should go alone!',
     start_time: '2025-02-14T22:00:00Z',
@@ -274,7 +449,14 @@ export const MOCK_QUESTS: Quest[] = [
     exp_reward: 200,
     participants: [OTHER_USERS[0], OTHER_USERS[1], OTHER_USERS[2]],
     participant_ids: ['u2', 'u3', 'u4'],
-    location: mockLocation('Psyched - Davao City')
+    location: mockLocation('Psyched - Davao City'),
+    vibe_signals: ['High Energy', 'Solo Friendly', '21+'],
+    checklist: ['Ticket', 'ID'],
+    itinerary: [
+      { time: '22:00', description: 'Meetup outside gate' },
+      { time: '22:30', description: 'Enter & grab drinks' },
+      { time: '02:00', description: 'After party food run' }
+    ]
   },
   {
     id: 'q-sec-1',
@@ -299,7 +481,13 @@ export const MOCK_QUESTS: Quest[] = [
     exp_reward: 250,
     participants: [OTHER_USERS[2], OTHER_USERS[3], OTHER_USERS[4], OTHER_USERS[5]],
     participant_ids: ['u4', 'u5', 'u6', 'u7'],
-    location: mockLocation('Secret Society')
+    location: mockLocation('Secret Society'),
+    vibe_signals: ['Chill', '21+', 'Couples'],
+    checklist: ['Formal Wear'],
+    itinerary: [
+      { time: '23:30', description: 'Table reserved' },
+      { time: '00:00', description: 'Cheers!' }
+    ]
   },
   {
     id: 'q-trv-1',
@@ -332,7 +520,7 @@ export const MOCK_QUESTS: Quest[] = [
     host: OTHER_USERS[8],
     mode: QuestType.CANON,
     source: 'USER_CREATED',
-    category: 'Adventure',
+    category: 'Adventures',
     title: 'Sponty Samal island hopping?',
     description: 'The weather is perfect. Who is down for a quick boat trip around Samal?',
     start_time: '2025-02-04T13:00:00Z',
@@ -374,7 +562,13 @@ export const MOCK_QUESTS: Quest[] = [
     exp_reward: 150,
     participants: [OTHER_USERS[3], OTHER_USERS[0], OTHER_USERS[4], OTHER_USERS[5]],
     participant_ids: ['u5', 'u2', 'u6', 'u7'],
-    location: mockLocation('SuperSmasher')
+    location: mockLocation('SuperSmasher'),
+    vibe_signals: ['Competitive', 'Beginner Friendly'],
+    checklist: ['Paddle', 'Water'],
+    itinerary: [
+      { time: '16:00', description: 'Warmup dinks' },
+      { time: '16:30', description: 'Matches start' }
+    ]
   },
   {
     id: 'q-and-1',
@@ -382,7 +576,7 @@ export const MOCK_QUESTS: Quest[] = [
     host: OTHER_USERS[0],
     mode: QuestType.CANON,
     source: 'USER_CREATED',
-    category: 'Social',
+    category: 'Socials',
     title: 'Come with us for &Friends',
     description: 'Heading to Manila for the Summer EDC by &Friends. Join the Davao contingent!',
     start_time: '2025-03-20T10:00:00Z',
@@ -507,7 +701,7 @@ export const MOCK_QUESTS: Quest[] = [
     host: OTHER_USERS[7],
     mode: QuestType.CANON,
     source: 'USER_CREATED',
-    category: 'Social',
+    category: 'Socials',
     title: 'matcha cafe hopping?',
     description: 'Testing 3 new matcha spots in Obrero today. Join the crawl!',
     start_time: '2025-02-04T14:00:00Z',
@@ -524,7 +718,108 @@ export const MOCK_QUESTS: Quest[] = [
     exp_reward: 120,
     participants: [OTHER_USERS[7], OTHER_USERS[0]],
     participant_ids: ['u9', 'u2'],
-    location: mockLocation('Obrero, Davao City')
+    location: mockLocation('Obrero, Davao City'),
+    vibe_signals: ['Eco-friendly', 'Chill', 'Students'],
+    checklist: ['Cash'],
+    itinerary: [
+      { time: '14:00', description: 'Meet at Obrero' },
+      { time: '14:30', description: 'Matcha Spot 1' }
+    ]
+  },
+  {
+    id: 'q-c29-1',
+    host_id: 'op9',
+    host: OTHER_USERS[9],
+    mode: QuestType.CANON,
+    source: 'OPERATOR_CREATED',
+    category: 'Socials',
+    title: 'Cloud29 Guest List Only',
+    description: 'Exclusive access for Be4L members. Come early to secure your spot on the rroftop.',
+    start_time: '2025-02-14T20:00:00Z',
+    max_participants: 50,
+    current_participants: 12,
+    status: QuestStatus.DISCOVERABLE,
+    visibility_scope: QuestVisibilityScope.PUBLIC,
+    join_mode: 'OPEN_ACTIVE',
+    approval_required: true,
+    fee: 0,
+    is_public: true,
+    activity: 'Nightlife',
+    aura_reward: 150,
+    exp_reward: 600,
+    participants: [OTHER_USERS[9]],
+    participant_ids: ['op9'],
+    location: mockLocation('Cloud29 Rooftop'),
+    vibe_signals: ['18+', 'High Energy', 'Ladies Only'],
+    checklist: ['Dress Code: Smart Casual', 'ID'],
+    itinerary: [
+      { time: '20:00', description: 'Doors Open' },
+      { time: '21:00', description: 'Sunset Sets' },
+      { time: '23:00', description: 'Main Event' }
+    ]
+  },
+  {
+    id: 'q-fit-1',
+    host_id: 'u3',
+    host: OTHER_USERS[1],
+    mode: QuestType.CANON,
+    source: 'USER_CREATED',
+    category: 'Train',
+    title: 'Sunset Beach Run',
+    description: 'Running along Azuela Cove. All paces welcome, we vibe at the end.',
+    start_time: '2025-02-14T17:30:00Z',
+    max_participants: 15,
+    current_participants: 8,
+    status: QuestStatus.DISCOVERABLE,
+    visibility_scope: QuestVisibilityScope.PUBLIC,
+    join_mode: 'OPEN_ACTIVE',
+    approval_required: false,
+    fee: 0,
+    is_public: true,
+    activity: 'Running',
+    aura_reward: 40,
+    exp_reward: 150,
+    participants: [OTHER_USERS[1], OTHER_USERS[2], OTHER_USERS[3]],
+    participant_ids: ['u3', 'u4', 'u5'],
+    location: mockLocation('Azuela Cove'),
+    vibe_signals: ['Beginner Friendly', 'Solo Friendly', 'Chill'],
+    checklist: ['Running Shoes', 'Water'],
+    itinerary: [
+      { time: '17:30', description: 'Warmup at the deck' },
+      { time: '17:45', description: '5K Run starts' },
+      { time: '18:30', description: 'Sunset stretch' }
+    ]
+  },
+  {
+    id: 'q-game-2',
+    host_id: 'u4',
+    host: OTHER_USERS[2],
+    mode: QuestType.CANON,
+    source: 'USER_CREATED',
+    category: 'Socials',
+    title: 'VALORANT Custom Night',
+    description: '10-man custom games. Silver to Diamond peak only. Let\'s keep it balanced!',
+    start_time: '2025-02-15T20:00:00Z',
+    max_participants: 10,
+    current_participants: 6,
+    status: QuestStatus.DISCOVERABLE,
+    visibility_scope: QuestVisibilityScope.PUBLIC,
+    join_mode: 'OPEN_ACTIVE',
+    approval_required: true,
+    fee: 0,
+    is_public: true,
+    activity: 'Gaming',
+    aura_reward: 30,
+    exp_reward: 100,
+    participants: [OTHER_USERS[2]],
+    participant_ids: ['u4'],
+    location: mockLocation('Discord Lobby'),
+    vibe_signals: ['Competitive', 'Students', 'Solo Friendly'],
+    checklist: ['Strong Internet'],
+    itinerary: [
+      { time: '20:00', description: 'Lobby Open' },
+      { time: '20:15', description: 'Game 1 Start' }
+    ]
   }
 ];
 
@@ -691,7 +986,12 @@ export const MOCK_PARTNER_POSTS: import('./types').PartnerPost[] = [
       description: 'The ultimate summer electronic dance festival.',
       available_slots: 50,
       total_slots: 100,
-      is_active: true
+      is_active: true,
+      tiers: [
+        { id: 't1', name: 'General Admission', price: 2500, perks: ['Entry Only'], capacity: 100, available: 50 },
+        { id: 't2', name: 'VIP Pass', price: 5000, perks: ['Express Entry', 'VIP Lounge', '1 Drink'], capacity: 50, available: 20 },
+        { id: 't3', name: 'VVIP Table', price: 50000, perks: ['Private Table', 'Bottle Service', 'Meet & Greet'], capacity: 5, available: 2 }
+      ]
     },
     likes_count: 412,
     comments_count: 89,
@@ -716,7 +1016,7 @@ export const MOCK_PLACES: any[] = [
     logo_url: 'https://images.unsplash.com/photo-1511920170033-f8396924c348',
     category: 'Cafe',
     items: [
-      { id: 'i3', operator_id: 'op2', title: 'Barista Workshop', price: 500, category: 'Event', image_url: 'https://images.unsplash.com/photo-1511920170033-f8396924c348', unit_label: 'pax', type: 'EVENT', event_date: new Date(Date.now() + 86400000).toISOString(), available_slots: 10 }
+      { id: 'i3', operator_id: 'op2', title: 'Barista Workshop', price: 500, category: 'Event', image_url: 'https://images.unsplash.com/photo-1511920170033-f8396924c348', unit_label: 'pax', type: 'EVENT', event_date: new Date(Date.now() + 86400000).toISOString(), available_slots: 10, tiers: [{ id: 'bt1', name: 'Standard pax', price: 500, perks: ['Workshop access', 'Free Coffee'], capacity: 10, available: 5 }] }
     ]
   },
   {
@@ -726,7 +1026,7 @@ export const MOCK_PLACES: any[] = [
     logo_url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc',
     category: 'Sports',
     items: [
-      { id: 'i4', operator_id: 'op3', title: 'Night League Registration', price: 3000, category: 'Competition', image_url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc', unit_label: 'team', type: 'EVENT', available_slots: 8 }
+      { id: 'i4', operator_id: 'op3', title: 'Night League Registration', price: 3000, category: 'Competition', image_url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc', unit_label: 'team', type: 'EVENT', available_slots: 8, tiers: [{ id: 'nl1', name: 'Team Entry', price: 3000, perks: ['Tournament Slot', 'Jersey'], capacity: 8, available: 4 }] }
     ]
   }
 ];

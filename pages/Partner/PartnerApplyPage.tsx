@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Starfield } from '../../components/Landing/LandingComponents';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../utils/supabaseClient';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { Upload, Check, Loader2, ChevronRight, Briefcase, Store, Music, Utensils, Phone, Mail, Lock } from 'lucide-react';
 
 type Step = 1 | 2 | 3;
 
 export const PartnerApplyPage: React.FC = () => {
     const navigate = useNavigate();
+    useDocumentTitle('Partner Application');
     const [step, setStep] = useState<Step>(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

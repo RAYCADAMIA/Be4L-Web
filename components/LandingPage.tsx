@@ -8,8 +8,10 @@ import { RoadmapSection } from './Landing/RoadmapSection';
 import { FeatureShowcase } from './Landing/FeatureShowcase';
 import { PartnerPitch, UserCTA, HUDMenu, Starfield, TeamRecruitment, PoweredBy } from './Landing/LandingComponents';
 import { AuthScreen } from './AuthScreen';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => void }> = ({ bypassSplash = false, onReset }) => {
+    useDocumentTitle('Are you up for a side quest?');
     const [showSplash, setShowSplash] = useState(!bypassSplash);
     const [showAuth, setShowAuth] = useState(false);
     const [scrolled, setScrolled] = useState(false);
@@ -40,7 +42,9 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                     <main className="relative">
                         <HeroSection onJoinClick={() => setShowAuth(true)} />
 
-                        <UserCTA onJoinClick={() => setShowAuth(true)} />
+                        <div id="vibe-check-section">
+                            <UserCTA onJoinClick={() => setShowAuth(true)} />
+                        </div>
 
                         {/* 3D Phone Showcase Section */}
                         <div id="phone-showcase">
@@ -93,14 +97,14 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                                             <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Beta</span>
                                         </span>
                                     </div>
-                                    <p className="text-cool-grey text-base font-medium leading-[1.8] max-w-xs opacity-70 italic font-sans">
+                                    <p className="text-cool-grey text-base font-medium leading-[1.8] max-w-xs opacity-70 font-sans">
                                         OBX-Inspired platform for the lore you're yet to live.
                                     </p>
                                     <div className="flex gap-4">
                                         <a
-                                            href="https://www.instagram.com/be4l.app/"
                                             target="_blank"
                                             rel="noopener noreferrer"
+                                            aria-label="Instagram"
                                             className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white/[0.03] border border-white/5 text-cool-grey hover:text-white hover:border-electric-teal/40 transition-all hover:-translate-y-1 group"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:text-electric-teal transition-colors">
@@ -111,7 +115,7 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                                         </a>
                                         {/* Placeholder for others */}
                                         {['TW', 'TK'].map(social => (
-                                            <a key={social} href="#" className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white/[0.03] border border-white/5 text-cool-grey hover:text-white hover:border-white/20 transition-all hover:-translate-y-1">
+                                            <a key={social} href="#" aria-label={`Follow us on ${social}`} className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white/[0.03] border border-white/5 text-cool-grey hover:text-white hover:border-white/20 transition-all hover:-translate-y-1">
                                                 <div className="w-5 h-5 rounded-full bg-current opacity-20" />
                                             </a>
                                         ))}

@@ -7,6 +7,7 @@ import TopBar from '../TopBar';
 
 import { HeartbeatTransition } from '../ui/AestheticComponents';
 import { useNavigation } from '../../contexts/NavigationContext';
+import { useScrollBehavior } from '../../hooks/useScrollBehavior';
 import { ChatSidebar, ChatHeader } from './ChatFilters';
 
 interface ChatListScreenProps {
@@ -22,6 +23,8 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
     const [activeCat, setActiveCat] = useState('All');
     const [chats, setChats] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const { headerSpringY } = useNavigation();
+    const { handleScroll } = useScrollBehavior();
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -90,18 +93,6 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
     // Simplified state to match the UI: 'All' | 'Unread' | 'Lobbies'
     const [activeHeading, setActiveHeading] = useState('All');
 
-    // Scroll handling for floating header
-    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-    const lastScrollY = useRef(0);
-
-    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        const currentScrollY = e.currentTarget.scrollTop;
-        const scrollDiff = currentScrollY - lastScrollY.current;
-        if (scrollDiff > 10 && currentScrollY > 50) setIsHeaderVisible(false);
-        else if (scrollDiff < -10 || currentScrollY < 50) setIsHeaderVisible(true);
-        lastScrollY.current = currentScrollY;
-    };
-
     // Sync complex state with simplified UI state
     useEffect(() => {
         if (activeHeading === 'Lobbies') {
@@ -118,45 +109,60 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                 onScroll={handleScroll}
                 className="flex-1 overflow-y-auto no-scrollbar relative flex flex-col"
             >
-                {/* Search Bar - Part of scrollable content but stays at top initially */}
-                <div className="pt-24 px-6 pb-2">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="relative flex-1 group">
-                            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-electric-teal transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Search comms..."
-                                className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-3 pl-11 pr-4 text-[11px] font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-electric-teal/50 focus:bg-white/[0.05] transition-all uppercase tracking-wide"
-                            />
-                        </div>
-                        <button
-                            onClick={handleCreateGroup}
-                            className="w-11 h-11 shrink-0 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center active:scale-95 shadow-lg"
-                        >
-                            <Plus size={18} />
-                        </button>
-                    </div>
-                </div>
-
-                <div className="h-[10px] w-full shrink-0" />
-
-                {/* Sticky Header */}
-                <div className="md:hidden pb-4 sticky top-[70px] z-30 pointer-events-none transition-all duration-300">
+                {/* Header Spacer for Floating Nav - 75px to clear logo & menu area perfectly */}
+                <div className="h-[88px] w-full shrink-0" />
+                {/* Fixed Header Container - Changed to relative to follow scroll spacer */}
+                <div className="md:hidden relative z-30 pointer-events-none">
                     <motion.div
-                        initial={{ y: -20, opacity: 0 }}
-                        animate={{
-                            y: isHeaderVisible ? 0 : -20,
-                            opacity: isHeaderVisible ? 1 : 0,
-                            pointerEvents: isHeaderVisible ? 'auto' : 'none'
-                        }}
-                        transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
                         className="pointer-events-auto"
                     >
-                        <ChatHeader
-                            activeHeading={activeHeading}
-                            setActiveHeading={setActiveHeading}
-                        />
+                        {/* Search Bar Integrated into Header for Mobile */}
+                        <div className="pt-2 px-6 pb-2">
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="relative flex-1 group">
+                                    <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-electric-teal transition-colors" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search comms..."
+                                        className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-3 pl-11 pr-4 text-[11px] font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-electric-teal/50 focus:bg-white/[0.05] transition-all uppercase tracking-wide"
+                                    />
+                                </div>
+                                <button
+                                    onClick={handleCreateGroup}
+                                    className="w-11 h-11 shrink-0 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center active:scale-95 shadow-lg"
+                                >
+                                    <Plus size={18} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="pb-0">
+                            <ChatHeader
+                                activeHeading={activeHeading}
+                                setActiveHeading={setActiveHeading}
+                            />
+                        </div>
                     </motion.div>
+                </div>
+                {/* Reduced Gap between filters and list */}
+                <div className="md:hidden h-4 w-full shrink-0" />
+
+                {/* Filter Pills - Desktop Only */}
+                <div className="hidden md:flex px-4 pb-4 gap-2">
+                    {['All', 'Unread', 'Lobbies'].map(filter => (
+                        <button
+                            key={filter}
+                            onClick={() => setActiveHeading(filter)}
+                            className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all ${activeHeading === filter
+                                ? 'bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]'
+                                : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30 hover:text-white'
+                                }`}
+                        >
+                            {filter}
+                        </button>
+                    ))}
                 </div>
 
                 {/* Chat List */}
@@ -187,7 +193,7 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-center mb-0.5">
-                                            <h3 className="text-sm font-black text-white group-hover:text-electric-teal transition-colors tracking-tight uppercase truncate italic">
+                                            <h3 className="text-sm font-black text-white group-hover:text-electric-teal transition-colors tracking-tight uppercase truncate">
                                                 <span className="animate-liquid-text">
                                                     {chat.name}
                                                 </span>

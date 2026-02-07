@@ -21,7 +21,7 @@ export const RightPanel: React.FC = () => {
             <div className="absolute bottom-0 right-0 w-full h-1/2 bg-blue-500/5 blur-[100px] pointer-events-none" />
 
             <div className="flex items-center justify-between">
-                <h2 className="text-lg font-black italic text-white tracking-widest uppercase">Pulse</h2>
+                <h2 className="text-lg font-black text-white tracking-widest uppercase">Pulse</h2>
                 <span className="text-[9px] font-bold bg-white/10 px-2 py-1 rounded text-white/50">LIVE</span>
             </div>
 

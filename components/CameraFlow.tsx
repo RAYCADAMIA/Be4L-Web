@@ -471,7 +471,7 @@ const CameraFlow: React.FC<CameraFlowProps> = ({ onClose, onPost, onCapture, cur
         return (
             <div className="absolute inset-0 z-[60] bg-black flex flex-col safe-area-bottom">
                 <div className="absolute top-6 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1 pointer-events-none">
-                    <div className="text-primary font-black italic tracking-tighter text-xl drop-shadow-md">
+                    <div className="text-primary font-black tracking-tighter text-xl drop-shadow-md">
                         Be4L
                     </div>
                     {/* Small countdown or branding */}
@@ -571,7 +571,7 @@ const CameraFlow: React.FC<CameraFlowProps> = ({ onClose, onPost, onCapture, cur
     return (
         <div className="absolute inset-0 z-[60] bg-black flex flex-col safe-area-bottom">
             <div className="absolute top-6 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1 pointer-events-none">
-                <div className="text-primary font-black italic tracking-tighter text-xl drop-shadow-md">
+                <div className="text-primary font-black tracking-tighter text-xl drop-shadow-md">
                     Be4L
                 </div>
                 {/* <DailyCountdown onTimerZero={onClose} className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 scale-90" /> */}
@@ -712,7 +712,7 @@ const CameraFlow: React.FC<CameraFlowProps> = ({ onClose, onPost, onCapture, cur
                             <Music size={32} className="text-[#1DB954]" />
                         </div>
 
-                        <h3 className="text-2xl font-black italic text-white uppercase mb-2">Connect Music</h3>
+                        <h3 className="text-2xl font-black text-white uppercase mb-2">Connect Music</h3>
                         <p className="text-gray-400 text-sm mb-8 leading-relaxed">
                             Link your Spotify account to automatically share your vibe with every capture.
                         </p>

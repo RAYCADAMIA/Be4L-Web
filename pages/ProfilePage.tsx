@@ -2,8 +2,8 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import ProfileScreen from '../components/ProfileScreen';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CommandCenter } from '../components/CommandCenter';
 import { supabaseService } from '../services/supabaseService';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export const ProfilePage: React.FC = () => {
     const { user: currentUser, login, logout } = useAuth();
@@ -12,33 +12,48 @@ export const ProfilePage: React.FC = () => {
     const [targetUser, setTargetUser] = React.useState<any>(null);
     const [loading, setLoading] = React.useState(true);
 
+    useDocumentTitle(
+        targetUser
+            ? targetUser.id === currentUser?.id
+                ? 'My Profile'
+                : `${targetUser.display_name || targetUser.username}'s Profile`
+            : 'Profile'
+    );
+
     React.useEffect(() => {
         const fetchUserData = async () => {
             if (!userId || userId === currentUser?.id) {
-                setTargetUser(currentUser);
-                setLoading(false);
-                return;
+                if (currentUser) {
+                    setTargetUser(currentUser);
+                    setLoading(false);
+                    return;
+                }
             }
 
             setLoading(true);
             try {
+                // Fetch specific user profile
                 const { data, error } = await supabaseService.profiles.getProfile(userId);
-                if (data) setTargetUser(data);
-                else {
-                    // Fallback to mock or error
-                    console.error("User not found", error);
+
+                if (data) {
+                    setTargetUser(data);
+                } else {
+                    console.error("User profile not found:", userId, error);
+                    // Fallback to current user if fetch fails
+                    if (currentUser) setTargetUser(currentUser);
                 }
             } catch (err) {
-                console.error(err);
+                console.error("Error fetching profile:", err);
+                if (currentUser) setTargetUser(currentUser);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchUserData();
-    }, [userId, currentUser]);
+    }, [userId, currentUser?.id]);
 
-    const handleLegacyNavigate = (tab: string) => {
+    const handleLegacyNavigate = (tab: any) => {
         if (tab === 'HOME') navigate('/app/home');
     };
 
@@ -46,7 +61,7 @@ export const ProfilePage: React.FC = () => {
         <div className="flex-1 flex items-center justify-center bg-deep-black min-h-screen">
             <div className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-4 border-electric-teal/20 border-t-electric-teal rounded-full animate-spin" />
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Syncing Profile...</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Decrypting Profile...</p>
             </div>
         </div>
     );
@@ -62,12 +77,14 @@ export const ProfilePage: React.FC = () => {
                 logout();
                 navigate('/');
             }}
-            onOpenPostDetail={(p) => console.log("Post", p)}
-            onOpenQuest={(q) => console.log("Quest", q)}
+            onOpenPostDetail={(p) => console.log("Post Detail", p)}
+            onOpenQuest={(q) => navigate(`/app/quest/${q.id}`)}
             onOpenUser={(u) => navigate(u.id === currentUser?.id ? '/app/myprofile' : `/app/profile/${u.id}`)}
             onProfileUpdate={(u) => login(u)}
-            onOpenChat={(id, name) => console.log("Chat", id)}
+            onOpenChat={(id, name) => navigate('/app/chat')}
             onNavigate={handleLegacyNavigate}
         />
     );
 };
+
+export default ProfilePage;

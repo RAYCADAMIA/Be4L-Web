@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Send, ImageIcon } from 'lucide-react';
-import { Hero3DScene } from '../components/Landing/Hero3DScene';
+import { HeroPhoneShowcase } from '../components/Landing/HeroPhoneShowcase';
 import { useAuth } from '../contexts/AuthContext';
 import { supabaseService } from '../services/supabaseService';
 import { EKGLoader } from '../components/ui/AestheticComponents';
 import PostCard from '../components/PostCard';
 import { Operator } from '../types';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export const LorePage: React.FC = () => {
+    useDocumentTitle('Lore');
     const { user } = useAuth();
     const [vault, setVault] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -56,6 +58,8 @@ export const LorePage: React.FC = () => {
 
     return (
         <div className="min-h-full bg-transparent relative overflow-y-auto no-scrollbar px-4 pb-20">
+            {/* Header Spacer for Floating Nav */}
+            <div className="h-[60px] w-full shrink-0" />
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -136,14 +140,14 @@ export const LorePage: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* 3D Showcase Integration */}
+                                {/* Showcase Integration */}
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: 0.5, duration: 1 }}
-                                    className="relative w-full h-[60vh] -mt-12"
+                                    className="relative w-full pb-20 mt-8 overflow-visible"
                                 >
-                                    <Hero3DScene isPaused={false} />
+                                    {/* <HeroPhoneShowcase /> */}
                                 </motion.div>
                             </div>
                         )}

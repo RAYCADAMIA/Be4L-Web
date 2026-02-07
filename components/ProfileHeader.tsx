@@ -1,7 +1,8 @@
 import React from 'react';
-import { User, Settings, Mail, Camera, Activity, LayoutDashboard, MoreVertical, ChevronLeft, MapPin, BadgeCheck, Star, LogOut, Trash2 } from 'lucide-react';
+import { User, Settings, Mail, Camera, Activity, LayoutDashboard, MoreVertical, ChevronLeft, MapPin, BadgeCheck, Star, LogOut, Trash2, Shield, HelpCircle, Info, Sparkles } from 'lucide-react';
 import { User as UserType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BrandAccessModal } from './Dibs/BrandAccessModal';
 
 interface ProfileHeaderProps {
     user: UserType;
@@ -22,6 +23,7 @@ interface ProfileHeaderProps {
     onShowFollowers?: () => void;
     onShowFollowing?: () => void;
     onShowAuraStats?: () => void;
+    onProfileUpdate?: (user: UserType) => void;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -42,14 +44,16 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     locationText,
     onShowFollowers,
     onShowFollowing,
-    onShowAuraStats
+    onShowAuraStats,
+    onProfileUpdate
 }) => {
     const [showSettingsMenu, setShowSettingsMenu] = React.useState(false);
     const [showCoverModal, setShowCoverModal] = React.useState(false);
+    const [showBrandModal, setShowBrandModal] = React.useState(false);
 
     return (
         <div className="relative w-full bg-deep-black text-white mb-8">
-            <div className="max-w-4xl mx-auto px-4 pt-4">
+            <div className="max-w-4xl mx-auto px-4 pt-24 md:pt-32">
                 <div className="relative">
                     <div
                         className="relative h-44 md:h-52 w-full bg-zinc-900 overflow-hidden rounded-[2rem] border border-white/5 cursor-pointer"
@@ -85,58 +89,92 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                                     {showSettingsMenu && (
                                         <>
                                             <motion.div
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                className="fixed inset-0 z-40 bg-transparent"
-                                                onClick={() => setShowSettingsMenu(false)}
-                                            />
-                                            <motion.div
                                                 initial={{ opacity: 0, scale: 0.95, y: 10, x: 20 }}
                                                 animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
                                                 exit={{ opacity: 0, scale: 0.95, y: 10, x: 20 }}
-                                                className="absolute top-full right-0 mt-3 w-64 bg-[#0A0A0A]/95 backdrop-blur-3xl border border-white/10 rounded-[2rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-50 p-2"
+                                                className="absolute top-full right-0 mt-3 w-72 bg-deep-black/95 backdrop-blur-3xl border border-white/10 rounded-[2rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-50 p-3"
                                             >
+                                                <div className="px-4 py-2 mb-2">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Settings</p>
+                                                </div>
+
                                                 <button
                                                     onClick={() => {
                                                         onEditProfile?.();
                                                         setShowSettingsMenu(false);
                                                     }}
-                                                    className="w-full px-6 py-4 text-left text-white/90 hover:bg-white/5 transition-colors flex items-center gap-3 group rounded-2xl"
+                                                    className="w-full px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors flex items-center gap-4 group rounded-2xl"
                                                 >
                                                     <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-electric-teal/20 group-hover:text-electric-teal transition-colors">
-                                                        <Settings size={16} />
+                                                        <User size={16} />
                                                     </div>
-                                                    <span className="text-sm font-black uppercase tracking-widest">Edit Profile</span>
+                                                    <div>
+                                                        <span className="text-xs font-bold block">Account</span>
+                                                        <span className="text-[9px] text-gray-500 font-medium">Edit details via Profile</span>
+                                                    </div>
                                                 </button>
 
-                                                <div className="h-px bg-white/5 mx-4 my-1" />
+                                                <button
+                                                    onClick={() => {
+                                                        if (user.is_operator) {
+                                                            onManagePage?.();
+                                                        } else {
+                                                            setShowBrandModal(true);
+                                                        }
+                                                        setShowSettingsMenu(false);
+                                                    }}
+                                                    className="w-full px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors flex items-center gap-4 group rounded-2xl"
+                                                >
+                                                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-electric-teal/20 group-hover:text-electric-teal transition-colors">
+                                                        {user.is_operator ? <LayoutDashboard size={16} /> : <Sparkles size={16} />}
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-xs font-bold block">{user.is_operator ? 'Manage Brand' : 'Switch to Brand'}</span>
+                                                        <span className="text-[9px] text-gray-500 font-medium">{user.is_operator ? 'Access Dashboard' : 'Enter Access Code'}</span>
+                                                    </div>
+                                                </button>
+
+                                                <div className="h-px bg-white/5 mx-4 my-2" />
+
+                                                <button className="w-full px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors flex items-center gap-4 group rounded-2xl">
+                                                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:text-white transition-colors">
+                                                        <HelpCircle size={16} />
+                                                    </div>
+                                                    <span className="text-xs font-bold">Help & Support</span>
+                                                </button>
+
+                                                <button className="w-full px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors flex items-center gap-4 group rounded-2xl">
+                                                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:text-white transition-colors">
+                                                        <Shield size={16} />
+                                                    </div>
+                                                    <span className="text-xs font-bold">Privacy Center</span>
+                                                </button>
+
+                                                <button className="w-full px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors flex items-center gap-4 group rounded-2xl">
+                                                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:text-white transition-colors">
+                                                        <Info size={16} />
+                                                    </div>
+                                                    <span className="text-xs font-bold">About Be4L</span>
+                                                </button>
+
+                                                <div className="h-px bg-white/5 mx-4 my-2" />
 
                                                 <button
                                                     onClick={() => {
                                                         onLogout?.();
                                                         setShowSettingsMenu(false);
                                                     }}
-                                                    className="w-full px-6 py-4 text-left text-white/90 hover:bg-white/5 transition-colors flex items-center gap-3 group rounded-2xl"
-                                                >
-                                                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-red-500/20 group-hover:text-red-500 transition-colors">
-                                                        <LogOut size={16} />
-                                                    </div>
-                                                    <span className="text-sm font-black uppercase tracking-widest">Log Out</span>
-                                                </button>
-
-                                                <button
-                                                    onClick={() => {
-                                                        if (onMore) onMore();
-                                                        setShowSettingsMenu(false);
-                                                    }}
-                                                    className="w-full px-6 py-4 text-left text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-3 group rounded-2xl"
+                                                    className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-4 group rounded-2xl"
                                                 >
                                                     <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-colors">
-                                                        <Trash2 size={16} />
+                                                        <LogOut size={16} />
                                                     </div>
-                                                    <span className="text-sm font-black uppercase tracking-widest">Delete Account</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest">Log Out</span>
                                                 </button>
+
+                                                <div className="text-[9px] text-center text-gray-700 py-2 font-mono uppercase tracking-widest opacity-50">
+                                                    v3.0.0 (Operator)
+                                                </div>
                                             </motion.div>
                                         </>
                                     )}
@@ -149,6 +187,20 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                         )}
                     </div>
                 </div>
+
+                {/* Brand Access Modal */}
+                <BrandAccessModal
+                    isOpen={showBrandModal}
+                    onClose={() => setShowBrandModal(false)}
+                    onSuccess={() => {
+                        if (onProfileUpdate) {
+                            onProfileUpdate({ ...user, is_operator: true });
+                        }
+                        // Force window reload to ensure all contexts refresh if needed, or rely on callback
+                        window.location.reload();
+                    }}
+                />
+
 
                 {/* 2. Identity Block (Avatar Overlap Centered) */}
                 <div className="relative flex flex-col items-center text-center px-4">
@@ -170,13 +222,13 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
                     {/* Info Block */}
                     <div className="flex flex-col items-center gap-1 mb-4">
-                        <h1 className="text-2xl md:text-5xl font-black italic tracking-tighter leading-none flex items-center justify-center gap-2">
+                        <h1 className="text-2xl md:text-5xl font-black tracking-tighter leading-none flex items-center justify-center gap-2">
                             <span className="animate-liquid-text">
                                 {user.is_operator ? (user.name || user.username) : (user.name || 'Explorer')}
                             </span>
                             {user.is_operator && <BadgeCheck size={20} className="text-electric-teal fill-electric-teal/20 md:w-[28px]" />}
                         </h1>
-                        <p className="text-electric-teal/60 text-base md:text-xl tracking-tight font-black italic">
+                        <p className="text-electric-teal/60 text-base md:text-xl tracking-tight font-black">
                             <span className="animate-liquid-text">
                                 @{user.username}
                             </span>

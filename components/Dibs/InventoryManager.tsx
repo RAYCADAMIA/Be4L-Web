@@ -255,17 +255,17 @@ const InventoryManager = () => {
                                         <div className="w-2 h-2 rounded-full bg-electric-teal animate-pulse" />
                                         <span className="text-[10px] font-black uppercase tracking-widest text-electric-teal">Operations Summary</span>
                                     </div>
-                                    <p className="text-2xl font-black text-white italic tracking-tighter uppercase">5 Reservations</p>
+                                    <p className="text-2xl font-black text-white tracking-tighter uppercase">5 Reservations</p>
                                     <p className="text-[10px] font-bold text-zinc-500 uppercase mt-1">Expected Today</p>
                                 </div>
                                 <div className="flex gap-4 mt-6">
                                     <div className="flex-1">
                                         <p className="text-[8px] font-black text-zinc-600 uppercase">Checked In</p>
-                                        <p className="text-xl font-black text-white italic">2/5</p>
+                                        <p className="text-xl font-black text-white">2/5</p>
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-[8px] font-black text-zinc-600 uppercase">Revenue</p>
-                                        <p className="text-xl font-black text-electric-teal italic">₱1,450</p>
+                                        <p className="text-xl font-black text-electric-teal">₱1,450</p>
                                     </div>
                                 </div>
                             </div>
@@ -284,7 +284,7 @@ const InventoryManager = () => {
 
                                             <div>
                                                 <div className="flex items-center gap-3 mb-1">
-                                                    <span className="text-sm font-black text-white uppercase italic tracking-tight">KREEMO J.</span>
+                                                    <span className="text-sm font-black text-white uppercase tracking-tight">KREEMO J.</span>
                                                     <div className="px-2 py-0.5 rounded-md bg-electric-teal text-black text-[8px] font-black uppercase tracking-tighter">PREMIUM</div>
                                                 </div>
                                                 <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-500 uppercase">
@@ -297,7 +297,7 @@ const InventoryManager = () => {
                                         <div className="flex flex-col md:items-end gap-2">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-[10px] font-black text-zinc-600 uppercase">Total Paid</span>
-                                                <span className="text-sm font-black text-white italic">₱250.00</span>
+                                                <span className="text-sm font-black text-white">₱250.00</span>
                                             </div>
                                             <div className="flex gap-2">
                                                 <button className="px-6 py-2 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-electric-teal transition-all">
@@ -336,7 +336,7 @@ const InventoryManager = () => {
                                 <div className="p-6 rounded-full bg-white/5 text-gray-700 mb-6">
                                     <LayoutGrid size={40} strokeWidth={1} />
                                 </div>
-                                <h3 className="text-white font-bold text-lg italic uppercase">No active listings</h3>
+                                <h3 className="text-white font-bold text-lg uppercase">No active listings</h3>
                                 <p className="text-gray-500 text-xs mt-2 max-w-xs">Your deployments will appear here once you launch them.</p>
                             </motion.div>
                         ) : filteredItems.map((item) => (
@@ -373,7 +373,7 @@ const InventoryManager = () => {
                                 {/* Status Indicator */}
                                 {!item.is_active && (
                                     <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] rounded-[2.5rem] flex items-center justify-center pointer-events-none">
-                                        <span className="px-4 py-1.5 bg-red-500/20 text-red-500 border border-red-500/30 rounded-full text-[10px] font-black uppercase tracking-[0.2em] italic">Unlisted</span>
+                                        <span className="px-4 py-1.5 bg-red-500/20 text-red-500 border border-red-500/30 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Unlisted</span>
                                     </div>
                                 )}
                             </motion.div>
@@ -403,7 +403,7 @@ const InventoryManager = () => {
                             {/* Modal Header */}
                             <div className="px-8 pt-8 flex items-center justify-between z-10">
                                 <div>
-                                    <h3 className="text-2xl font-black italic uppercase text-white tracking-tighter flex items-center gap-3">
+                                    <h3 className="text-2xl font-black uppercase text-white tracking-tighter flex items-center gap-3">
                                         <Sparkles className="text-electric-teal" size={20} />
                                         {isEditing ? 'Sync Deployment' : 'New Deployment'}
                                     </h3>
@@ -428,7 +428,7 @@ const InventoryManager = () => {
                                             className="space-y-6"
                                         >
                                             <div className="text-center mb-8">
-                                                <h4 className="text-xl font-black text-white italic uppercase tracking-tight">Select Listing Architecture</h4>
+                                                <h4 className="text-xl font-black text-white uppercase tracking-tight">Select Listing Architecture</h4>
                                                 <p className="text-gray-500 text-xs mt-2">What kind of inventory are you deploying today?</p>
                                             </div>
 
@@ -573,7 +573,7 @@ const InventoryManager = () => {
                                                 <div className="space-y-8">
                                                     {/* Units Config */}
                                                     <div className="space-y-4 p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-                                                        <h5 className="text-xs font-black uppercase text-electric-teal flex items-center gap-3 tracking-[0.2em] italic">
+                                                        <h5 className="text-xs font-black uppercase text-electric-teal flex items-center gap-3 tracking-[0.2em]">
                                                             <Box size={16} strokeWidth={3} /> Resource Configuration
                                                         </h5>
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -651,7 +651,7 @@ const InventoryManager = () => {
                                                     {/* Event Tiers */}
                                                     <div className="space-y-5">
                                                         <div className="flex items-center justify-between">
-                                                            <h5 className="text-xs font-black uppercase text-electric-teal flex items-center gap-3 tracking-[0.2em] italic">
+                                                            <h5 className="text-xs font-black uppercase text-electric-teal flex items-center gap-3 tracking-[0.2em]">
                                                                 <Ticket size={16} strokeWidth={3} /> Ticket Inventory
                                                             </h5>
                                                             <button
@@ -715,7 +715,7 @@ const InventoryManager = () => {
                                                             ))}
                                                             {formData.tiers.length === 0 && (
                                                                 <div className="text-center py-10 border border-dashed border-white/5 rounded-3xl">
-                                                                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-700 italic">No tickets defined</p>
+                                                                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-700">No tickets defined</p>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -736,7 +736,7 @@ const InventoryManager = () => {
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                 {/* Scheduling */}
                                                 <div className="space-y-6">
-                                                    <h5 className="text-xs font-black uppercase text-electric-teal flex items-center gap-3 tracking-[0.2em] italic mb-4">
+                                                    <h5 className="text-xs font-black uppercase text-electric-teal flex items-center gap-3 tracking-[0.2em] mb-4">
                                                         <Clock size={16} strokeWidth={3} /> Temporal Settings
                                                     </h5>
 

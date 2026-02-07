@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, MapPin, ListFilter, Search, ChevronDown } from 'lucide-react';
+import { DollarSign, MapPin, ListFilter, ChevronDown } from 'lucide-react';
 
 export const DIB_CATEGORIES = [
     { id: 'All', label: 'All' },
@@ -45,7 +45,7 @@ export const DibsSidebar: React.FC<DibsFiltersProps> = ({
                     onClick={() => setIsExpanded(!isExpanded)}
                     className={`
                         w-full flex items-center justify-between px-4 py-4 rounded-2xl border transition-all duration-300 group
-                        ${isExpanded ? 'bg-electric-teal shadow-[0_4px_20px_rgba(45,212,191,0.3)] border-electric-teal text-black' : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'}
+                        ${isExpanded ? 'bg-primary shadow-[0_4px_20px_rgba(45,212,191,0.3)] border-primary text-black' : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'}
                     `}
                 >
                     <div className="flex items-center gap-3">
@@ -69,9 +69,12 @@ export const DibsSidebar: React.FC<DibsFiltersProps> = ({
                                     <label className="text-[9px] font-black uppercase text-white/20 tracking-widest flex items-center gap-1.5">
                                         <DollarSign size={10} /> Maximum Price
                                     </label>
-                                    <span className="text-[10px] font-black text-electric-teal uppercase tracking-widest">
-                                        ₱{priceRange[1].toLocaleString()}
-                                    </span>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">
+                                            ₱{priceRange[1].toLocaleString()}
+                                        </span>
+                                        {priceRange[1] === MAX_VAL && <span className="text-[7px] font-black text-white/20 uppercase">+</span>}
+                                    </div>
                                 </div>
                                 <div className="relative h-6 flex items-center group">
                                     <input
@@ -81,27 +84,33 @@ export const DibsSidebar: React.FC<DibsFiltersProps> = ({
                                         step="100"
                                         value={priceRange[1]}
                                         onChange={(e) => setPriceRange?.([priceRange[0], Number(e.target.value)])}
-                                        className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-electric-teal range-sm"
+                                        className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-primary range-sm"
                                     />
                                     <div className="absolute -top-1 left-0 text-[7px] font-bold text-white/10 uppercase tracking-tighter">Budget Friendly</div>
                                     <div className="absolute -top-1 right-0 text-[7px] font-bold text-white/10 uppercase tracking-tighter">Premium</div>
                                 </div>
                             </div>
 
-                            {/* Location Search */}
+                            {/* Location Filter (Quick Presets Only) */}
                             <div className="space-y-3 px-1">
                                 <label className="text-[9px] font-black uppercase text-white/20 tracking-widest flex items-center gap-1.5">
-                                    <MapPin size={10} /> Location
+                                    <MapPin size={10} /> City Selection
                                 </label>
-                                <div className="relative group">
-                                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-electric-teal transition-colors" />
-                                    <input
-                                        type="text"
-                                        placeholder="Enter Area..."
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-[10px] font-bold text-white placeholder:text-white/10 focus:border-electric-teal/50 outline-none transition-all"
-                                        value={locationFilter}
-                                        onChange={(e) => setLocationFilter?.(e.target.value)}
-                                    />
+                                <div className="flex flex-wrap gap-2">
+                                    {['All Cities', 'Manila', 'Davao', 'Cebu', 'Makati'].map(city => {
+                                        const isAll = city === 'All Cities';
+                                        const value = isAll ? '' : city;
+                                        const isActive = (locationFilter === value);
+                                        return (
+                                            <button
+                                                key={city}
+                                                onClick={() => setLocationFilter?.(value)}
+                                                className={`px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${isActive ? 'bg-primary text-black' : 'bg-white/5 text-white/40 hover:bg-white/10 border border-white/5'}`}
+                                            >
+                                                {city}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
@@ -149,13 +158,29 @@ export const DibsSidebar: React.FC<DibsFiltersProps> = ({
 export const DibsHeader: React.FC<DibsFiltersProps> = ({
     activeCat,
     setActiveCat,
-    priceRange = [0, 5000],
+    priceRange = [0, 10000],
     setPriceRange,
     locationFilter = '',
     setLocationFilter,
 }) => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [tempPrice, setTempPrice] = useState<[number, number]>(priceRange);
+    const [tempLocation, setTempLocation] = useState(locationFilter);
     const MAX_VAL = 10000;
+
+    // Sync temp state when modal opens
+    useEffect(() => {
+        if (isFilterOpen) {
+            setTempPrice(priceRange);
+            setTempLocation(locationFilter);
+        }
+    }, [isFilterOpen, priceRange, locationFilter]);
+
+    const handleApply = () => {
+        setPriceRange?.(tempPrice);
+        setLocationFilter?.(tempLocation);
+        setIsFilterOpen(false);
+    };
 
     return (
         <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-700">
@@ -166,14 +191,14 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
                     <button
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
                         className={`
-                            h-7 w-7 flex items-center justify-center rounded-full shrink-0 border transition-all duration-300
-                            ${isFilterOpen ? 'bg-electric-teal border-electric-teal text-black shadow-[0_0_15px_rgba(45,212,191,0.4)]' : 'bg-white/[0.08] backdrop-blur-md border-white/10 text-gray-400 hover:bg-white/10'}
+                            h-8 w-8 flex items-center justify-center rounded-full shrink-0 border transition-all duration-300
+                            ${isFilterOpen ? 'bg-primary border-primary text-black shadow-[0_0_15px_rgba(45,212,191,0.4)]' : 'bg-white/[0.08] backdrop-blur-3xl border-white/10 text-gray-400 hover:bg-white/10'}
                         `}
                     >
-                        <ListFilter size={12} strokeWidth={2.5} />
+                        <ListFilter size={14} strokeWidth={2.5} />
                     </button>
 
-                    <div className="h-3 w-px bg-white/10 shrink-0 mx-1" />
+                    <div className="h-4 w-px bg-white/10 shrink-0 mx-1" />
 
                     {DIB_CATEGORIES.map(cat => {
                         const isActive = activeCat === cat.id;
@@ -182,15 +207,15 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
                                 key={cat.id}
                                 onClick={() => setActiveCat(cat.id)}
                                 className={`
-                                    relative h-7 px-4 rounded-full whitespace-nowrap text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 shrink-0
-                                    ${isActive ? 'bg-electric-teal text-black' : 'bg-white/[0.08] backdrop-blur-md text-gray-400 border border-white/10 hover:bg-white/10'}
+                                    relative h-8 px-5 rounded-full whitespace-nowrap text-[9px] font-black uppercase tracking-[0.15em] transition-all duration-300 shrink-0
+                                    ${isActive ? 'bg-primary text-black shadow-[0_0_15px_rgba(45,212,191,0.2)]' : 'bg-white/[0.03] backdrop-blur-xl text-gray-400 border border-white/5 hover:bg-white/10'}
                                 `}
                             >
-                                {cat.label}
+                                <span className="relative z-10">{cat.label}</span>
                                 {isActive && (
                                     <motion.div
                                         layoutId="dibsCatActiveMobile"
-                                        className="absolute inset-0 bg-white/20 rounded-full blur-md -z-10"
+                                        className="absolute inset-0 bg-primary/20 rounded-full blur-md -z-10"
                                     />
                                 )}
                             </button>
@@ -223,48 +248,59 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Refine Sector</h3>
                                     <button
-                                        onClick={() => setIsFilterOpen(false)}
-                                        className="text-[9px] font-black uppercase text-gray-500 hover:text-white transition-colors"
+                                        onClick={handleApply}
+                                        className="text-[10px] font-black uppercase text-primary hover:text-white transition-colors bg-primary/10 px-4 py-1.5 rounded-full border border-primary/20"
                                     >
                                         Done
                                     </button>
                                 </div>
 
                                 {/* Price Range */}
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     <div className="flex items-center justify-between">
                                         <label className="text-[9px] font-black uppercase text-white/20 tracking-widest flex items-center gap-1.5">
                                             <DollarSign size={10} /> Maximum Price
                                         </label>
-                                        <span className="text-[10px] font-black text-electric-teal uppercase tracking-widest">
-                                            ₱{priceRange[1].toLocaleString()}
-                                        </span>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-[14px] font-black text-primary uppercase tracking-widest">
+                                                ₱{tempPrice[1].toLocaleString()}
+                                            </span>
+                                            {tempPrice[1] === MAX_VAL && <span className="text-[8px] font-black text-white/20 uppercase">+</span>}
+                                        </div>
                                     </div>
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max={MAX_VAL}
-                                        step="100"
-                                        value={priceRange[1]}
-                                        onChange={(e) => setPriceRange?.([priceRange[0], Number(e.target.value)])}
-                                        className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-electric-teal"
-                                    />
+                                    <div className="relative h-6 flex items-center">
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max={MAX_VAL}
+                                            step="100"
+                                            value={tempPrice[1]}
+                                            onChange={(e) => setTempPrice([tempPrice[0], Number(e.target.value)])}
+                                            className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-primary"
+                                        />
+                                    </div>
                                 </div>
 
-                                {/* Location */}
+                                {/* Location Presets */}
                                 <div className="space-y-3">
                                     <label className="text-[9px] font-black uppercase text-white/20 tracking-widest flex items-center gap-1.5">
-                                        <MapPin size={10} /> Location
+                                        <MapPin size={10} /> Select City
                                     </label>
-                                    <div className="relative group">
-                                        <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
-                                        <input
-                                            type="text"
-                                            placeholder="WHERE ARE YOU?"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-[10px] font-black text-white placeholder:text-white/10 outline-none focus:border-electric-teal transition-all uppercase italic"
-                                            value={locationFilter}
-                                            onChange={(e) => setLocationFilter?.(e.target.value)}
-                                        />
+                                    <div className="flex flex-wrap gap-2 pt-1">
+                                        {['All Cities', 'Manila', 'Davao', 'Cebu', 'Makati'].map(city => {
+                                            const isAll = city === 'All Cities';
+                                            const value = isAll ? '' : city;
+                                            const isActive = (tempLocation === value);
+                                            return (
+                                                <button
+                                                    key={city}
+                                                    onClick={() => setTempLocation(value)}
+                                                    className={`px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${isActive ? 'bg-primary text-black' : 'bg-white/5 text-white/40 hover:bg-white/10 border border-white/5'}`}
+                                                >
+                                                    {city}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>

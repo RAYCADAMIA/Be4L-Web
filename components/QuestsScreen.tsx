@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Zap, ChevronLeft, MapPin, Search, X, Compass, Plus, Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
 
 import { supabaseService } from '../services/supabaseService';
 import { Quest, QuestType, QuestStatus, User, Competition } from '../types';
@@ -54,17 +54,14 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
     const [showCreate, setShowCreate] = useState(false);
     const [showCalendar, setShowCalendar] = useState(false);
     const [activeDrop, setActiveDrop] = useState<any>(null);
+    const [viewingLocation, setViewingLocation] = useState('Global');
     const [isMapFull, setIsMapFull] = useState(false);
     const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+    const [localRefresh, setLocalRefresh] = useState(0);
     const lastScrollY = useRef(0);
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
         const currentScrollY = e.currentTarget.scrollTop;
-        if (currentScrollY > lastScrollY.current && currentScrollY > 20) {
-            setIsHeaderVisible(false); // Scrolling down - hide
-        } else {
-            setIsHeaderVisible(true);  // Scrolling up - show
-        }
         lastScrollY.current = currentScrollY;
     };
 
@@ -114,17 +111,10 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
 
     // Register Tabs
     useEffect(() => {
-        // We no longer set global tabs because the Sidebar now handles the switching locally and visually
-        // setTabs([...]); 
-
-        // Ensure default tab
-        if (!activeTab || (activeTab !== 'CANON' && activeTab !== 'SPONTY')) {
-            setActiveTab('CANON');
-        }
-
+        // Force default tab to CANON when landing on Quests page
+        setActiveTab('CANON');
         // Clear global tabs to hide the floating side pill
         setTabs([]);
-
         return () => setTabs([]);
     }, []);
 
@@ -132,6 +122,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
         setActiveCat('All');
     }, [activeTab]);
 
+    // Added 'localRefresh' to dependencies
     useEffect(() => {
         setLoading(true);
         const type = activeTab === 'CANON' ? QuestType.CANON : QuestType.SPONTY;
@@ -169,7 +160,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
             setQuests(uniqueQuests);
             setLoading(false);
         });
-    }, [activeTab, activeCat, selectedDate, refreshTrigger]);
+    }, [activeTab, activeCat, selectedDate, refreshTrigger, localRefresh]);
 
     return (
         <div className="flex-1 flex flex-col h-full relative overflow-hidden">
@@ -183,7 +174,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                 className="flex-1 h-full overflow-hidden flex flex-col md:flex-row max-w-[1600px] mx-auto w-full"
             >
                 {/* Desktop Sidebar (Left) */}
-                <div className="hidden md:flex flex-col w-24 shrink-0 pt-8 sticky top-0 h-full overflow-y-auto no-scrollbar border-r border-white/[0.02]">
+                <div className="hidden md:flex flex-col w-24 shrink-0 pt-28 sticky top-0 h-full overflow-y-auto no-scrollbar border-r border-white/[0.02]">
                     <QuestSidebar
                         selectedDate={selectedDate}
                         onDateChange={(d) => {
@@ -196,6 +187,8 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                         setActiveTab={setActiveTab}
                         activeCat={activeCat}
                         setActiveCat={setActiveCat}
+                        viewingLocation={viewingLocation}
+                        setViewingLocation={setViewingLocation}
                     />
                 </div>
 
@@ -205,20 +198,15 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                     className="flex-1 h-full overflow-y-auto pb-0 no-scrollbar relative"
                 >
                     {/* Header Spacer for Floating Nav */}
-                    <div className="h-[72px] md:h-0 w-full shrink-0" />
+                    <div className="h-[60px] w-full shrink-0" />
 
                     {/* Mobile Header (Filters) */}
-                    <div className="md:hidden pb-2 sticky top-[60px] z-30 pointer-events-none transition-all duration-300">
-                        <motion.div
-                            initial={{ y: -20, opacity: 0 }}
-                            animate={{
-                                y: isHeaderVisible ? 0 : -20,
-                                opacity: isHeaderVisible ? 1 : 0,
-                                pointerEvents: isHeaderVisible ? 'auto' : 'none'
-                            }}
-                            transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-                            className="pointer-events-auto"
-                        >
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="md:hidden z-30 pb-2 pointer-events-none"
+                    >
+                        <div className="pointer-events-auto pt-4 relative">
                             <QuestHeader
                                 selectedDate={selectedDate}
                                 onDateChange={(d) => {
@@ -231,9 +219,11 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                                 setActiveCat={setActiveCat}
                                 activeTab={activeTab}
                                 setActiveTab={setActiveTab}
+                                viewingLocation={viewingLocation}
+                                setViewingLocation={setViewingLocation}
                             />
-                        </motion.div>
-                    </div>
+                        </div>
+                    </motion.div>
 
                     {activeTab === 'CANON' && (
                         <div className="px-4 md:px-8 pt-4 md:pt-8 animate-in fade-in duration-500">
@@ -245,6 +235,11 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                                 ) : quests.filter(q => {
                                     if (q.mode !== QuestType.CANON) return false;
                                     if (activeCat !== 'All' && q.category !== activeCat) return false;
+                                    if (viewingLocation !== 'Global') {
+                                        const loc = (q.location || '').toLowerCase();
+                                        const filter = viewingLocation.toLowerCase();
+                                        if (!loc.includes(filter)) return false;
+                                    }
                                     const qDate = new Date(q.start_time);
                                     return qDate.getFullYear() === selectedDate.getFullYear() &&
                                         qDate.getMonth() === selectedDate.getMonth() &&
@@ -253,6 +248,11 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                                     quests.filter(q => {
                                         if (q.mode !== QuestType.CANON) return false;
                                         if (activeCat !== 'All' && q.category !== activeCat) return false;
+                                        if (viewingLocation !== 'Global') {
+                                            const loc = (q.location || '').toLowerCase();
+                                            const filter = viewingLocation.toLowerCase();
+                                            if (!loc.includes(filter)) return false;
+                                        }
                                         const qDate = new Date(q.start_time);
                                         return qDate.getFullYear() === selectedDate.getFullYear() &&
                                             qDate.getMonth() === selectedDate.getMonth() &&
@@ -343,8 +343,10 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                             onQuestCreated={(id, title) => {
                                 setShowCreate(false);
                                 showToast(`Quest "${title}" deployed!`, "success");
+                                // Trigger refresh locally
+                                setLoading(true);
+                                setLocalRefresh(prev => prev + 1);
                             }}
-                        // Force update
                         />
                     )}
                 </AnimatePresence>

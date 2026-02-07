@@ -119,6 +119,9 @@ export const PoweredBy: React.FC = () => {
                     <img
                         src="/assets/landing/partnership_v2.jpg"
                         alt="Partnership Logos"
+                        width={400}
+                        height={144}
+                        loading="lazy"
                         className="h-24 md:h-36 w-auto object-contain rounded-2xl md:rounded-[2rem] transition-all duration-500 hover:scale-105 shadow-[0_0_30px_rgba(30,64,175,0.2)] hover:shadow-[0_0_50px_rgba(30,64,175,0.4)]"
                     />
                 </motion.div>

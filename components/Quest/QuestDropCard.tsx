@@ -63,11 +63,11 @@ const QuestDropCard: React.FC<QuestDropCardProps> = ({ drop, onAccept }) => {
                         </p>
 
                         <div className="space-y-4 bg-white/[0.04] p-5 rounded-3xl border border-white/10 w-full backdrop-blur-md">
-                            <p className="text-[10px] text-white font-black italic underline decoration-primary/30 underline-offset-4 leading-relaxed">
-                                "Would you walk around the planet for $1B?"
+                            <p className="text-[10px] text-white font-black underline decoration-primary/30 underline-offset-4 leading-relaxed">
+                                "Would you walk around the planet for ₱1B?"
                             </p>
                             <div className="h-[1px] w-6 bg-white/10 mx-auto" />
-                            <p className="text-[10px] text-white font-black italic underline decoration-primary/30 underline-offset-4 leading-relaxed">
+                            <p className="text-[10px] text-white font-black underline decoration-primary/30 underline-offset-4 leading-relaxed">
                                 "Swim across the school pool with your uniform on for ₱500!"
                             </p>
                         </div>
@@ -129,7 +129,7 @@ const QuestDropCard: React.FC<QuestDropCardProps> = ({ drop, onAccept }) => {
                 {/* Content */}
                 <div className="flex-1 flex flex-col justify-center">
                     <div className="space-y-4">
-                        <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white leading-tight">
+                        <h2 className="text-2xl font-black uppercase tracking-tighter text-white leading-tight">
                             {drop.title}
                         </h2>
                         <p className="text-[11px] text-gray-400 font-medium leading-relaxed opacity-80 mb-6">
@@ -143,7 +143,7 @@ const QuestDropCard: React.FC<QuestDropCardProps> = ({ drop, onAccept }) => {
                             <span className="text-[7px] font-black uppercase tracking-widest text-gray-500 mb-1">Grant Pool</span>
                             <div className="flex items-center gap-2">
                                 <CreditCard size={12} className="text-primary" />
-                                <span className="text-lg font-black italic tracking-tighter text-white">{drop.reward}</span>
+                                <span className="text-lg font-black tracking-tighter text-white">{drop.reward}</span>
                             </div>
                         </div>
                         <div className="flex flex-col items-end">
@@ -157,7 +157,7 @@ const QuestDropCard: React.FC<QuestDropCardProps> = ({ drop, onAccept }) => {
                         <GradientButton
                             onClick={() => onAccept(drop)}
                             fullWidth
-                            className="h-14 font-black italic uppercase tracking-[0.2em] text-[10px] gap-3"
+                            className="h-14 font-black uppercase tracking-[0.2em] text-[10px] gap-3"
                         >
                             Secure Drop <ArrowRight size={16} />
                         </GradientButton>

@@ -2,8 +2,10 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import BookScreen from '../components/BookScreen';
 import { useNavigate } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export const BookPage: React.FC = () => {
+    useDocumentTitle('Dibs');
     const { user } = useAuth();
     const navigate = useNavigate();
 

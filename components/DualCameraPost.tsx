@@ -112,7 +112,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
             ctx.shadowColor = 'rgba(0,0,0,0.5)';
             ctx.shadowBlur = 10 * scaleFactor;
             ctx.fillStyle = '#2DD4BF'; // Brand Primary
-            ctx.font = `italic black ${Math.round(24 * scaleFactor)}px Inter, sans-serif`;
+            ctx.font = `black ${Math.round(24 * scaleFactor)}px Inter, sans-serif`;
             ctx.textAlign = 'center';
             const watermarkY = canvas.height - (30 * scaleFactor);
             ctx.fillText('Be4L', canvas.width / 2, watermarkY);
@@ -242,7 +242,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                             </div>
                         )}
                         <div className="flex items-center">
-                            <p className="font-black italic text-[13px] mr-1 cursor-pointer hover:underline" onClick={(e) => { e.stopPropagation(); capture.user && onUserClick?.(capture.user); }}>
+                            <p className="font-black text-[13px] mr-1 cursor-pointer hover:underline" onClick={(e) => { e.stopPropagation(); capture.user && onUserClick?.(capture.user); }}>
                                 <span className="animate-liquid-text">
                                     {capture.user?.username || 'Unknown User'}
                                 </span>
@@ -268,7 +268,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                 {isEditingCaption ? (
                     <input autoFocus value={captionText} onChange={(e) => setCaptionText(e.target.value)} onBlur={saveCaption} onKeyDown={(e) => e.key === 'Enter' && saveCaption()} className="w-full bg-white/5 border border-primary/30 rounded-xl px-3 py-2 text-sm text-white outline-none" />
                 ) : (
-                    <p className="text-white text-sm font-bold" onClick={() => isOwnPost && setIsEditingCaption(true)}>{captionText || <span className="text-gray-600 italic text-xs">Add a caption...</span>}</p>
+                    <p className="text-white text-sm font-bold" onClick={() => isOwnPost && setIsEditingCaption(true)}>{captionText || <span className="text-gray-600 text-xs">Add a caption...</span>}</p>
                 )}
             </div>
 
@@ -473,7 +473,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                             <div className="w-16 h-16 rounded-3xl bg-red-500/10 flex items-center justify-center mb-6">
                                 <Trash2 size={32} className="text-red-500" />
                             </div>
-                            <h3 className="text-white font-black text-xl uppercase tracking-tighter mb-8 italic">
+                            <h3 className="text-white font-black text-xl uppercase tracking-tighter mb-8">
                                 Delete Memory?
                             </h3>
                             <div className="flex w-full gap-3">
@@ -501,7 +501,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                 <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-end animate-in fade-in duration-300">
                     <div className="w-full bg-card rounded-t-[32px] border-t border-white/10 p-6 pb-12 animate-in slide-in-from-bottom duration-500">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-white font-black uppercase text-lg tracking-tight italic">Tag Friends</h3>
+                            <h3 className="text-white font-black uppercase text-lg tracking-tight">Tag Friends</h3>
                             <button onClick={() => setShowTaggingModal(false)} className="p-2 bg-white/5 rounded-full text-white"><X size={20} /></button>
                         </div>
                         <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-3 mb-6">

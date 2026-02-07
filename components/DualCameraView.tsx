@@ -313,7 +313,7 @@ const DualCameraView: React.FC<DualCameraViewProps> = ({
                         <EyeOff size={48} className="text-primary" />
                     </div>
 
-                    <h2 className="text-xl font-black italic text-white mb-2 leading-tight tracking-tighter drop-shadow-lg uppercase">
+                    <h2 className="text-xl font-black text-white mb-2 leading-tight tracking-tighter drop-shadow-lg uppercase">
                         Lore Locked
                     </h2>
                     <p className="text-white/70 text-[11px] font-bold mb-8 max-w-[240px] text-center drop-shadow-md tracking-wide">

@@ -4,30 +4,43 @@ import { useAuth } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Trophy, Zap, Target, Star, LayoutGrid, Sparkles, ChevronRight, Users, ArrowRight, Send } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { MOCK_QUESTS } from '../constants';
 import QuestCard from './QuestCard';
 import DibsItemCard from './DibsItemCard';
 import DibsCard, { Operator } from './DibsCard';
 import { PhoneShowcaseSection } from './Landing/PhoneShowcaseSection';
+import { useScrollBehavior } from '../hooks/useScrollBehavior';
 
 export const HomePage: React.FC = () => {
+    useDocumentTitle('Home');
     const { user } = useAuth();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const { handleScroll } = useScrollBehavior();
 
     const [brands, setBrands] = useState<any[]>([]);
     const [discoveryItems, setDiscoveryItems] = useState<any[]>([]);
+    const [discoveryQuests, setDiscoveryQuests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadHomePageData = async () => {
             setLoading(true);
             try {
-                const [opData, itemData] = await Promise.all([
+                const [opData, itemData, questData] = await Promise.all([
                     supabaseService.dibs.getOperators(),
-                    supabaseService.dibs.getAllItems()
+                    supabaseService.dibs.getAllItems(),
+                    supabaseService.quests.getQuests()
                 ]);
+
+                if (questData) {
+                    setDiscoveryQuests(questData.slice(0, 10));
+                } else {
+                    setDiscoveryQuests(MOCK_QUESTS.slice(0, 5));
+                }
+
                 if (opData) {
                     // Match BookScreen filtering: only venue and event
                     const filteredOps = opData.filter((op: any) =>
@@ -47,15 +60,14 @@ export const HomePage: React.FC = () => {
                 }
             } catch (err) {
                 console.error("Home feed load failed", err);
+                setDiscoveryQuests(MOCK_QUESTS.slice(0, 5));
             }
             setLoading(false);
         };
         loadHomePageData();
     }, []);
 
-    const discoveryQuests = MOCK_QUESTS.slice(0, 11);
-
-    const displayName = user?.username || user?.email?.split('@')[0] || 'Friend';
+    const displayName = user?.name || user?.username || user?.email?.split('@')[0] || 'Friend';
 
     const [feedback, setFeedback] = useState('');
     const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
@@ -74,7 +86,9 @@ export const HomePage: React.FC = () => {
     if (!user) return null;
 
     return (
-        <div className="flex-1 h-full relative overflow-y-auto no-scrollbar bg-deep-black pb-0 pt-24">
+        <div onScroll={handleScroll} className="flex-1 h-full relative overflow-y-auto no-scrollbar bg-deep-black pb-0">
+            {/* Header Spacer for Floating Nav - Increased to 80px for Hero Breathing Room */}
+            <div className="h-[80px] w-full shrink-0" />
 
             {/* Header / Aura Toggle */}
             <div className="px-6 mb-12">
@@ -82,7 +96,7 @@ export const HomePage: React.FC = () => {
                     <motion.h1
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="text-4xl md:text-5xl font-black font-fui text-white italic pr-12"
+                        className="text-4xl md:text-5xl font-black font-fui text-white pr-12"
                     >
                         What's the plan, <span className="animate-liquid-text">{displayName}</span>?
                     </motion.h1>

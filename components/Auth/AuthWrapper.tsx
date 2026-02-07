@@ -38,14 +38,21 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children 
                 }
 
                 // If real session, logic continues...
-                // ... (Existing logic but wrapped in a helper function to avoid code dup)
-                const { data: profile } = await supabase
+                const { data: profile, error: profileError } = await supabase
                     .from('profiles')
                     .select('*')
                     .eq('id', session.user.id)
                     .single();
 
-                if (profile) processUserLogic(profile);
+                if (profile) {
+                    processUserLogic(profile);
+                } else {
+                    // SESSION EXISTS but NO PROFILE -> Must be new user
+                    if (location.pathname !== '/onboarding') {
+                        navigate('/onboarding');
+                    }
+                    setIsVerifying(false);
+                }
 
             } catch (error) {
                 console.error('Auth Check Error:', error);
@@ -57,8 +64,8 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children 
             // Logic Tree
             // 1. Operator Logic
             if (profile.is_operator) {
-                // If it's a MOCK user, we skip Supabase check for operator status
-                if (profile.id.startsWith('op')) { // Mock ID convention
+                // If it's a MOCK user (non-UUID), we skip Supabase check for operator status
+                if (!profile.id.includes('-')) {
                     if (!location.pathname.startsWith('/app')) navigate('/app/home');
                     setIsVerifying(false);
                     return;
@@ -88,7 +95,7 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children 
             }
 
             // 3. Regular User Logic
-            if (!profile.username) {
+            if (!profile.onboarding_completed) {
                 // New User -> Onboarding
                 if (location.pathname !== '/onboarding') {
                     navigate('/onboarding');

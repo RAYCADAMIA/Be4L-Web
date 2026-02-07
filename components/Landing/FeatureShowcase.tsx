@@ -133,6 +133,10 @@ const FeatureBlock: React.FC<{ feature: typeof FEATURES[0], index: number }> = (
                         <img
                             src={feature.image3d}
                             alt={feature.title}
+                            width={800}
+                            height={800}
+                            loading="lazy"
+                            decoding="async"
                             className="w-full h-full object-contain filter drop-shadow-[0_0_80px_rgba(255,255,255,0.05)]"
                         />
                     </motion.div>

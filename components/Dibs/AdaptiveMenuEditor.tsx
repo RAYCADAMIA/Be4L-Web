@@ -61,7 +61,7 @@ const AdaptiveMenuEditor: React.FC<AdaptiveMenuEditorProps> = ({ operatorType })
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h3 className="text-xl font-black italic text-white">
+                    <h3 className="text-xl font-black text-white">
                         {operatorType === 'venue' ? 'VENUE MANAGEMENT' : 'EVENT TICKETS'}
                     </h3>
                     <p className="text-xs text-gray-500 uppercase tracking-widest">

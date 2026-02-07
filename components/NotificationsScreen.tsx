@@ -46,7 +46,7 @@ const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onClose, onOp
             <div className="sticky top-0 z-30 bg-deep-black/95 backdrop-blur-md px-4 pt-[15px] pb-3 border-b border-transparent flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <button onClick={onClose} className="p-1 -ml-1 text-gray-400 hover:text-white"><ChevronLeft /></button>
-                    <h2 className="text-xl font-black text-white italic tracking-tight">NOTIFICATIONS</h2>
+                    <h2 className="text-xl font-black text-white tracking-tight">NOTIFICATIONS</h2>
                 </div>
                 <button className="text-[10px] font-bold text-gray-500 uppercase hover:text-white">Mark all read</button>
             </div>

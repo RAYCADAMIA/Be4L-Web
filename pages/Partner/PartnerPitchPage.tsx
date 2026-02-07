@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Starfield, HUDMenu } from '../../components/Landing/LandingComponents';
 import { useNavigate } from 'react-router-dom';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import {
     Zap,
     Users,
@@ -18,6 +19,7 @@ import {
 
 export const PartnerPitchPage: React.FC = () => {
     const navigate = useNavigate();
+    useDocumentTitle('For Partners');
 
     const sections = [
         {
@@ -121,7 +123,7 @@ export const PartnerPitchPage: React.FC = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20" />
                         <div className="absolute bottom-12 left-12 right-12 flex justify-between items-end">
                             <div className="space-y-2">
-                                <h2 className="text-4xl font-black italic tracking-tighter uppercase animate-liquid-text">Vibrant Community.</h2>
+                                <h2 className="text-4xl font-black tracking-tighter uppercase animate-liquid-text">Vibrant Community.</h2>
                                 <p className="text-cool-grey font-bold uppercase tracking-widest text-xs">Real-world engagement at its peak.</p>
                             </div>
                             <div className="hidden md:flex gap-4">
@@ -172,7 +174,7 @@ export const PartnerPitchPage: React.FC = () => {
                                             <Zap className="text-electric-teal" size={18} />
                                             The Operator Alpha
                                         </div>
-                                        <p className="text-base text-cool-grey italic font-sans pr-12 relative z-10">
+                                        <p className="text-base text-cool-grey font-sans pr-12 relative z-10">
                                             "{section.example}"
                                         </p>
                                     </div>
@@ -255,7 +257,7 @@ export const PartnerPitchPage: React.FC = () => {
                                 <span className="text-white">PILOT QUEST.</span>
                             </h2>
                             <p className="text-xl md:text-2xl text-cool-grey max-w-3xl mx-auto font-medium font-sans mt-8">
-                                We are currently looking for the <span className="text-white font-black italic">first few partners</span> on each category for pilot testing only.
+                                We are currently looking for the <span className="text-white font-black">first few partners</span> on each category for pilot testing only.
                                 Secure your spot as a pioneer in the Be4L ecosystem.
                             </p>
                         </div>

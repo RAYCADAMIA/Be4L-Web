@@ -58,7 +58,7 @@ const PostCard: React.FC<PostCardProps> = ({ capture, onClick }) => {
                         </div>
                     </div>
                     <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">
-                        {new Date(capture.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                        {capture.created_at ? new Date(capture.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Recently'}
                     </span>
                 </div>
             </div>

@@ -34,7 +34,7 @@ export const RouteErrorBoundary: React.FC = () => {
                     <AlertCircle size={40} className="text-red-500 animate-pulse" />
                 </div>
 
-                <h1 className="text-4xl font-black italic tracking-tighter mb-4 text-white">
+                <h1 className="text-4xl font-black tracking-tighter mb-4 text-white">
                     SYSTEM <span className="text-red-500">GLITCH</span>
                 </h1>
 

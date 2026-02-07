@@ -47,7 +47,7 @@ const OperatorCard: React.FC<Props> = ({ operator, onClick }) => {
                     </div>
 
                     <div className="flex-1 pb-0.5 md:pb-1">
-                        <h3 className="text-sm md:text-xl font-black italic text-white uppercase tracking-tighter leading-none mb-0.5 md:mb-1 shadow-black drop-shadow-md truncate">
+                        <h3 className="text-sm md:text-xl font-black text-white uppercase tracking-tighter leading-none mb-0.5 md:mb-1 shadow-black drop-shadow-md truncate">
                             {operator.business_name}
                         </h3>
                         {operator.is_verified && (

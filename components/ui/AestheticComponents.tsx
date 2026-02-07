@@ -91,7 +91,7 @@ export const GlowText: React.FC<{ children: React.ReactNode; className?: string;
     const isLiquid = liquid || size === 'lg' || size === 'xl';
 
     return (
-        <h1 className={`font-black italic drop-shadow-[0_0_12px_rgba(255,255,255,0.2)] ${sizes[size]} ${isLiquid ? 'animate-liquid-text' : 'text-white'} ${className}`}>
+        <h1 className={`font-black drop-shadow-[0_0_12px_rgba(255,255,255,0.2)] ${sizes[size]} ${isLiquid ? 'animate-liquid-text' : 'text-white'} ${className}`}>
             {children}
         </h1>
     );
@@ -116,7 +116,7 @@ export const FeedPlaceholder: React.FC<{
                 </div>
             </div>
             <div className="space-y-2">
-                <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter leading-none">{title}</h3>
+                <h3 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">{title}</h3>
                 <p className="text-xs text-gray-500 max-w-[200px] leading-relaxed font-medium uppercase tracking-widest">{description}</p>
             </div>
             {buttonLabel && onAction && (
@@ -156,7 +156,7 @@ export const EKGLoader: React.FC<{ size?: number; color?: string; isFlatline?: b
                 />
             </svg>
             {showLabel && false && (
-                <span className={`text-[9px] font-black uppercase tracking-[0.4em] animate-pulse italic ${isFlatline ? 'text-red-500' : 'text-primary'}`}>
+                <span className={`text-[9px] font-black uppercase tracking-[0.4em] animate-pulse ${isFlatline ? 'text-red-500' : 'text-primary'}`}>
                     {isFlatline ? 'Critical Lore' : 'Syncing Vitals...'}
                 </span>
             )}
@@ -289,7 +289,7 @@ export const MissionCalendarModal: React.FC<{
                 <div className="p-6 border-b border-white/5 flex items-center justify-between">
                     <div>
                         <h3 className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">Temporal Map</h3>
-                        <p className="text-white text-xl font-black italic tracking-tighter">
+                        <p className="text-white text-xl font-black tracking-tighter">
                             {viewDate.toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase()}
                         </p>
                     </div>

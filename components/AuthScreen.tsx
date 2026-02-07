@@ -4,8 +4,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabaseService } from '../services/supabaseService';
 import { MOCK_USER, MOCK_OPERATOR, MOCK_ADMIN } from '../constants';
 import { User as UserType } from '../types';
-import { ArrowRight, Loader2, Mail, Lock, X, Github, Chrome, User, Terminal } from 'lucide-react';
+import { ArrowRight, Loader2, Mail, Lock, X, Github, Chrome, User, Terminal, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AccountRecoveryModal } from './AccountRecoveryModal';
 
 interface AuthScreenProps {
     onClose: () => void;
@@ -18,8 +19,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onClose }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showRecovery, setShowRecovery] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,7 +31,20 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onClose }) => {
 
         try {
             if (isLogin) {
-                const result = await supabaseService.auth.signInWithEmail(email, password);
+                // Determine if input is email or username
+                let loginEmail = email;
+                if (!email.includes('@')) {
+                    // Assume username - try to resolve to email
+                    const resolvedEmail = await supabaseService.auth.getEmailByUsername(email);
+                    if (!resolvedEmail) {
+                        setError('Username not found');
+                        setLoading(false);
+                        return;
+                    }
+                    loginEmail = resolvedEmail;
+                }
+
+                const result = await supabaseService.auth.signInWithEmail(loginEmail, password);
                 if (result) {
                     login(result);
                     onClose();
@@ -92,6 +108,22 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onClose }) => {
         } else {
             navigate('/app/home');
         }
+    };
+
+    const handleGuestLogin = () => {
+        const randomId = Math.floor(1000 + Math.random() * 9000);
+        const guestUser: UserType = {
+            ...MOCK_USER,
+            id: `guest_${randomId}`,
+            name: 'Guest',
+            username: `guest${randomId}`,
+            handle: `@guest${randomId}`,
+            onboarding_completed: true,
+            is_new_user: false // Force established state
+        };
+        login(guestUser);
+        onClose();
+        navigate('/app/home');
     };
 
     return (
@@ -206,7 +238,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onClose }) => {
                                         {isLogin ? 'Log in to continue' : 'Join the giant friend group'}
                                     </p>
                                     {!isLogin && (
-                                        <p className="text-electric-teal/60 font-medium text-[9px] uppercase tracking-widest italic animate-pulse">
+                                        <p className="text-electric-teal/60 font-medium text-[9px] uppercase tracking-widest animate-pulse">
                                             Experience more, worry less. ✦
                                         </p>
                                     )}
@@ -244,7 +276,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onClose }) => {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="w-full pl-12 pr-4 py-3 bg-white/5 border border-transparent rounded-full text-white placeholder-white/10 text-xs font-medium focus:bg-white/10 focus:border-electric-teal/30 transition-all outline-none"
-                                        placeholder="EMAIL"
+                                        placeholder={isLogin ? "USERNAME OR EMAIL" : "EMAIL"}
+                                        aria-label="Email or Username"
                                         required
                                     />
                                 </motion.div>
@@ -259,14 +292,41 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onClose }) => {
                                         <Lock size={14} />
                                     </div>
                                     <input
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-transparent rounded-full text-white placeholder-white/10 text-xs font-medium focus:bg-white/10 focus:border-electric-teal/30 transition-all outline-none"
+                                        className="w-full pl-12 pr-12 py-3 bg-white/5 border border-transparent rounded-full text-white placeholder-white/10 text-xs font-medium focus:bg-white/10 focus:border-electric-teal/30 transition-all outline-none"
                                         placeholder="PASSWORD"
+                                        aria-label="Password"
                                         required
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                                    </button>
                                 </motion.div>
+
+                                <AnimatePresence>
+                                    {isLogin && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="text-right"
+                                        >
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowRecovery(true)}
+                                                className="text-[9px] font-bold text-white/30 hover:text-white uppercase tracking-widest transition-colors"
+                                            >
+                                                Forgot Password?
+                                            </button>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
 
                                 <AnimatePresence>
                                     {!isLogin && (
@@ -285,6 +345,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onClose }) => {
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                                 className="w-full pl-12 pr-4 py-3 bg-white/5 border border-transparent rounded-full text-white placeholder-white/10 text-xs font-medium focus:bg-white/10 focus:border-electric-teal/30 transition-all outline-none"
                                                 placeholder="CONFIRM PASSWORD"
+                                                aria-label="Confirm Password"
                                                 required={!isLogin}
                                             />
                                         </motion.div>
@@ -323,10 +384,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onClose }) => {
                                 </button>
 
                                 <button
-                                    onClick={() => handleDevLogin(MOCK_USER)}
+                                    onClick={handleGuestLogin}
                                     className="w-full py-3 bg-electric-teal/5 border border-electric-teal/10 rounded-full hover:bg-electric-teal/10 transition-all flex items-center justify-center gap-2 text-electric-teal text-[9px] uppercase font-black tracking-widest mt-1"
                                 >
-                                    Preview as guest to explore <span className="animate-liquid-text ml-1">Be4L</span>
+                                    Preview as guest to explore <span className="animate-liquid-text ml-1 normal-case">Be4L</span>
                                 </button>
 
                                 {!isLogin && (
@@ -374,6 +435,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onClose }) => {
                 {/* Close Button Interactions */}
                 <button
                     onClick={onClose}
+                    aria-label="Close"
                     className="absolute top-4 right-4 lg:hidden p-3 text-white/30 hover:text-white hover:bg-white/10 rounded-full transition-all"
                 >
                     <X size={24} />
@@ -382,11 +444,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onClose }) => {
                 {/* Desktop Close Button */}
                 <button
                     onClick={onClose}
+                    aria-label="Close"
                     className="hidden lg:block absolute -top-8 -right-8 p-3 text-white/30 hover:text-white hover:bg-white/10 rounded-full transition-all"
                 >
                     <X size={24} />
                 </button>
             </div>
+            <AccountRecoveryModal isOpen={showRecovery} onClose={() => setShowRecovery(false)} />
         </div>
     );
 };

@@ -53,14 +53,11 @@ export const DesktopSidebar: React.FC = () => {
                                     size={14}
                                     strokeWidth={2.5}
                                     className="relative z-10 md:w-4 md:h-4"
-                                    style={{ filter: isActive ? 'drop-shadow(0 0 5px rgba(204,255,0,0.5))' : 'none' }}
                                 />
                             )}
 
                             {/* Label */}
-                            <span className={`relative z-10 text-[7px] md:text-[6px] font-black uppercase tracking-[0.15em] whitespace-nowrap ${isActive ? 'text-primary md:text-white' : 'md:text-gray-500'}`} style={{
-                                textShadow: isActive ? '0 0 12px rgba(204,255,0,0.8)' : 'none'
-                            }}>
+                            <span className={`relative z-10 text-[7px] md:text-[6px] font-black uppercase tracking-[0.15em] whitespace-nowrap ${isActive ? 'text-primary md:text-white' : 'md:text-gray-500'}`}>
                                 {tab.label}
                             </span>
 
@@ -68,8 +65,8 @@ export const DesktopSidebar: React.FC = () => {
                             {isActive && (
                                 <motion.div
                                     layoutId="sidebarActivePill"
-                                    className="absolute inset-0 bg-white/10 rounded-full md:rounded-xl border border-white/20 -z-0 shadow-[0_0_20px_rgba(204,255,0,0.1)]"
-                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                    className="absolute inset-0 bg-white/10 rounded-full md:rounded-xl border border-white/20 -z-0"
+                                    transition={{ type: "spring", bounce: 0, duration: 0.4 }}
                                 />
                             )}
                         </button>

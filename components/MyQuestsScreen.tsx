@@ -5,6 +5,7 @@ import { Quest, QuestStatus, User } from '../types';
 import { MOCK_USER } from '../constants';
 import QuestCard from './QuestCard';
 import { supabaseService } from '../services/supabaseService';
+import { HeartbeatLoader } from './HeartbeatLoader';
 
 interface MyQuestsScreenProps {
     onBack: () => void;
@@ -75,7 +76,7 @@ const MyQuestsScreen: React.FC<MyQuestsScreenProps> = ({ onBack, onOpenQuest, cu
                 <button onClick={onBack} className="w-10 h-10 rounded-full bg-surface border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors">
                     <ArrowLeft size={20} />
                 </button>
-                <h1 className="text-2xl font-black italic text-white uppercase tracking-tighter">My Quests</h1>
+                <h1 className="text-2xl font-black text-white uppercase tracking-tighter">My Quests</h1>
             </div>
 
             {/* Tabs */}
@@ -99,9 +100,7 @@ const MyQuestsScreen: React.FC<MyQuestsScreenProps> = ({ onBack, onOpenQuest, cu
             {/* Content List */}
             <div className="flex-1 overflow-y-auto px-4 pb-14">
                 {loading ? (
-                    <div className="flex items-center justify-center h-40 text-gray-500 text-xs uppercase font-bold tracking-widest">
-                        Loading...
-                    </div>
+                    <HeartbeatLoader />
                 ) : sortedQuests.length > 0 ? (
                     sortedQuests.map(q => (
                         <QuestCard

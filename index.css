@@ -505,7 +505,6 @@ select {
   display: inline-block;
   vertical-align: baseline;
   animation: liquid-text-flow 6s linear infinite;
-  filter: drop-shadow(0 0 8px rgba(45, 212, 191, 0.2));
   padding-right: 0.2em;
   /* Fixes ending letter cutoff */
 }

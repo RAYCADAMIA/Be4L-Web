@@ -16,14 +16,24 @@ export const GlobalHeader: React.FC = () => {
 
     if (!user) return null;
 
+    const isChatDetail = location.pathname.startsWith('/app/chat') && new URLSearchParams(location.search).has('id');
+    const isMobile = window.innerWidth < 768; // Simple mobile check
+
     return (
-        <>
+        <div className="relative">
             <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 pointer-events-none">
 
                 {/* 1. Floating Logo (Left) + Search */}
-                <div className="pointer-events-auto flex items-center gap-3">
+                <div className={`pointer-events-auto flex items-center gap-3 transition-all duration-500 ${isChatDetail && isMobile ? 'opacity-0 -translate-y-4 scale-95 pointer-events-none' : 'opacity-100'}`}>
                     <button
-                        onClick={() => navigate('/app/home')}
+                        onClick={() => {
+                            if (location.pathname === '/app/home' || location.pathname === '/app/quests') {
+                                // Find any scrollable containers and reset them
+                                const scrollers = document.querySelectorAll('.overflow-y-auto');
+                                scrollers.forEach(s => s.scrollTo({ top: 0, behavior: 'smooth' }));
+                            }
+                            navigate('/app/home');
+                        }}
                         className="focus:outline-none shrink-0"
                     >
                         <div className="flex items-center gap-2">
@@ -33,7 +43,7 @@ export const GlobalHeader: React.FC = () => {
                         </div>
                     </button>
 
-                    {!isSearchOpen && (
+                    {!isSearchOpen && !location.pathname.startsWith('/app/chat') && (
                         <div className="flex sm:hidden relative items-center ml-2">
                             <button
                                 onClick={() => {
@@ -55,11 +65,11 @@ export const GlobalHeader: React.FC = () => {
                         />
                     )}
 
-                    <div className={`${isSearchOpen ? 'flex absolute left-[70px] right-[60px] top-1/2 -translate-y-1/2 z-50' : 'hidden sm:flex'} items-center h-[40px] sm:h-[52px]`}>
+                    <div className={`${isSearchOpen ? 'flex absolute left-[70px] top-1/2 -translate-y-1/2 z-50' : 'hidden sm:flex'} items-center h-[40px] sm:h-[52px]`}>
                         <motion.div
                             initial={false}
                             animate={{
-                                width: '100%',
+                                width: isSearchOpen ? '260px' : '100%',
                             }}
                             className={`flex items-center h-full sm:h-[52px] w-full overflow-hidden transition-all duration-300 ${isSearchOpen ? 'bg-white/[0.08] backdrop-blur-3xl border border-white/10 rounded-full p-1 pr-3 shadow-xl' : 'sm:w-[52px]'}`}
                         >
@@ -138,42 +148,32 @@ export const GlobalHeader: React.FC = () => {
                 </div>
 
                 {/* 3. Floating Control Pill (Right) */}
-                <div className="pointer-events-auto">
+                <div className={`pointer-events-auto transition-all duration-500 ${isChatDetail && isMobile ? 'opacity-0 translate-y-4 scale-95 pointer-events-none' : 'opacity-100'}`}>
                     <nav className="flex items-center gap-1 h-[52px] p-1.5 bg-white/[0.08] backdrop-blur-3xl border border-white/10 rounded-full shadow-lg transition-all hover:border-white/20">
-                        {/* Quick Actions - Desktop View */}
-                        <div className="hidden md:flex items-center gap-0.5">
-                            <button className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label="Tasks">
+                        {/* Control Icons - Now visible on both Mobile & Desktop */}
+                        <div className="flex items-center gap-0.5">
+                            <button className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-colors" aria-label="Tasks">
                                 <CheckSquare size={18} strokeWidth={2.5} />
                             </button>
 
-                            <button className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-gray-500 hover:text-white transition-colors relative" aria-label="Notifications">
+                            <button className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-colors relative" aria-label="Notifications">
                                 <Bell size={18} strokeWidth={2.5} />
-                                <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-primary rounded-full border border-[#0F0F11]" />
-                            </button>
-                        </div>
-
-                        {/* Hamburger Menu Toggle - Mobile View */}
-                        <div className="flex md:hidden items-center">
-                            <button
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isMenuOpen ? 'bg-primary text-black' : 'hover:bg-white/5 text-gray-400 hover:text-white'}`}
-                            >
-                                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                                <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-primary rounded-full border border-black" />
                             </button>
                         </div>
 
                         {/* User Profile */}
-                        <div className="pl-1 pr-1">
+                        <div className="flex items-center pl-1 pr-1">
                             <button
                                 onClick={() => navigate('/app/myprofile')}
-                                className="w-10 h-10 rounded-full overflow-hidden border border-white/10 hover:border-primary transition-all relative group"
+                                className="w-9 h-9 rounded-full overflow-hidden border border-white/10 hover:border-primary transition-all relative group flex items-center justify-center"
                             >
                                 <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
                                 {user.avatar_url ? (
                                     <img src={user.avatar_url} className="w-full h-full object-cover" alt="User" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-surface">
-                                        <User size={16} className="text-gray-500" />
+                                    <div className="w-full h-full flex items-center justify-center bg-zinc-900">
+                                        <User size={14} className="text-gray-500" />
                                     </div>
                                 )}
                             </button>
@@ -181,36 +181,8 @@ export const GlobalHeader: React.FC = () => {
                     </nav>
                 </div>
 
-                {/* Mobile Dropdown Menu */}
-                <AnimatePresence>
-                    {isMenuOpen && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: -20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                            className="absolute top-24 right-4 md:right-8 z-[100] w-64 p-2 bg-white/[0.08] backdrop-blur-3xl border border-white/10 rounded-[2rem] shadow-2xl pointer-events-auto"
-                        >
-                            <div className="flex flex-col gap-1">
-                                <button className="flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-white/5 text-gray-300 hover:text-white transition-all group">
-                                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary/20 group-hover:text-primary transition-colors">
-                                        <CheckSquare size={18} strokeWidth={2.5} />
-                                    </div>
-                                    <span className="text-xs font-black uppercase tracking-widest">Tasks Hub</span>
-                                </button>
-                                <button className="flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-white/5 text-gray-300 hover:text-white transition-all group">
-                                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary/20 group-hover:text-primary transition-colors relative">
-                                        <Bell size={18} strokeWidth={2.5} />
-                                        <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-primary rounded-full" />
-                                    </div>
-                                    <span className="text-xs font-black uppercase tracking-widest">Notifications</span>
-                                </button>
-                                <div className="h-[1px] bg-white/5 my-1 mx-4" />
-                                {/* Removed Mobile Create Button */}
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+
             </header >
-        </>
+        </div >
     );
 };

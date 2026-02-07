@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { HUDMenu, Starfield } from '../components/Landing/LandingComponents';
 import { ChevronLeft, Send, Sparkles, Heart, Zap, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export const TeamPage: React.FC = () => {
     const navigate = useNavigate();
+    useDocumentTitle('Team');
     const [scrolled, setScrolled] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [formData, setFormData] = useState({
@@ -70,7 +72,7 @@ export const TeamPage: React.FC = () => {
                             transition={{ delay: 0.2 }}
                             className="text-lg md:text-2xl text-cool-grey font-medium max-w-2xl font-sans"
                         >
-                            We don't want employees. We want <span className="text-white italic">dreamers</span>, <span className="text-white">action-takers</span>, and people who are unapologetically passionate about life.
+                            We don't want employees. We want <span className="text-white">dreamers</span>, <span className="text-white">action-takers</span>, and people who are unapologetically passionate about life.
                         </motion.p>
                     </div>
 

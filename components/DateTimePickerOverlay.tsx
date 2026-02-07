@@ -89,7 +89,7 @@ export const CustomDatePicker: React.FC<DatePickerProps> = ({ value, onChange, o
                 <div className="absolute top-0 left-0 right-0 h-32 bg-primary/5 blur-3xl rounded-full pointer-events-none" />
 
                 <div className="flex justify-between items-center mb-6 relative z-10">
-                    <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">
+                    <h2 className="text-xl font-black text-white uppercase tracking-tighter">
                         {MONTHS[currentMonth]} <span className="text-primary">{currentYear}</span>
                     </h2>
                     <div className="flex gap-2">
@@ -202,12 +202,12 @@ export const CustomTimePicker: React.FC<TimePickerProps> = ({ value, onChange, o
                 <div className="absolute top-0 left-0 right-0 h-32 bg-primary/5 blur-3xl pointer-events-none" />
 
                 <div className="text-center mb-8 relative z-10">
-                    <h2 className="text-xl font-black text-white uppercase italic tracking-tighter mb-6">Set Mission Time</h2>
+                    <h2 className="text-xl font-black text-white uppercase tracking-tighter mb-6">Set Mission Time</h2>
                     <div className="flex items-center justify-center gap-2 bg-white/5 rounded-3xl py-6 border border-white/5">
                         <span className="text-5xl font-black text-white tracking-tighter w-16 text-center">{hour12}</span>
                         <span className="text-5xl font-black text-white/20 tracking-tighter animate-pulse">:</span>
                         <span className="text-5xl font-black text-white tracking-tighter w-16 text-center">{minute.toString().padStart(2, '0')}</span>
-                        <span className="text-xl font-black text-primary ml-2 italic">{isPM ? 'PM' : 'AM'}</span>
+                        <span className="text-xl font-black text-primary ml-2">{isPM ? 'PM' : 'AM'}</span>
                     </div>
                 </div>
 

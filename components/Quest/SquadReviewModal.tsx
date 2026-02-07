@@ -83,7 +83,7 @@ const SquadReviewModal: React.FC<SquadReviewModalProps> = ({ participants, curre
 
                 {/* Header */}
                 <div className="text-center space-y-2">
-                    <h1 className="text-4xl font-black italic text-white uppercase tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] animate-pulse">
+                    <h1 className="text-4xl font-black text-white uppercase tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] animate-pulse">
                         Vibe Check
                     </h1>
                     <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">
@@ -143,7 +143,7 @@ const SquadReviewModal: React.FC<SquadReviewModalProps> = ({ participants, curre
                     })}
 
                     {squad.length === 0 && (
-                        <div className="text-center text-gray-500 italic">No other squad members to rate.</div>
+                        <div className="text-center text-gray-500">No other squad members to rate.</div>
                     )}
                 </div>
 

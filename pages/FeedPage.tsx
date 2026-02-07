@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { LoreFeed } from '../components/LoreFeed';
 import { useNavigate } from 'react-router-dom';
+import { HeartbeatLoader } from '../components/HeartbeatLoader';
 
 export const FeedPage: React.FC = () => {
     const { user } = useAuth();
@@ -17,7 +18,7 @@ export const FeedPage: React.FC = () => {
         // ... handle others
     };
 
-    if (!user) return <div>Loading...</div>;
+    if (!user) return <HeartbeatLoader />;
 
     return (
         <LoreFeed

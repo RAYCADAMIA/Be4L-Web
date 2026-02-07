@@ -52,7 +52,7 @@ const OperatorOnboarding: React.FC<Props> = ({ onComplete, onCancel }) => {
                     <div className="space-y-8 animate-in fade-in slide-in-from-right w-full">
                         <div className="text-center">
                             <Store size={48} className="text-electric-teal mx-auto mb-6" />
-                            <h2 className="text-3xl font-black italic text-white uppercase tracking-tighter mb-2">Build Your Shop</h2>
+                            <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Build Your Shop</h2>
                             <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">The Basics</p>
                         </div>
 
@@ -95,7 +95,7 @@ const OperatorOnboarding: React.FC<Props> = ({ onComplete, onCancel }) => {
                     <div className="space-y-8 animate-in fade-in slide-in-from-right w-full">
                         <div className="text-center">
                             <Smartphone size={48} className="text-electric-teal mx-auto mb-6" />
-                            <h2 className="text-3xl font-black italic text-white uppercase tracking-tighter mb-2">Short Bio</h2>
+                            <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Short Bio</h2>
                             <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Tell your story</p>
                         </div>
 
@@ -119,7 +119,7 @@ const OperatorOnboarding: React.FC<Props> = ({ onComplete, onCancel }) => {
                     <div className="space-y-8 animate-in fade-in slide-in-from-right w-full">
                         <div className="text-center">
                             <CreditCard size={48} className="text-electric-teal mx-auto mb-6" />
-                            <h2 className="text-3xl font-black italic text-white uppercase tracking-tighter mb-2">Payment Info</h2>
+                            <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Payment Info</h2>
                             <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Direct GCash Transfers</p>
                         </div>
 
@@ -160,7 +160,7 @@ const OperatorOnboarding: React.FC<Props> = ({ onComplete, onCancel }) => {
                             <CheckCircle size={48} className="text-electric-teal" />
                         </div>
                         <div>
-                            <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter mb-2">You're Live!</h2>
+                            <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-2">You're Live!</h2>
                             <p className="text-xs text-gray-500 leading-relaxed max-w-[240px] mx-auto font-bold tracking-wider">Your shop is now discoverable in the Be4L Marketplace.</p>
                         </div>
 

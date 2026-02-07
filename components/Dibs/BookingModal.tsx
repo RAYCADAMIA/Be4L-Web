@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Minus, Plus, Upload, Check, Copy, AlertCircle, Loader2, Shield, Wallet, Sparkles, Download, Share2, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 // toPng is dynamically imported in handleDownload and handleShare to avoid SSR issues
 import { DibsItem, Operator } from '../../types';
+import SmartMap from '../ui/SmartMap';
 import { GradientButton } from '../ui/AestheticComponents';
 import { supabaseService } from '../../services/supabaseService';
 import MapPicker from '../MapPicker';
 import { MapPin, Navigation } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { ALPHA_EVENT_ID } from '../../constants';
 
 interface BookingModalProps {
     isOpen: boolean;
@@ -62,8 +62,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
     const [isViewingPoster, setIsViewingPoster] = useState(false);
 
     // PRE-LAUNCH LOGIC
-    // Only the ALPHA_EVENT_ID is bookable. All others are restricted.
-    const isRestricted = item.id !== ALPHA_EVENT_ID;
+    // Restrictions removed for generic launch
+    const isRestricted = false;
 
     // Form State
     const [quantity, setQuantity] = useState(1);
@@ -150,6 +150,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
             setSecureId('');
             setSelectedSlots([]);
             setSelectedResourceId(null);
+            setSelectedTierId(null);
             setVerificationResult(null);
             setIsVerifying(false);
             setCurrentImageIndex(0);
@@ -240,18 +241,19 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
     const handleDownload = async () => {
         if (ticketRef.current === null) return;
         try {
-            const { toPng } = await import('html-to-image');
-            const dataUrl = await toPng(ticketRef.current, {
-                quality: 0.95,
-                backgroundColor: '#05050A',
-                style: {
-                    borderRadius: '2rem',
-                }
-            });
-            const link = document.createElement('a');
-            link.download = `Be4LTICKET_${secureId || bookingCode}.png`;
-            link.href = dataUrl;
-            link.click();
+            // const { toPng } = await import('html-to-image');
+            // const dataUrl = await toPng(ticketRef.current, {
+            //     quality: 0.95,
+            //     backgroundColor: '#05050A',
+            //     style: {
+            //         borderRadius: '2rem',
+            //     }
+            // });
+            // const link = document.createElement('a');
+            // link.download = `Be4LTICKET_${secureId || bookingCode}.png`;
+            // link.href = dataUrl; // was dataUrl
+            // link.click();
+            alert('Download disabled temporarily');
         } catch (err) {
             console.error('Download failed', err);
         }
@@ -260,21 +262,22 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
     const handleShare = async () => {
         if (ticketRef.current === null) return;
         try {
-            const { toPng } = await import('html-to-image');
-            const dataUrl = await toPng(ticketRef.current);
-            const blob = await (await fetch(dataUrl)).blob();
-            const file = new File([blob], `BE4L-Booking-${bookingCode}.png`, { type: 'image/png' });
-
-            if (navigator.share) {
-                await navigator.share({
-                    title: 'My Be4L Booking',
-                    text: `Check out my booking: ${bookingCode}`,
-                    files: [file]
-                });
-            } else {
-                handleCopy(bookingCode);
-                alert('Sharing not supported on this browser. Booking code copied to clipboard!');
-            }
+            // const { toPng } = await import('html-to-image');
+            // const dataUrl = await toPng(ticketRef.current);
+            // const blob = await (await fetch(dataUrl)).blob();
+            // const file = new File([blob], `BE4L-Booking-${bookingCode}.png`, { type: 'image/png' });
+            // if (navigator.share) {
+            //     await navigator.share({
+            //         title: 'My Be4L Booking',
+            //         text: `Check out my booking: ${bookingCode}`,
+            //         // files: [file]
+            //     });
+            // } else {
+            //     handleCopy(bookingCode);
+            //     alert('Sharing not supported on this browser. Booking code copied to clipboard!');
+            // }
+            handleCopy(bookingCode);
+            alert('Booking code copied: ' + bookingCode);
         } catch (err) {
             console.error('Share failed', err);
         }
@@ -372,14 +375,14 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                 }
                             `}
                         >
-                            <div className={`relative z-10 ${isBooked ? 'opacity-20 italic' : ''}`}>
+                            <div className={`relative z-10 ${isBooked ? 'opacity-20' : ''}`}>
                                 {time.split(' ')[0]}
                                 <span className="text-[7px] ml-0.5 opacity-50">{time.split(' ')[1]}</span>
                             </div>
 
                             {isBooked && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                                    <span className="text-[7px] font-black text-white/40 tracking-[0.2em] uppercase italic">
+                                    <span className="text-[7px] font-black text-white/40 tracking-[0.2em] uppercase">
                                         DIBBED
                                     </span>
                                 </div>
@@ -424,7 +427,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                             <span className={`text-[8px] font-black uppercase tracking-widest ${isSelected ? 'text-black/60' : 'text-zinc-500'}`}>
                                 {isToday ? 'Today' : d.toLocaleDateString(undefined, { weekday: 'short' })}
                             </span>
-                            <span className={`text-sm font-black italic -mt-0.5 ${isSelected ? 'text-black' : 'text-white'}`}>
+                            <span className={`text-sm font-black -mt-0.5 ${isSelected ? 'text-black' : 'text-white'}`}>
                                 {d.getDate()}
                             </span>
                             {isToday && !isSelected && (
@@ -462,7 +465,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
         return (
             <div className="bg-white/5 border border-white/10 rounded-3xl p-4 shadow-2xl">
                 <div className="flex justify-between items-center mb-4 px-1">
-                    <span className="text-[10px] font-black uppercase text-white italic tracking-widest leading-none">
+                    <span className="text-[10px] font-black uppercase text-white tracking-widest leading-none">
                         {MONTHS[viewMonth]} {viewYear}
                     </span>
                     <div className="flex gap-2">
@@ -724,13 +727,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                     alt={operator.business_name}
                                                                 />
                                                             </div>
-                                                            <span className="text-[10px] font-black italic uppercase tracking-widest bg-gradient-to-r from-electric-teal via-purple-400 to-electric-teal bg-clip-text text-transparent">
+                                                            <span className="text-[10px] font-black uppercase tracking-widest bg-gradient-to-r from-electric-teal via-purple-400 to-electric-teal bg-clip-text text-transparent">
                                                                 {operator.business_name}
                                                             </span>
                                                             {operator.is_verified && <Shield size={10} className="text-electric-teal fill-electric-teal/20" />}
                                                         </div>
 
-                                                        <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-tight mb-3">
+                                                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-tight mb-3">
                                                             {item.title}
                                                         </h2>
 
@@ -740,14 +743,14 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                 <div className="flex items-center gap-3">
                                                                     <div className="flex items-center gap-1.5 text-white/50">
                                                                         <Calendar size={10} className="text-electric-teal" />
-                                                                        <span className="text-[9px] font-bold uppercase italic text-white/80">
+                                                                        <span className="text-[9px] font-bold uppercase text-white/80">
                                                                             {item.event_date ? new Date(item.event_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBA'}
                                                                         </span>
                                                                     </div>
                                                                     <div className="w-1 h-1 rounded-full bg-white/10" />
                                                                     <div className="flex items-center gap-1.5 text-white/50">
                                                                         <Sparkles size={10} className="text-electric-teal" />
-                                                                        <span className="text-[9px] font-bold uppercase italic text-white/80">
+                                                                        <span className="text-[9px] font-bold uppercase text-white/80">
                                                                             {item.event_date ? new Date(item.event_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBA'}
                                                                         </span>
                                                                     </div>
@@ -761,7 +764,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                     </div>
                                                                     <div className="flex items-center gap-1.5 text-white/40">
                                                                         <Sparkles size={10} />
-                                                                        <span className="text-[9px] font-bold uppercase italic text-white/80">
+                                                                        <span className="text-[9px] font-bold uppercase text-white/80">
                                                                             {item.opening_time || '06:00'} - {item.closing_time || '23:00'}
                                                                         </span>
                                                                     </div>
@@ -769,7 +772,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                             )}
                                                             {/* Categories/Types */}
                                                             <div className="flex items-center gap-3">
-                                                                <div className="flex items-center gap-1.5 py-1 px-2 rounded-lg bg-electric-teal/5 border border-white/10 uppercase italic">
+                                                                <div className="flex items-center gap-1.5 py-1 px-2 rounded-lg bg-electric-teal/5 border border-white/10 uppercase">
                                                                     <span className="text-[9px] font-black text-white/50">{item.category}</span>
                                                                 </div>
                                                             </div>
@@ -779,9 +782,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                     {/* Deets Section */}
                                                     {(item.description || operator.bio) && (
                                                         <div className="space-y-2">
-                                                            <label className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1 italic">Deets</label>
+                                                            <label className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">Deets</label>
                                                             <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
-                                                                <p className="text-[10px] text-zinc-400 leading-relaxed font-medium italic">
+                                                                <p className="text-[10px] text-zinc-400 leading-relaxed font-medium">
                                                                     {item.description || operator.bio}
                                                                 </p>
                                                             </div>
@@ -799,7 +802,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                 <div key={card.id} className="min-w-[140px] p-3 rounded-2xl bg-white/5 border border-white/10 flex flex-col gap-1">
                                                                     <div className="flex justify-between items-center">
                                                                         <span className="text-[9px] font-black uppercase text-electric-teal tracking-wider">{card.label}</span>
-                                                                        <span className="text-[10px] font-bold text-white">â‚±{card.price}</span>
+                                                                        <span className="text-[10px] font-bold text-white">₱{card.price}</span>
                                                                     </div>
                                                                     <span className="text-[8px] text-zinc-500 font-bold">{card.time}</span>
                                                                 </div>
@@ -850,7 +853,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                                 <div>
                                                                                     <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-0.5">Total Estimate</p>
                                                                                     <div className="flex items-baseline gap-1">
-                                                                                        <span className="text-xl font-black text-white italic">â‚±{totalPrice.toLocaleString()}</span>
+                                                                                        <span className="text-xl font-black text-white">₱{totalPrice.toLocaleString()}</span>
                                                                                         <span className="text-[10px] font-bold text-zinc-500">for {selectedSlots.length} slots</span>
                                                                                     </div>
                                                                                 </div>
@@ -888,29 +891,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                 )}
                                                             </AnimatePresence>
                                                         </div>
-                                                    ) : bookingType === 'TIER_BASED' && (
-                                                        <div className="space-y-3">
-                                                            <label className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">Tiers & Inclusions</label>
-                                                            <div className="flex flex-col gap-2">
-                                                                {item.tiers?.map(tier => (
-                                                                    <div
-                                                                        key={tier.id}
-                                                                        className="p-3.5 rounded-2xl border bg-white/[0.03] border-white/5 text-zinc-400 flex flex-col"
-                                                                    >
-                                                                        <span className="text-[10px] font-black uppercase italic tracking-tight text-zinc-300">{tier.name}</span>
-                                                                        <span className="text-[8px] opacity-60 mt-0.5">{tier.perks?.join(' â€¢ ') || 'Standard Entry'}</span>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* Common Quantity Picker */}
-                                                    {(bookingType === 'QUANTITY_BASED' || (bookingType === 'TIER_BASED' && selectedTierId)) && (
+                                                    {/* Common Quantity Picker - Only for simple quantity items in Step 0 */}
+                                                    {bookingType === 'QUANTITY_BASED' && (
                                                         <div className="p-3.5 bg-white/[0.03] border border-white/10 rounded-2xl flex items-center justify-between">
                                                             <div className="flex flex-col">
                                                                 <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest">QUANTITY</span>
-                                                                <span className="text-[10px] font-bold text-white uppercase italic">{quantity} {item.unit_label || 'Units'}</span>
+                                                                <span className="text-[10px] font-bold text-white uppercase">{quantity} {item.unit_label || 'Units'}</span>
                                                             </div>
                                                             <div className="flex items-center gap-4">
                                                                 <button
@@ -937,7 +923,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                         <MapPin size={16} className="text-zinc-500" />
                                                         <div className="flex flex-col">
                                                             <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest">LOCATION</span>
-                                                            <span className="text-[10px] font-bold text-white uppercase italic truncate max-w-[200px]">
+                                                            <span className="text-[10px] font-bold text-white uppercase truncate max-w-[200px]">
                                                                 {item.event_location || operator.location_text || "Davao City"}
                                                             </span>
                                                         </div>
@@ -945,24 +931,15 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
 
                                                     {/* Interactive Maps Window */}
                                                     <div className="h-56 w-full bg-zinc-900 relative border-t border-white/5">
-                                                        <iframe
-                                                            width="100%"
+                                                        <SmartMap
+                                                            mode="view"
+                                                            initialLocation={item.event_lat ? {
+                                                                lat: item.event_lat,
+                                                                lng: item.event_lng!,
+                                                                placeName: item.event_location
+                                                            } : undefined}
                                                             height="100%"
-                                                            style={{ border: 0 }}
-                                                            src={`https://maps.google.com/maps?q=${encodeURIComponent(item.event_location || operator.location_text || "Davao City")}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
-                                                            allowFullScreen
-                                                        ></iframe>
-                                                        {/* Fallback pattern if no API key or to keep it minimalist/static looks like the screenshot */}
-                                                        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/20 to-transparent" />
-
-                                                        {/* "Get Directions" Overlay Button */}
-                                                        <button
-                                                            onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.event_location || operator.location_text || "Davao City")}`, '_blank')}
-                                                            className="absolute bottom-2 right-2 px-3 py-1.5 bg-white text-black text-[10px] font-black uppercase tracking-tighter rounded-lg shadow-2xl flex items-center gap-2 hover:scale-105 transition-all"
-                                                        >
-                                                            <Navigation size={12} fill="black" />
-                                                            Get Directions
-                                                        </button>
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
@@ -982,7 +959,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                         fullWidth
                                                         className="shadow-[0_20px_40px_-10px_rgba(20,255,236,0.3)]"
                                                     >
-                                                        {isRestricted ? 'START PREVIEW FLOW' : 'RESERVE NOW'}
+                                                        {isRestricted ? 'START PREVIEW FLOW' : 'GET DIBS'}
                                                     </GradientButton>
                                                 </div>
                                             )}
@@ -1002,7 +979,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                         className="py-2 space-y-6"
                                     >
                                         <div className="text-center space-y-2 mb-8">
-                                            <h3 className="text-xl font-black italic uppercase text-white tracking-tight">Guest Details</h3>
+                                            <h3 className="text-xl font-black uppercase text-white tracking-tight">Guest Details</h3>
                                             <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Who are we expecting?</p>
                                         </div>
 
@@ -1073,10 +1050,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                     >
                                         <div className="space-y-6 pt-2">
                                             {/* Tier selection moved to payment step */}
+                                            {/* Tier selection moved to payment step */}
                                             {bookingType === 'TIER_BASED' && (
-                                                <div className="space-y-3">
-                                                    <label className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">Select Tier</label>
-                                                    <div className="flex flex-col gap-2">
+                                                <div className="space-y-4">
+                                                    <label className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500 px-1">Tiers & Inclusions</label>
+                                                    <div className="flex flex-col gap-3">
                                                         {item.tiers?.map(tier => (
                                                             <div
                                                                 key={tier.id}
@@ -1084,21 +1062,62 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                     setSelectedTierId(tier.id);
                                                                     setQuantity(1);
                                                                 }}
-                                                                className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex justify-between items-center
+                                                                className={`p-5 rounded-2xl border transition-all cursor-pointer relative group
                                                                     ${selectedTierId === tier.id
-                                                                        ? 'bg-electric-teal/10 border-electric-teal text-electric-teal'
-                                                                        : 'bg-white/[0.03] border-white/5 text-zinc-500 hover:bg-white/[0.05]'
+                                                                        ? 'bg-electric-teal/5 border-electric-teal shadow-[0_0_30px_-5px_rgba(45,212,191,0.15)]'
+                                                                        : 'bg-white/[0.03] border-white/5 hover:bg-white/[0.05] hover:border-white/10'
                                                                     }
                                                                 `}
                                                             >
-                                                                <div className="flex flex-col">
-                                                                    <span className="text-[10px] font-black uppercase italic tracking-tight">{tier.name}</span>
-                                                                    <span className="text-[8px] opacity-60 mt-0.5">{tier.perks?.join(' â€¢ ') || 'Standard Entry'}</span>
+                                                                <div className="flex justify-between items-start mb-2">
+                                                                    <span className={`text-base font-black uppercase tracking-tight ${selectedTierId === tier.id ? 'text-electric-teal' : 'text-white'}`}>
+                                                                        {tier.name}
+                                                                    </span>
+                                                                    {selectedTierId === tier.id && (
+                                                                        <Check size={16} className="text-electric-teal" />
+                                                                    )}
                                                                 </div>
-                                                                <span className="text-xs font-black italic">â‚±{tier.price.toLocaleString()}</span>
+
+                                                                <div className="flex justify-between items-end">
+                                                                    <div className="text-[10px] text-zinc-400 font-medium max-w-[70%]">
+                                                                        {tier.perks?.join(' • ') || 'Standard Entry'}
+                                                                    </div>
+                                                                    <span className="text-lg font-black text-white tracking-tight">
+                                                                        ₱{tier.price.toLocaleString()}
+                                                                    </span>
+                                                                </div>
                                                             </div>
                                                         ))}
                                                     </div>
+
+                                                    {/* Quantity Picker for Tiers */}
+                                                    {selectedTierId && (
+                                                        <motion.div
+                                                            initial={{ opacity: 0, y: -10 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            className="p-5 bg-white/[0.03] border border-white/10 rounded-2xl flex items-center justify-between mt-2"
+                                                        >
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">QUANTITY</span>
+                                                                <span className="text-sm font-black text-white uppercase">{quantity} TICKET{quantity > 1 ? 'S' : ''}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-4 bg-white/5 rounded-xl p-1 border border-white/5">
+                                                                <button
+                                                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                                                    className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-all active:scale-90"
+                                                                >
+                                                                    <Minus size={16} />
+                                                                </button>
+                                                                <span className="text-base font-black text-white w-6 text-center tabular-nums">{quantity}</span>
+                                                                <button
+                                                                    onClick={() => setQuantity(Math.min(item.available_slots || 99, quantity + 1))}
+                                                                    className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-all active:scale-90"
+                                                                >
+                                                                    <Plus size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
                                                 </div>
                                             )}
 
@@ -1173,12 +1192,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                         <h4 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1">Billing Summary</h4>
                                                         <div className="flex items-center gap-2">
                                                             <FileText size={14} className="text-electric-teal" />
-                                                            <span className="text-xs font-bold text-white uppercase italic tracking-tight">Order #DIB-{item.id.slice(0, 4).toUpperCase()}</span>
+                                                            <span className="text-xs font-bold text-white uppercase tracking-tight">Order #DIB-{item.id.slice(0, 4).toUpperCase()}</span>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
                                                         <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500">Payable Amount</p>
-                                                        <p className="text-2xl font-black italic text-white leading-none mt-1">â‚±{totalPrice.toLocaleString()}</p>
+                                                        <p className="text-2xl font-black text-white leading-none mt-1">₱{totalPrice.toLocaleString()}</p>
                                                     </div>
                                                 </div>
 
@@ -1212,7 +1231,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                         return (
                                                                             <div key={i} className="flex justify-between items-center text-[10px] bg-white/[0.02] border border-white/5 p-2 rounded-xl">
                                                                                 <span className="text-white font-bold">{slot.time}</span>
-                                                                                <span className="text-zinc-300 font-mono">â‚±{price}</span>
+                                                                                <span className="text-zinc-300 font-mono">₱{price}</span>
                                                                             </div>
                                                                         );
                                                                     })}
@@ -1224,7 +1243,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                     <span className="text-white font-bold">{quantity} {item.unit_label || 'Units'}</span>
                                                                     <span className="text-[8px] text-zinc-500 uppercase font-black">{new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                                                                 </div>
-                                                                <span className="text-zinc-300 font-mono">â‚±{totalPrice}</span>
+                                                                <span className="text-zinc-300 font-mono">₱{totalPrice}</span>
                                                             </div>
                                                         )}
                                                     </div>
@@ -1235,8 +1254,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                 <div className="w-8 h-8 rounded-full bg-electric-teal/10 flex items-center justify-center text-electric-teal shrink-0">
                                                     <AlertCircle size={14} />
                                                 </div>
-                                                <p className="text-[10px] text-zinc-400 leading-tight font-medium italic">
-                                                    Please send exactly <span className="text-white font-bold not-italic">â‚±{totalPrice.toLocaleString()}</span>. Screenshot the success screen and upload below for automated verification.
+                                                <p className="text-[10px] text-zinc-400 leading-tight font-medium">
+                                                    Please send exactly <span className="text-white font-bold">₱{totalPrice.toLocaleString()}</span>. Screenshot the success screen and upload below for automated verification.
                                                 </p>
                                             </div>
 
@@ -1264,7 +1283,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                         <div className="flex items-center gap-1.5 mb-1">
                                                                             <p className="text-[8px] uppercase font-black tracking-[0.2em] text-zinc-500">{account.label}</p>
                                                                         </div>
-                                                                        <p className="font-black text-white text-sm italic uppercase tracking-tight truncate">{account.name}</p>
+                                                                        <p className="font-black text-white text-sm uppercase tracking-tight truncate">{account.name}</p>
                                                                         <div className="flex items-center gap-2 mt-1.5">
                                                                             <p className="text-2xl font-black text-white font-mono tracking-tighter leading-none">{account.number}</p>
                                                                             <button
@@ -1279,7 +1298,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                 </div>
                                                             ))}
                                                         </div>
-                                                        <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest text-center px-4 italic">Transfer funds through any of the accounts above</p>
+                                                        <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest text-center px-4">Transfer funds through any of the accounts above</p>
                                                     </div>
 
                                                     {/* Upload Proof */}
@@ -1348,7 +1367,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                         <Sparkles className="text-white" size={32} />
                                                     </div>
                                                     <div className="text-center">
-                                                        <p className="text-2xl font-black text-white italic tracking-tighter">{(totalPrice * 10).toLocaleString()}</p>
+                                                        <p className="text-2xl font-black text-white tracking-tighter">{(totalPrice * 10).toLocaleString()}</p>
                                                         <p className="text-[10px] font-black uppercase text-electric-teal tracking-[0.3em]">AURA POINTS</p>
                                                         <p className="text-[8px] font-bold text-gray-500 mt-2">COMING SOON</p>
                                                     </div>
@@ -1451,7 +1470,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                             </div>
                                                             <div className="text-left">
                                                                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 leading-none mb-1">Status</p>
-                                                                <p className="text-lg font-black italic uppercase text-white leading-none tracking-tight">Dibs Called</p>
+                                                                <p className="text-lg font-black uppercase text-white leading-none tracking-tight">Dibs Called</p>
                                                             </div>
                                                         </div>
 
@@ -1477,7 +1496,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                             <div className="grid grid-cols-2 gap-2">
                                                                                 {daySlots.map((slot, i) => (
                                                                                     <div key={i} className="flex items-center justify-between group px-3 py-2 bg-white/[0.02] border border-white/5 rounded-xl">
-                                                                                        <p className="text-[10px] font-black italic uppercase text-white tracking-tight">{slot.time}</p>
+                                                                                        <p className="text-[10px] font-black uppercase text-white tracking-tight">{slot.time}</p>
                                                                                         <div className="w-1 h-1 rounded-full bg-electric-teal/40" />
                                                                                     </div>
                                                                                 ))}
@@ -1487,7 +1506,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                 ) : (
                                                                     <div className="flex items-center justify-between bg-white/[0.02] border border-white/5 p-4 rounded-2xl">
                                                                         <div className="text-left">
-                                                                            <p className="text-xl font-black italic uppercase text-white tracking-tight">{quantity} {item.unit_label || 'Units'}</p>
+                                                                            <p className="text-xl font-black uppercase text-white tracking-tight">{quantity} {item.unit_label || 'Units'}</p>
                                                                             <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-1">
                                                                                 {new Date(date).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
                                                                             </p>
@@ -1526,7 +1545,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                         <div className="mt-8 grid grid-cols-3 gap-4 border-t border-white/5 pt-8">
                                                             <div className="text-left">
                                                                 <p className="text-[7px] font-black uppercase text-zinc-600 tracking-widest mb-1">Pass Holder</p>
-                                                                <p className="text-[10px] font-black text-white uppercase italic truncate">
+                                                                <p className="text-[10px] font-black text-white uppercase truncate">
                                                                     <span className="animate-liquid-text">
                                                                         {userInfo.name || 'Guest'}
                                                                     </span>
@@ -1536,13 +1555,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                 <p className="text-[7px] font-black uppercase text-zinc-600 tracking-widest mb-1">
                                                                     {assignedCourt ? 'Assigned' : 'Quantity'}
                                                                 </p>
-                                                                <p className="text-[10px] font-black text-white uppercase italic">
+                                                                <p className="text-[10px] font-black text-white uppercase">
                                                                     {assignedCourt ? `#${assignedCourt}` : `${quantity} ${item.unit_label || 'Units'}`}
                                                                 </p>
                                                             </div>
                                                             <div className="text-right">
                                                                 <p className="text-[7px] font-black uppercase text-zinc-600 tracking-widest mb-1">Operator</p>
-                                                                <p className="text-[10px] font-black text-white uppercase italic truncate">
+                                                                <p className="text-[10px] font-black text-white uppercase truncate">
                                                                     <span className="animate-liquid-text">
                                                                         {operator.business_name}
                                                                     </span>
@@ -1553,7 +1572,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                         {assignedCourt && (
                                                             <div className="mt-6 p-4 rounded-2xl bg-electric-teal/5 border border-electric-teal/10 flex items-center justify-center gap-3">
                                                                 <div className="w-2 h-2 rounded-full bg-electric-teal shadow-[0_0_10px_rgba(45,212,191,0.5)]" />
-                                                                <p className="text-[10px] font-black uppercase tracking-widest text-white italic">Go to Court #{assignedCourt} upon arrival</p>
+                                                                <p className="text-[10px] font-black uppercase tracking-widest text-white">Go to Court #{assignedCourt} upon arrival</p>
                                                             </div>
                                                         )}
                                                     </div>
@@ -1567,7 +1586,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                             <p className="text-[9px] text-gray-600 leading-relaxed max-w-[250px] mx-auto uppercase font-black tracking-[0.2em] mt-6 mb-2">
                                                 SECURE ID: {secureId}
                                             </p>
-                                            <p className="text-[7px] text-zinc-600 font-bold uppercase tracking-widest mb-6 italic">Don't share this ticket with others. Download or screenshot for your copy.</p>
+                                            <p className="text-[7px] text-zinc-600 font-bold uppercase tracking-widest mb-6">Don't share this ticket with others. Download or screenshot for your copy.</p>
 
                                             <div className="flex items-center gap-4">
                                                 <button

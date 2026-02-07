@@ -45,7 +45,7 @@ const DibsItemCard: React.FC<DibsItemCardProps> = ({ item, operator, onClick }) 
             {/* Metadata (Airbnb Style) */}
             <div className="p-3 md:p-5 flex flex-col gap-1.5 md:gap-2">
                 <div className="flex justify-between items-start">
-                    <h3 className="text-sm md:text-lg font-black italic uppercase tracking-tighter text-white leading-tight group-hover:text-electric-teal transition-colors">
+                    <h3 className="text-sm md:text-lg font-black uppercase tracking-tighter text-white leading-tight group-hover:text-electric-teal transition-colors">
                         {item.title}
                     </h3>
                 </div>
@@ -67,7 +67,7 @@ const DibsItemCard: React.FC<DibsItemCardProps> = ({ item, operator, onClick }) 
                                 alt={operator.business_name}
                             />
                         </div>
-                        <span className="text-[7px] md:text-[9px] font-black italic uppercase tracking-widest text-gray-400 group-hover:text-white transition-colors animate-liquid-text truncate">
+                        <span className="text-[7px] md:text-[9px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white transition-colors animate-liquid-text truncate">
                             {operator.business_name}
                         </span>
                     </div>

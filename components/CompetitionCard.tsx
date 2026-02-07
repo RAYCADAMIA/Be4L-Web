@@ -60,7 +60,7 @@ const CompetitionCard: React.FC<CompetitionCardProps> = ({ competition, onClick 
             {/* Metadata Section */}
             <div className="p-5 flex flex-col gap-2 flex-1 relative">
                 <div className="flex justify-between items-start">
-                    <h3 className="text-xl font-black italic uppercase tracking-tighter text-white leading-none group-hover:text-electric-teal transition-colors line-clamp-2 pr-4">
+                    <h3 className="text-xl font-black uppercase tracking-tighter text-white leading-none group-hover:text-electric-teal transition-colors line-clamp-2 pr-4">
                         {competition.title}
                     </h3>
                 </div>
@@ -80,7 +80,7 @@ const CompetitionCard: React.FC<CompetitionCardProps> = ({ competition, onClick 
                 <div className="mt-2 pt-3 border-t border-white/5 flex items-center justify-between">
                     <div>
                         <span className="block text-[8px] text-gray-600 font-black uppercase tracking-widest mb-0.5">Prize Pool</span>
-                        <div className="text-yellow-400 font-black italic text-lg shadow-black">
+                        <div className="text-yellow-400 font-black text-lg shadow-black">
                             {competition.prize_pool}
                         </div>
                     </div>

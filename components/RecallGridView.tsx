@@ -106,7 +106,7 @@ export const RecallGridView: React.FC<{
                 </button>
 
                 <div className="flex flex-col items-center">
-                    <h2 className="text-lg font-black italic text-white/90 uppercase tracking-[0.2em]">Recall</h2>
+                    <h2 className="text-lg font-black text-white/90 uppercase tracking-[0.2em]">Recall</h2>
                     <div className="flex items-center gap-1.5 opacity-60">
                         <span className="text-[8px] font-black text-primary uppercase tracking-widest">{captures.length} Lore</span>
                         <div className="w-0.5 h-0.5 rounded-full bg-white/40" />
@@ -158,7 +158,7 @@ export const RecallGridView: React.FC<{
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                                 <div className="absolute bottom-2 left-2 flex items-center gap-1">
                                     {c.media_type === 'video' && <Play size={10} className="text-white/60 fill-current" />}
-                                    <span className="text-[9px] font-black text-white italic tracking-tight uppercase">
+                                    <span className="text-[9px] font-black text-white tracking-tight uppercase">
                                         {new Date(c.captured_at || c.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
                                     </span>
                                 </div>

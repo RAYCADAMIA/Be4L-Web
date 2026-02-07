@@ -31,11 +31,11 @@ const MapPopup: React.FC<MapPopupProps> = ({ locationName, locationCoords, onClo
                                 scrolling="no"
                                 marginHeight={0}
                                 marginWidth={0}
-                                src={`https://www.openstreetmap.org/export/embed.html?bbox=${locationCoords.longitude - 0.005}%2C${locationCoords.latitude - 0.005}%2C${locationCoords.longitude + 0.005}%2C${locationCoords.latitude + 0.005}&layer=mapnik&marker=${locationCoords.latitude}%2C${locationCoords.longitude}`}
-                                className="w-full h-full"
-                                style={{
-                                    filter: "grayscale(100%) invert(90%) sepia(20%) saturate(500%) hue-rotate(65deg) brightness(0.9) contrast(1.2)"
-                                }}
+                                src={locationCoords
+                                    ? `https://maps.google.com/maps?q=${locationCoords.latitude},${locationCoords.longitude}&t=m&z=15&ie=UTF8&iwloc=&output=embed`
+                                    : `https://maps.google.com/maps?q=${encodeURIComponent(locationName)}&t=m&z=15&ie=UTF8&iwloc=&output=embed`
+                                }
+                                className="w-full h-full grayscale invert-[0.9] contrast-125 brightness-90 sepia-[0.2]"
                             />
                         </div>
                     ) : (

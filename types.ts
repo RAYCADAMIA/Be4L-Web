@@ -45,6 +45,7 @@ export interface User {
   name: string;
   mobile?: string;
   email?: string;
+  birthdate?: string; // ISO Date YYYY-MM-DD
   avatar_url: string;
   bio: string;
 
@@ -78,6 +79,9 @@ export interface User {
   cover_url?: string;
   is_operator?: boolean; // v3.0
   is_admin?: boolean;
+  onboarding_completed?: boolean;
+  is_new_user?: boolean;
+  is_guest?: boolean;
 }
 
 // 0. LORE SYSTEM DEFINITION (LOCK)
@@ -178,13 +182,20 @@ export enum QuestVisibilityScope {
   FRIENDS = 'friends'
 }
 
+export enum QuestTimingIntent {
+  NOW = 'now', // Spontaneous / Happens Right Now
+  SCHEDULED = 'scheduled', // Classic planned event
+  FLEXIBLE = 'flexible' // Pick a date + Window (Morning, Evening, etc.)
+}
+
 export interface Quest {
   id: string;
   host_id: string; // lead_id
   host?: User;
 
-  // Mode & Source
+  // Intent & Mode
   mode: QuestType;
+  timing_intent?: QuestTimingIntent;
   source: 'USER_CREATED' | 'SYSTEM_GENERATED' | 'CANON_ESCALATED';
 
   // Core Info
@@ -230,6 +241,15 @@ export interface Quest {
     social?: string[];
   };
   aura_req?: number;
+
+  // v1.3 Enhanced Details
+  itinerary?: { time: string; description: string }[];
+  checklist?: string[]; // Essentials
+  vibe_signals?: string[]; // e.g. "Ladies Only"
+
+  // Host Controls
+  is_started_manually?: boolean;
+  host_managed_attendance?: string[]; // IDs of verified attendees
 
   // Legacy / UI Helpers
   fee?: number;
@@ -319,6 +339,8 @@ export interface Operator {
   cover_photo_url: string;
   logo_url: string; // Circular avatar
   location_text: string; // e.g. "Davao City"
+  lat?: number;
+  lng?: number;
 
   // Payment Info (Manual Verification)
   gcash_name?: string;

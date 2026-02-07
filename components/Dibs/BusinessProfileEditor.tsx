@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Camera, MapPin, Clock, Save, Globe, Phone, Mail, Instagram, Facebook } from 'lucide-react';
+import { Camera, MapPin, Clock, Save, Globe, Phone, Mail, Instagram, Facebook, X } from 'lucide-react';
 import { GradientButton } from '../ui/AestheticComponents';
+import MapPicker from '../MapPicker';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface BusinessProfileEditorProps {
     operator: any;
@@ -18,8 +20,12 @@ const BusinessProfileEditor: React.FC<BusinessProfileEditorProps> = ({ operator,
         instagram: operator.instagram || '',
         facebook: operator.facebook || '',
         operating_hours: operator.operating_hours || '10:00 AM - 10:00 PM',
-        website: operator.website || ''
+        website: operator.website || '',
+        lat: operator.lat,
+        lng: operator.lng
     });
+
+    const [showMap, setShowMap] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -34,7 +40,7 @@ const BusinessProfileEditor: React.FC<BusinessProfileEditorProps> = ({ operator,
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
             <div>
-                <h3 className="text-xl font-black italic text-white">BRAND PROFILE</h3>
+                <h3 className="text-xl font-black text-white">BRAND PROFILE</h3>
                 <p className="text-xs text-gray-500 uppercase tracking-widest">Manage your public presence</p>
             </div>
 
@@ -85,15 +91,61 @@ const BusinessProfileEditor: React.FC<BusinessProfileEditorProps> = ({ operator,
                     <MapPin size={16} className="text-pink-500" /> Location Setup
                 </h4>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                     <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Display Address</label>
-                        <input name="location" value={formData.location} onChange={handleChange} className="w-full bg-black/20 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-electric-teal outline-none" />
+                        <label className="text-[10px] font-bold uppercase text-gray-500 px-1">Display Address</label>
+                        <div className="relative group">
+                            <input
+                                name="location"
+                                value={formData.location}
+                                onChange={handleChange}
+                                className="w-full bg-black/20 border border-white/10 rounded-xl p-3.5 pr-14 text-sm text-white focus:border-electric-teal outline-none transition-all"
+                                placeholder="Business Address..."
+                            />
+                            <button
+                                onClick={() => setShowMap(true)}
+                                className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-all ${formData.lat ? 'bg-electric-teal text-black' : 'bg-white/5 text-gray-500 hover:text-white'}`}
+                                title="Pin on Map"
+                            >
+                                <MapPin size={16} />
+                            </button>
+                        </div>
                     </div>
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Google Maps Embed Link (Optional)</label>
-                        <input name="google_maps_link" placeholder="Paste embed URL here..." value={formData.google_maps_link} onChange={handleChange} className="w-full bg-black/20 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-electric-teal outline-none font-mono text-xs" />
-                        <p className="text-[9px] text-gray-500">Go to Google Maps {'>'} Share {'>'} Embed a map {'>'} Copy HTML</p>
+
+                    {showMap && (
+                        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="absolute inset-0 bg-black/90 backdrop-blur-md"
+                                onClick={() => setShowMap(false)}
+                            />
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="relative w-full max-w-2xl h-[500px] bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden"
+                            >
+                                <div className="absolute top-4 right-4 z-[160]">
+                                    <button onClick={() => setShowMap(false)} className="p-2 bg-black/50 text-white rounded-full hover:bg-black transition-colors">
+                                        <X size={20} />
+                                    </button>
+                                </div>
+                                <MapPicker
+                                    initialCoords={formData.lat ? { latitude: formData.lat, longitude: formData.lng! } : undefined}
+                                    onSelect={(coords, addr) => {
+                                        setFormData({ ...formData, location: addr, lat: coords.latitude, lng: coords.longitude });
+                                        setShowMap(false);
+                                    }}
+                                    onClose={() => setShowMap(false)}
+                                />
+                            </motion.div>
+                        </div>
+                    )}
+
+                    <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                        <p className="text-[9px] text-gray-500 uppercase tracking-widest leading-relaxed">
+                            {formData.lat ? `Precise location pinned at ${formData.lat.toFixed(4)}, ${formData.lng?.toFixed(4)}` : "No precise location set. Pin your location to help users find you better."}
+                        </p>
                     </div>
                 </div>
             </div>

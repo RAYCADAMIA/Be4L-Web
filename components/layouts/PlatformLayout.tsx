@@ -1,3 +1,4 @@
+import React from 'react';
 import { Home, Compass, MessageCircle, ShoppingBag, Aperture } from 'lucide-react';
 import { DesktopSidebar } from '../navigation/DesktopSidebar';
 import { GlobalHeader } from '../navigation/GlobalHeader';
@@ -62,7 +63,7 @@ export const PlatformLayout: React.FC = () => {
                             exit={{ y: -20, opacity: 0 }}
                             className="fixed z-40 pointer-events-none transition-all duration-500
                                  top-20 left-0 right-0 flex justify-center px-4
-                                 md:top-24 md:left-6 md:right-auto md:h-auto md:px-0 md:flex-col
+                                 md:top-32 md:left-6 md:right-auto md:h-auto md:px-0 md:flex-col
                              "
                         >
                             <div className="pointer-events-auto">
@@ -78,7 +79,7 @@ export const PlatformLayout: React.FC = () => {
             </div>
 
             {/* Mobile Bottom Bar */}
-            <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm h-16 bg-white/[0.08] backdrop-blur-3xl border border-white/10 flex items-center justify-around z-50 rounded-full shadow-2xl px-2">
+            <div className={`md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm h-16 bg-white/[0.08] backdrop-blur-3xl border border-white/10 flex items-center justify-around z-50 rounded-full shadow-2xl px-2 transition-all duration-500 ${location.pathname.startsWith('/app/chat') && searchParams.has('id') ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100'}`}>
                 {navItems.map((item) => {
                     const isActive = item.path === '/app/home'
                         ? location.pathname === '/app/home'
@@ -88,16 +89,19 @@ export const PlatformLayout: React.FC = () => {
                         <button
                             key={item.path}
                             onClick={() => navigate(item.path)}
-                            className={`flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-300 relative ${isActive ? 'text-primary' : 'text-white/40 hover:text-white'}`}
+                            className={`group flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-300 relative ${isActive ? 'text-primary' : 'text-white/40 hover:text-white'}`}
                         >
-                            <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                            {isActive && (
-                                <motion.div
-                                    layoutId="mobileActiveNav"
-                                    className="absolute inset-0 bg-white/10 rounded-full border border-white/20 -z-10 shadow-[0_0_15px_rgba(204,255,0,0.1)]"
-                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                />
-                            )}
+                            <div className="relative p-1">
+                                <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} className="relative z-10" />
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="mobileActiveNav"
+                                        className="absolute inset-0 bg-white/10 rounded-full border border-white/20 -z-0 shadow-[0_0_15px_rgba(204,255,0,0.1)]"
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                    />
+                                )}
+                            </div>
+                            <span className="text-[9px] font-bold uppercase tracking-wider mt-1">{item.label}</span>
                         </button>
                     );
                 })}

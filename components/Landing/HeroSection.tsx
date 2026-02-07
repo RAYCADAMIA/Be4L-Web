@@ -34,9 +34,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onJoinClick }) => {
                 >
                     <div className="relative z-20 overflow-visible p-4 mb-8">
                         {/* Invisible Placeholder to reserve layout space for PersistentLogo */}
-                        <div className="opacity-0 pointer-events-none text-7xl md:text-[8rem] lg:text-[12rem] font-black tracking-tighter leading-[0.9] font-display flex items-center justify-center select-none">
+                        <h1 className="opacity-0 pointer-events-none text-7xl md:text-[8rem] lg:text-[12rem] font-black tracking-tighter leading-[0.9] font-display flex items-center justify-center select-none">
                             Be4L
-                        </div>
+                        </h1>
                     </div>
 
                     {/* Updated Text per User Request */}
@@ -58,8 +58,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onJoinClick }) => {
                         </div>
 
                         <div className="w-full md:w-auto px-4 md:px-0">
-                            <button className="w-full md:w-auto px-8 md:px-10 py-4 md:py-5 bg-white/5 border border-white/10 text-white font-bold uppercase tracking-widest rounded-full hover:bg-white/10 transition-all hover:scale-105 active:scale-95 backdrop-blur-xl border-t-white/20 font-display group text-xs md:text-base">
-                                <span className="group-hover:animate-liquid-text transition-all">Explore Lores</span>
+                            <button
+                                onClick={() => {
+                                    const nextSection = document.getElementById('vibe-check-section');
+                                    nextSection?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                className="w-full md:w-auto px-8 md:px-10 py-4 md:py-5 bg-white/5 border border-white/10 text-white font-bold uppercase tracking-widest rounded-full hover:bg-white/10 transition-all hover:scale-105 active:scale-95 backdrop-blur-xl border-t-white/20 font-display group text-xs md:text-base"
+                            >
+                                <span className="group-hover:animate-liquid-text transition-all">Vibe Check</span>
                             </button>
                         </div>
                     </div>
@@ -76,7 +82,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onJoinClick }) => {
                     animate={{ opacity: 1, y: [0, 5, 0] }}
                     transition={{ duration: 2, repeat: Infinity, delay: 1 }}
                     onClick={() => {
-                        const nextSection = document.getElementById('features');
+                        const nextSection = document.getElementById('vibe-check-section');
                         nextSection?.scrollIntoView({ behavior: 'smooth' });
                     }}
                 >

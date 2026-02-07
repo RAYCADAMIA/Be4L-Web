@@ -9,6 +9,7 @@ import { DibsSidebar, DibsHeader } from './Dibs/DibsFilters';
 import { User as UserType, DibsItem } from '../types';
 import DibsItemCard from './DibsItemCard';
 import BookingModal from './Dibs/BookingModal';
+import { useScrollBehavior } from '../hooks/useScrollBehavior';
 
 const BookScreen: React.FC<{
     onOpenProfile: () => void,
@@ -25,6 +26,8 @@ const BookScreen: React.FC<{
     const [activeCat, setActiveCat] = useState('All');
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
     const [locationFilter, setLocationFilter] = useState('');
+    const { headerSpringY } = useNavigation();
+    const { handleScroll } = useScrollBehavior();
 
     // Fetch Brands (Operators)
     useEffect(() => {
@@ -89,16 +92,22 @@ const BookScreen: React.FC<{
             return false;
         }
 
+        // Price filter for Brands: check if brand has any item in price range
+        // If price filter is at MAX, assume user is exploring everything
+        if (priceRange[1] < 10000) {
+            const brandItems = allItems.filter(i => i.operator_id === brand.user_id);
+            const hasItemInPriceRange = brandItems.some(item => {
+                const lp = item.tiers && item.tiers.length > 0
+                    ? Math.min(...item.tiers.map(t => t.price))
+                    : item.price;
+                return lp >= priceRange[0] && lp <= priceRange[1];
+            });
+            if (!hasItemInPriceRange) return false;
+        }
+
         if (activeCat === 'All') return true;
         if (activeCat === 'Courts') return brand.category === 'venue' || brand.business_name.toLowerCase().includes('court');
         if (activeCat === 'Events') return brand.category === 'event';
-
-        // These are empty due to the check above but kept for logic completeness
-        if (activeCat === 'Competitions') return brand.category === 'competition';
-        if (activeCat === 'Resto') return brand.category === 'food' || brand.category === 'restaurant' || brand.category === 'resto';
-        if (activeCat === 'Cafe') return brand.category === 'cafe' || brand.category === 'coffee';
-        if (activeCat === 'Vacation' || activeCat === 'Hotels') return brand.category === 'stay' || brand.category === 'hotel' || brand.category === 'resort';
-        if (activeCat === 'Services') return brand.category === 'service' || brand.category === 'wellness';
 
         return true;
     });
@@ -136,32 +145,12 @@ const BookScreen: React.FC<{
         return true;
     });
 
-    // Scroll handling for floating header
-    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-    const lastScrollY = React.useRef(0);
-
-    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        const currentScrollY = e.currentTarget.scrollTop;
-        const scrollDiff = currentScrollY - lastScrollY.current;
-
-        // If scrolling down significantly, hide header
-        if (scrollDiff > 10 && currentScrollY > 50) {
-            setIsHeaderVisible(false);
-        }
-        // If scrolling up significantly or at top, show header
-        else if (scrollDiff < -10 || currentScrollY < 50) {
-            setIsHeaderVisible(true);
-        }
-
-        lastScrollY.current = currentScrollY;
-    };
-
     return (
         <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-transparent">
             <div className="flex-1 h-full overflow-hidden flex flex-col md:flex-row max-w-[1600px] mx-auto w-full">
 
                 {/* Desktop Sidebar (Left) */}
-                <div className="hidden md:flex flex-col w-40 shrink-0 pt-8 border-r border-white/[0.02] sticky top-0 h-full overflow-y-auto no-scrollbar">
+                <div className="hidden md:flex flex-col w-40 shrink-0 pt-28 border-r border-white/[0.02] sticky top-0 h-full overflow-y-auto no-scrollbar">
                     <DibsSidebar
                         activeCat={activeCat}
                         setActiveCat={setActiveCat}
@@ -177,21 +166,17 @@ const BookScreen: React.FC<{
                     onScroll={handleScroll}
                     className="flex-1 h-full overflow-y-auto no-scrollbar relative flex flex-col"
                 >
+                    {/* Header Spacer for Floating Nav - Increased for breathing room */}
+                    <div className="h-[88px] w-full shrink-0" />
 
-                    {/* Header Spacer for Floating Nav */}
-                    <div className="h-[20px] md:h-0 w-full shrink-0" />
 
-                    {/* Mobile Header (Filters) */}
-                    <div className="md:hidden pb-2 sticky top-[70px] z-30 pointer-events-none transition-all duration-300">
+
+                    {/* Mobile Header (Filters) - Sticky Floating Style */}
+                    <div className="md:hidden pb-4 sticky top-[80px] z-30 pointer-events-none">
                         <motion.div
-                            initial={{ y: -20, opacity: 0 }}
-                            animate={{
-                                y: isHeaderVisible ? 0 : -20,
-                                opacity: isHeaderVisible ? 1 : 0,
-                                pointerEvents: isHeaderVisible ? 'auto' : 'none'
-                            }}
-                            transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-                            className="pointer-events-auto"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="pointer-events-auto px-1"
                         >
                             <DibsHeader
                                 activeCat={activeCat}
@@ -204,8 +189,8 @@ const BookScreen: React.FC<{
                         </motion.div>
                     </div>
 
-                    {/* Feed Grid */}
-                    <div className="flex-1 overflow-y-auto pt-4 md:pt-8 pb-0 space-y-16 px-4 no-scrollbar">
+                    {/* Feed Grid - Removed internal overflow to fix sticky block look */}
+                    <div className="flex-1 pt-4 md:pt-8 pb-0 space-y-16 px-4 relative">
 
                         {/* Discovery Row (Items) */}
                         {!loading && filteredItems.length > 0 && (
@@ -287,14 +272,14 @@ const BookScreen: React.FC<{
                                 <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40 px-1">
                                     {activeCat}
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-20">
+                                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6 pb-20">
                                     {filteredBrands.length === 0 ? (
                                         <div className="col-span-full flex flex-col items-center justify-center py-32 text-center animate-in fade-in zoom-in duration-500">
                                             <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10">
                                                 <Briefcase size={24} className="text-white/20" />
                                             </div>
                                             <h3 className="text-white font-bold text-lg mb-2 uppercase tracking-tight">No brands yet</h3>
-                                            <p className="text-gray-500 text-sm mb-6 italic">Are you a brand? Partner with us.</p>
+                                            <p className="text-gray-500 text-sm mb-6">Are you a brand? Partner with us.</p>
                                             <button
                                                 onClick={() => navigate('/partner')}
                                                 className="px-8 py-4 bg-electric-teal/5 hover:bg-electric-teal/10 border-2 border-electric-teal/30 hover:border-electric-teal rounded-full transition-all group active:scale-95"

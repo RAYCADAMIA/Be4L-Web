@@ -168,7 +168,7 @@ const PostDetailScreen: React.FC<{
                     <ChevronLeft size={28} />
                 </button>
                 <div className="flex flex-col items-center pt-1">
-                    <span className="font-bold text-white text-base shadow-sm italic">
+                    <span className="font-bold text-white text-base shadow-sm">
                         <span className="animate-liquid-text">
                             {capture.user?.username || 'Unknown User'}
                         </span>
@@ -241,7 +241,7 @@ const PostDetailScreen: React.FC<{
                     <div className="flex gap-4 mb-8 overflow-x-auto no-scrollbar py-2 px-1">
                         {(!capture.reactions || capture.reactions.length === 0) && (
                             <div className="flex items-center h-12">
-                                <span className="text-gray-500 text-xs italic">No reacts yet</span>
+                                <span className="text-gray-500 text-xs">No reacts yet</span>
                             </div>
                         )}
                         {capture.reactions?.map(r => (
@@ -249,7 +249,7 @@ const PostDetailScreen: React.FC<{
                                 <button onClick={() => setSelectedReaction(r)} className="w-12 h-12 rounded-full border-2 border-surface overflow-hidden hover:scale-105 transition-transform">
                                     <img src={r.image_url} className="w-full h-full object-cover" />
                                 </button>
-                                <span className="text-[9px] font-bold text-gray-400 max-w-[60px] truncate italic">
+                                <span className="text-[9px] font-bold text-gray-400 max-w-[60px] truncate">
                                     <span className="animate-liquid-text">
                                         {r.user.username}
                                     </span>
@@ -269,7 +269,7 @@ const PostDetailScreen: React.FC<{
                     <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Comments</h3>
                     <div className="space-y-6">
                         {comments.length === 0 ? (
-                            <p className="text-center text-gray-600 text-xs italic">No comments yet.</p>
+                            <p className="text-center text-gray-600 text-xs">No comments yet.</p>
                         ) : (
                             comments.map((c, i) => (
                                 <div key={i} className="flex gap-3 items-start group">
@@ -278,7 +278,7 @@ const PostDetailScreen: React.FC<{
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-baseline gap-2">
-                                            <span className="font-bold text-white text-sm italic">
+                                            <span className="font-bold text-white text-sm">
                                                 <span className="animate-liquid-text">
                                                     {c.user}
                                                 </span>
@@ -336,7 +336,7 @@ const PostDetailScreen: React.FC<{
                         <div className="w-32 h-32 rounded-full border-[3px] border-primary overflow-hidden mx-auto mb-4">
                             <img src={selectedReaction.image_url} className="w-full h-full object-cover transform scale-x-[-1]" />
                         </div>
-                        <h3 className="text-center font-bold text-white italic">
+                        <h3 className="text-center font-bold text-white">
                             <span className="animate-liquid-text">
                                 {selectedReaction.user.username}
                             </span>
@@ -360,7 +360,7 @@ const PostDetailScreen: React.FC<{
                                 <Trash2 size={32} className="text-red-500" />
                             </div>
 
-                            <h3 className="text-white font-black text-xl uppercase tracking-tighter mb-8 italic">
+                            <h3 className="text-white font-black text-xl uppercase tracking-tighter mb-8">
                                 Delete Memory?
                             </h3>
 

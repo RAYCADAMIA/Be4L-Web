@@ -7,6 +7,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabaseService } from '../../services/supabaseService';
 import { Operator, DibsItem } from '../../types';
+import SmartMap from '../ui/SmartMap';
 import { EKGLoader, FloatingTabs } from '../ui/AestheticComponents';
 import BookingModal from './BookingModal'; // We might replace this with the new Flow later
 import { useNavigation } from '../../contexts/NavigationContext';
@@ -14,6 +15,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import OperatorDashboard from './OperatorDashboard'; // Import Dashboard
 import ProfileHeader from '../ProfileHeader';
 import DibsItemCard from '../DibsItemCard';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 interface OperatorProfileScreenProps {
     operatorData?: Operator;
@@ -25,9 +27,9 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
     const navigate = useNavigate();
     const { user: currentUser } = useAuth(); // Get current user
 
-    const [localTab, setLocalTab] = useState<'showcase' | 'services' | 'about'>('services');
-
     const [operator, setOperator] = useState<Operator | null>(operatorData || null);
+    const [localTab, setLocalTab] = useState<'showcase' | 'services' | 'about'>('services');
+    useDocumentTitle(operator ? operator.business_name : 'Shop');
     const [items, setItems] = useState<DibsItem[]>([]);
     const [loading, setLoading] = useState(!operatorData);
     const [selectedItem, setSelectedItem] = useState<DibsItem | null>(null);
@@ -102,7 +104,9 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
     }
 
     return (
-        <div className="min-h-full bg-transparent text-white pb-32 relative">
+        <div
+            className="flex-1 h-full overflow-y-auto no-scrollbar bg-transparent text-white pb-32 relative"
+        >
 
             {/* 1. Header (Unified Standard) */}
             <ProfileHeader
@@ -143,8 +147,10 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
             />
 
             {/* 2. Sticky Info Bar / Tabs (TikTok Shop Style) - Glassy Motif aligned with Cover */}
-            <div className="sticky top-[72px] md:top-[80px] z-40 max-w-4xl mx-auto px-4 mt-4 w-full">
-                <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] flex items-center justify-around px-2 shadow-2xl">
+            <div className="sticky top-[80px] md:top-[100px] z-40 max-w-4xl mx-auto px-4 mt-4 w-full">
+                <div
+                    className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] flex items-center justify-around px-2 shadow-2xl"
+                >
                     {[{ label: 'Posts', value: 'showcase' }, { label: 'Dibs', value: 'services' }, { label: 'Deets', value: 'about' }].map((tab) => (
                         <button
                             key={tab.value}
@@ -241,41 +247,16 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                                     <p className="text-gray-400 text-xs mt-1">{operator.location_text || 'Davao City, Philippines'}</p>
                                 </div>
                                 <div className="h-48 w-full bg-zinc-800 relative group overflow-hidden">
-                                    {operator.google_maps_link ? (
-                                        <div className="w-full h-full">
-                                            <iframe
-                                                title="Location Map"
-                                                src={(() => {
-                                                    const link = operator.google_maps_link;
-                                                    if (link.includes('src="')) {
-                                                        const match = link.match(/src="([^"]+)"/);
-                                                        return match ? match[1] : link;
-                                                    }
-                                                    return link;
-                                                })()}
-                                                width="100%"
-                                                height="100%"
-                                                style={{ border: 0 }}
-                                                allowFullScreen={false}
-                                                loading="lazy"
-                                                referrerPolicy="no-referrer-when-downgrade"
-                                                className="opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700"
-                                            />
-                                            <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-deep-black to-transparent pointer-events-none" />
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {/* Mock Google Map View */}
-                                            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=1000')] bg-cover opacity-40 grayscale group-hover:grayscale-0 transition-all duration-700" />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-deep-black via-transparent to-transparent" />
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <div className="w-10 h-10 bg-electric-teal rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(45,212,191,0.5)] border border-white/20">
-                                                    <MapPin size={24} className="text-black" />
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
-                                    <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center bg-black/60 backdrop-blur-md p-3 rounded-xl border border-white/10 group-hover:border-electric-teal/50 transition-colors">
+                                    <SmartMap
+                                        mode="view"
+                                        initialLocation={operator.lat ? {
+                                            lat: operator.lat,
+                                            lng: operator.lng!,
+                                            placeName: operator.location_text
+                                        } : undefined}
+                                        height="100%"
+                                    />
+                                    <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center bg-black/60 backdrop-blur-md p-3 rounded-xl border border-white/10 group-hover:border-electric-teal/50 transition-colors pointer-events-none">
                                         <span className="text-[10px] font-bold text-white uppercase tracking-widest">Get Directions</span>
                                         <div className="flex items-center gap-1">
                                             <div className="w-1.5 h-1.5 rounded-full bg-electric-teal animate-pulse" />
@@ -323,45 +304,50 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                                 </div>
                             </div>
                         </motion.div>
-                    )}
+                    )
+                    }
 
-                </AnimatePresence>
-            </div>
+                </AnimatePresence >
+            </div >
 
             {/* Bottom Padding for Mobile Nav Bar Visibility */}
-            <div className="h-32 md:h-0" />
+            < div className="h-32 md:h-0" />
 
 
             {/* OWNER OVERLAY: DASHBOARD */}
             <AnimatePresence>
-                {showDashboard && isOwner && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed inset-0 z-[100] bg-deep-void overflow-y-auto"
-                    >
-                        <OperatorDashboard
-                            onBack={() => setShowDashboard(false)}
-                            initialTab={initialDashboardTab}
-                        />
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                {
+                    showDashboard && isOwner && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="fixed inset-0 z-[100] bg-deep-void overflow-y-auto"
+                        >
+                            <OperatorDashboard
+                                onBack={() => setShowDashboard(false)}
+                                initialTab={initialDashboardTab}
+                            />
+                        </motion.div>
+                    )
+                }
+            </AnimatePresence >
 
             {/* BOOKING MODAL (Legacy flow, will upgrade to Customizable Page later) */}
             <AnimatePresence>
-                {selectedItem && (
-                    <BookingModal
-                        isOpen={!!selectedItem}
-                        onClose={() => setSelectedItem(null)}
-                        item={selectedItem}
-                        operator={operator}
-                    />
-                )}
-            </AnimatePresence>
+                {
+                    selectedItem && (
+                        <BookingModal
+                            isOpen={!!selectedItem}
+                            onClose={() => setSelectedItem(null)}
+                            item={selectedItem}
+                            operator={operator}
+                        />
+                    )
+                }
+            </AnimatePresence >
 
-        </div>
+        </div >
     );
 };
 

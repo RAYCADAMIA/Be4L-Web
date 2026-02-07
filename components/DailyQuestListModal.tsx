@@ -49,7 +49,7 @@ const DailyQuestListModal: React.FC<DailyQuestListModalProps> = ({ onClose }) =>
                                 <CheckSquare size={20} className="text-primary" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-black italic text-primary-text uppercase tracking-wider">Side Quest To Do</h2>
+                                <h2 className="text-lg font-black text-primary-text uppercase tracking-wider">Side Quest To Do</h2>
                                 <p className="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Personal Objectives</p>
                             </div>
                         </div>
@@ -95,7 +95,7 @@ const DailyQuestListModal: React.FC<DailyQuestListModalProps> = ({ onClose }) =>
 
                     {tasks.length === 0 && (
                         <div className="text-center py-8 text-gray-600">
-                            <p className="text-xs italic">No active side quests.</p>
+                            <p className="text-xs">No active side quests.</p>
                         </div>
                     )}
 

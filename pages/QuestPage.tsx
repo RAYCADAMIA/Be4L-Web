@@ -1,9 +1,12 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { Quest } from '../types';
 import QuestsScreen from '../components/QuestsScreen';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export const QuestPage: React.FC = () => {
+    useDocumentTitle('Quests');
     const { user } = useAuth();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -14,9 +17,7 @@ export const QuestPage: React.FC = () => {
     };
 
     const handleOpenQuest = (q: Quest) => {
-        const newParams = new URLSearchParams(searchParams);
-        newParams.set('quest', q.id);
-        setSearchParams(newParams);
+        setSearchParams({ quest: q.id });
     };
 
     if (!user) return <div>Loading Quests...</div>;

@@ -219,7 +219,7 @@ export const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = 
                 <div className={`flex flex-col items-center justify-center w-full max-w-xs ${!isFlatline ? 'animate-heartbeat' : ''}`}>
                     <div className={`absolute w-48 h-48 bg-primary/10 blur-[80px] rounded-full pointer-events-none transition-opacity duration-1000 ${isFlatline ? 'opacity-0' : 'opacity-100'}`} />
                     <div className={`relative flex items-center justify-center px-8 py-4 bg-black/40 backdrop-blur-3xl rounded-3xl transition-all duration-1000 border ${isFlatline ? 'border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.1)]' : 'border-white/5 shadow-2xl'} mb-12`}>
-                        <h1 className={`text-5xl font-black italic tracking-tighter transition-all duration-1000 ${isFlatline ? 'text-gray-600 opacity-50' : 'animate-liquid-text'}`} style={{ textShadow: isFlatline ? 'none' : '0 0 20px rgba(45, 212, 191, 0.3)' }}>
+                        <h1 className={`text-5xl font-black tracking-tighter transition-all duration-1000 ${isFlatline ? 'text-gray-600 opacity-50' : 'animate-liquid-text'}`} style={{ textShadow: isFlatline ? 'none' : '0 0 20px rgba(45, 212, 191, 0.3)' }}>
                         </h1>
                     </div>
 
@@ -252,7 +252,7 @@ export const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = 
             {step === 'FEATURES' && (
                 <div className="p-6 flex flex-col justify-between h-full safe-area-bottom">
                     <div className="mt-8 flex flex-col items-center w-full">
-                        <h1 className="text-5xl font-black italic animate-liquid-text mb-2" style={{ textShadow: '0 0 20px rgba(45, 212, 191, 0.3)' }}>Be4L</h1>
+                        <h1 className="text-5xl font-black animate-liquid-text mb-2" style={{ textShadow: '0 0 20px rgba(45, 212, 191, 0.3)' }}>Be4L</h1>
                         <p className="text-white/40 text-[9px] tracking-[0.2em] uppercase font-bold text-center w-full">always for life</p>
                     </div>
                     {/* Feature cards simplified for brevity in extraction, ensuring imports work */}
@@ -322,7 +322,7 @@ export const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = 
                             <ChevronLeft size={24} />
                         </button>
                         <GlowText size="lg" className="uppercase mb-2">Check the pings</GlowText>
-                        <p className="text-gray-400 text-sm font-medium italic">Sent to +63 {phone}</p>
+                        <p className="text-gray-400 text-sm font-medium">Sent to +63 {phone}</p>
                     </div>
                     <div className="flex-1 flex flex-col items-center justify-center -mt-20">
                         <div className="relative w-full flex justify-center mb-8">

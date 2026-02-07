@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
+import { useMotionValue, useSpring, MotionValue } from 'framer-motion';
 
 interface Tab {
     label: string;
@@ -11,15 +12,27 @@ interface NavigationContextType {
     setTabs: (tabs: Tab[]) => void;
     activeTab: string;
     setActiveTab: (tab: string) => void;
+    headerTranslateY: MotionValue<number>;
+    headerSpringY: MotionValue<number>;
+    isHeaderVisible: boolean;
+    setIsHeaderVisible: (visible: boolean) => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
 
 export const NavigationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [tabs, setTabsState] = React.useState<Tab[]>([]);
-    const [activeTab, setActiveTabState] = React.useState<string>('');
+    const [tabs, setTabsState] = useState<Tab[]>([]);
+    const [activeTab, setActiveTabState] = useState<string>('');
+    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
-    const setTabs = React.useCallback((newTabs: Tab[]) => {
+    const headerTranslateY = useMotionValue(0);
+    const headerSpringY = useSpring(headerTranslateY, {
+        damping: 30,
+        stiffness: 300,
+        mass: 0.5
+    });
+
+    const setTabs = useCallback((newTabs: Tab[]) => {
         setTabsState(prev => {
             if (JSON.stringify(newTabs) !== JSON.stringify(prev)) {
                 return newTabs;
@@ -28,16 +41,20 @@ export const NavigationProvider: React.FC<{ children: ReactNode }> = ({ children
         });
     }, []);
 
-    const setActiveTab = React.useCallback((tab: string) => {
+    const setActiveTab = useCallback((tab: string) => {
         setActiveTabState(tab);
     }, []);
 
-    const value = React.useMemo(() => ({
+    const value = useMemo(() => ({
         tabs,
         setTabs,
         activeTab,
-        setActiveTab
-    }), [tabs, setTabs, activeTab, setActiveTab]);
+        setActiveTab,
+        headerTranslateY,
+        headerSpringY,
+        isHeaderVisible,
+        setIsHeaderVisible
+    }), [tabs, setTabs, activeTab, setActiveTab, headerTranslateY, headerSpringY, isHeaderVisible, setIsHeaderVisible]);
 
     return (
         <NavigationContext.Provider value={value}>

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Starfield, HUDMenu } from '../Landing/LandingComponents';
 import { useNavigate } from 'react-router-dom';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 interface LegalLayoutProps {
     children: React.ReactNode;
@@ -11,6 +12,7 @@ interface LegalLayoutProps {
 
 export const LegalLayout: React.FC<LegalLayoutProps> = ({ children, title, lastUpdated = "2026" }) => {
     const navigate = useNavigate();
+    useDocumentTitle(title);
 
     return (
         <div className="relative min-h-screen bg-[#09090b] text-white selection:bg-electric-teal/30 overflow-x-hidden">

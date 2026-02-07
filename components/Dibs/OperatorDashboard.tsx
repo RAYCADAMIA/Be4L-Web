@@ -9,6 +9,7 @@ import InventoryManager from './InventoryManager';
 import BusinessProfileEditor from './BusinessProfileEditor';
 import ChatListScreen from '../Chat/ChatListScreen';
 import { useAuth } from '../../contexts/AuthContext';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 // Reusable Stats Card
 const DataCard = ({ title, value, subtext, icon: Icon, trend }: any) => (
@@ -36,17 +37,23 @@ const DataCard = ({ title, value, subtext, icon: Icon, trend }: any) => (
 const TabButton = ({ active, onClick, icon: Icon, label, badge }: any) => (
     <button
         onClick={onClick}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${active
-            ? 'bg-electric-teal text-black shadow-[0_0_20px_rgba(45,212,191,0.4)]'
-            : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+        className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative group ${active
+            ? 'bg-electric-teal text-black shadow-[0_10px_30px_rgba(45,212,191,0.2)] scale-105'
+            : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'
             }`}
     >
-        <Icon size={16} className={active ? 'stroke-[3px]' : ''} />
+        <Icon size={14} className={active ? 'stroke-[3px]' : ''} />
         {label}
         {badge && (
-            <span className="ml-1 px-2 py-0.5 text-[10px] bg-red-500 text-white rounded-full font-black">
+            <span className="ml-1 px-1.5 py-0.5 text-[8px] bg-red-500 text-white rounded-full font-black animate-pulse">
                 {badge}
             </span>
+        )}
+        {active && (
+            <motion.div
+                layoutId="activeTabGlow"
+                className="absolute inset-0 bg-electric-teal/20 blur-xl -z-10 rounded-full"
+            />
         )}
     </button>
 );
@@ -57,6 +64,7 @@ interface OperatorDashboardProps {
 }
 
 const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ onBack, initialTab = 'overview' }) => {
+    useDocumentTitle('Partner Dashboard');
     const navigate = useNavigate();
     const { user } = useAuth();
     const [loading, setLoading] = useState(true);
@@ -87,29 +95,55 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ onBack, initialTa
     if (loading) return <div className="flex h-screen items-center justify-center bg-transparent"><EKGLoader /></div>;
 
     return (
-        <div className="min-h-full bg-transparent text-white p-6 pt-16 pb-24 relative max-w-7xl mx-auto w-full">
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-6">
-                {onBack && (
-                    <button onClick={onBack} className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors">
-                        <ArrowLeft size={20} />
-                    </button>
-                )}
-                <h1 className="text-2xl font-black italic text-white tracking-tighter">DASHBOARD</h1>
-            </div>
+        <div className="min-h-full bg-[#0A0A0A] text-white relative pt-24 md:pt-32">
+            {/* Dashboard Header */}
+            <header className="bg-transparent border-b border-white/5 px-6 py-4">
+                <div className="max-w-7xl mx-auto flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            {onBack && (
+                                <button onClick={onBack} className="p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-white transition-all active:scale-90 flex items-center justify-center border border-white/10">
+                                    <ArrowLeft size={18} />
+                                </button>
+                            )}
+                            <div>
+                                <h1 className="text-xl md:text-2xl font-black text-white tracking-tighter leading-none flex items-center gap-2">
+                                    BE4L <span className="text-electric-teal">DASHBOARD</span>
+                                </h1>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600 mt-1.5 flex items-center gap-2">
+                                    <Shield size={10} className="text-electric-teal/50" />
+                                    Operator Portal <span className="w-1 h-1 rounded-full bg-electric-teal animate-pulse" />
+                                </p>
+                            </div>
+                        </div>
 
-            {/* Navigation Tabs */}
-            <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar mb-6">
-                <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={BarChart3} label="Overview" />
-                <TabButton active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} icon={DollarSign} label="Orders" badge={stats.pending > 0 ? stats.pending : undefined} />
-                <TabButton active={activeTab === 'comms'} onClick={() => setActiveTab('comms')} icon={MessageCircle} label="Comms" />
-                <TabButton active={activeTab === 'verify'} onClick={() => setActiveTab('verify')} icon={CheckCircle} label="Verify" />
-                <TabButton active={activeTab === 'items'} onClick={() => setActiveTab('items')} icon={List} label="Items" />
-                <TabButton active={activeTab === 'business'} onClick={() => setActiveTab('business')} icon={Store} label="Brand" />
-            </div>
+                        <div className="flex items-center gap-2">
+                            <button className="p-2.5 rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-colors relative">
+                                <MessageCircle size={18} />
+                                {stats.pending > 0 && <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-ping" />}
+                            </button>
+                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-electric-teal to-blue-500 p-[1px]">
+                                <div className="w-full h-full bg-[#0A0A0A] rounded-[calc(1rem-1px)] flex items-center justify-center overflow-hidden">
+                                    <Store size={20} className="text-electric-teal" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            {/* Content Body */}
-            <main className="pb-32">
+                    {/* Navigation Tabs - Compact & Scrollable */}
+                    <nav className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+                        <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={BarChart3} label="Overview" />
+                        <TabButton active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} icon={DollarSign} label="Orders" badge={stats.pending > 0 ? stats.pending : undefined} />
+                        <TabButton active={activeTab === 'comms'} onClick={() => setActiveTab('comms')} icon={MessageCircle} label="Comms" />
+                        <TabButton active={activeTab === 'verify'} onClick={() => setActiveTab('verify')} icon={CheckCircle} label="Verify" />
+                        <TabButton active={activeTab === 'items'} onClick={() => setActiveTab('items')} icon={List} label="Inventory" />
+                        <TabButton active={activeTab === 'business'} onClick={() => setActiveTab('business')} icon={Store} label="Settings" />
+                    </nav>
+                </div>
+            </header>
+
+            {/* Content Body with proper spacing for global navbar */}
+            <main className="max-w-7xl mx-auto px-6 py-8 pb-40">
                 <AnimatePresence mode="wait">
                     {activeTab === 'overview' && (
                         <motion.div

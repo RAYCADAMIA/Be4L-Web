@@ -33,11 +33,11 @@ export const PersistentLogo: React.FC<PersistentLogoProps> = ({ viewState, expan
              */}
             <motion.div
                 layout
-                animate={{ gap: expanded ? "0.04em" : "-0.08em" }}
+                animate={{ gap: expanded ? "0.04em" : "-0.05em" }}
                 className="flex items-center justify-center h-min"
             >
                 {/* 'Be' moves naturally */}
-                <motion.span layout className="animate-liquid-text leading-none">Be</motion.span>
+                <motion.span layout className="animate-liquid-text !pr-0 leading-none">Be</motion.span>
 
                 {/* The Morph Container - This pushes neighbors smoothly */}
                 <div className="relative flex items-center justify-center">
@@ -49,7 +49,7 @@ export const PersistentLogo: React.FC<PersistentLogoProps> = ({ viewState, expan
                             scale: expanded ? 0.8 : 1,
                             position: expanded ? "absolute" : "relative"
                         }}
-                        className="animate-liquid-text leading-none"
+                        className="animate-liquid-text !pr-0 leading-none"
                     >4</motion.span>
 
                     {/* The 'For' expands from 0 width */}
@@ -61,20 +61,20 @@ export const PersistentLogo: React.FC<PersistentLogoProps> = ({ viewState, expan
                             opacity: expanded ? 1 : 0,
                             marginInline: expanded ? "0.5rem" : "0px"
                         }}
-                        className="overflow-hidden whitespace-nowrap animate-liquid-text pseudo-italic leading-none"
+                        className="overflow-hidden whitespace-nowrap animate-liquid-text !pr-0 leading-none"
                     >For</motion.span>
                 </div>
 
                 {/* 'Life' grows out of 'L' */}
-                <div className="flex items-center relative gap-4">
+                <div className="flex items-center relative gap-0">
                     <div className="flex items-center">
-                        <motion.span layout className="animate-liquid-text leading-none">L</motion.span>
+                        <motion.span layout className="animate-liquid-text !pr-0 leading-none">L</motion.span>
                         <motion.span
                             animate={{
                                 width: expanded ? "auto" : 0,
                                 opacity: expanded ? 1 : 0
                             }}
-                            className="overflow-hidden animate-liquid-text flex leading-none"
+                            className="overflow-hidden animate-liquid-text flex leading-none !pr-0"
                         >
                             <span className="pr-4">ife</span>
                         </motion.span>
@@ -87,7 +87,7 @@ export const PersistentLogo: React.FC<PersistentLogoProps> = ({ viewState, expan
                             opacity: viewState === 'hero' ? 0.6 : 0,
                             scale: viewState === 'hero' ? 1 : 0.8
                         }}
-                        className={`absolute left-full ml-4 md:ml-8 border border-white/10 bg-white/5 rounded-lg md:rounded-2xl px-2 md:px-4 py-1 md:py-2 text-[10px] md:text-xl font-black uppercase tracking-[0.2em] animate-liquid-text whitespace-nowrap not-italic`}
+                        className={`absolute left-full ml-4 md:ml-8 border border-white/10 bg-white/5 rounded-lg md:rounded-2xl px-2 md:px-4 py-1 md:py-2 text-[10px] md:text-xl font-black uppercase tracking-[0.2em] animate-liquid-text whitespace-nowrap`}
                     >
                         BETA
                     </motion.div>

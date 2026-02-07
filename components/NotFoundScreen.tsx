@@ -20,13 +20,13 @@ const NotFoundScreen: React.FC<NotFoundScreenProps> = ({ onHome, onBack }) => {
                         <Ghost size={64} className="text-primary/50 animate-bounce" />
                     </div>
 
-                    <h1 className="text-8xl font-black italic text-primary/10 absolute top-[-40px] select-none pointer-events-none">
+                    <h1 className="text-8xl font-black text-primary/10 absolute top-[-40px] select-none pointer-events-none">
                         404
                     </h1>
                 </div>
             </div>
 
-            <h2 className="text-4xl font-black text-white italic tracking-tighter mb-4 uppercase">
+            <h2 className="text-4xl font-black text-white tracking-tighter mb-4 uppercase">
                 Lost in the Void
             </h2>
 

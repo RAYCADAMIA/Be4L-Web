@@ -48,7 +48,7 @@ export const CommandCenter: React.FC = () => {
                 <div className="flex items-end justify-between">
                     <div>
                         <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Command Center</h2>
-                        <h1 className="text-4xl md:text-5xl font-black italic text-white uppercase tracking-tighter">
+                        <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter">
                             Welcome back, <span className="animate-liquid-text">{user.name?.split(' ')[0] || 'Agent'}</span>
                         </h1>
                     </div>
@@ -83,7 +83,7 @@ export const CommandCenter: React.FC = () => {
                                 </div>
 
                                 <div className="absolute bottom-8 left-8 right-8">
-                                    <h3 className="text-4xl font-black animate-liquid-text italic uppercase tracking-tight mb-2 leading-none">
+                                    <h3 className="text-4xl font-black animate-liquid-text uppercase tracking-tight mb-2 leading-none">
                                         {trendingQuest.title}
                                     </h3>
                                     <p className="text-gray-300 line-clamp-2 max-w-xl text-sm font-medium mb-6">
@@ -123,7 +123,7 @@ export const CommandCenter: React.FC = () => {
                                             <stat.icon size={14} className={stat.color} />
                                             <span className="text-[10px] font-bold text-gray-500 uppercase">{stat.label}</span>
                                         </div>
-                                        <div className="text-2xl font-black animate-liquid-text italic">{stat.value}</div>
+                                        <div className="text-2xl font-black animate-liquid-text">{stat.value}</div>
                                     </div>
                                 ))}
                             </div>
@@ -179,7 +179,7 @@ export const CommandCenter: React.FC = () => {
                             <div className="absolute top-0 right-0 p-4 opacity-50 text-white/20 group-hover:text-primary/20 transition-colors">
                                 <Compass size={40} className={`transform ${i % 2 === 0 ? 'rotate-12' : '-rotate-12'}`} />
                             </div>
-                            <h4 className="text-white font-black italic uppercase text-lg relative z-10 mt-auto pt-8">{cat}</h4>
+                            <h4 className="text-white font-black uppercase text-lg relative z-10 mt-auto pt-8">{cat}</h4>
                             <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider relative z-10">View All</div>
                         </div>
                     ))}

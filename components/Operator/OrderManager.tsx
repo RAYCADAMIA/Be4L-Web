@@ -20,7 +20,7 @@ const OrderManager: React.FC = () => {
             {/* Header */}
             <div>
                 <h2 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Logistics</h2>
-                <h1 className="text-3xl font-black italic text-white uppercase tracking-tighter">Order Manager</h1>
+                <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Order Manager</h1>
             </div>
 
             {/* Filter Bar */}
@@ -102,7 +102,7 @@ const OrderManager: React.FC = () => {
 
                             <div className="flex-1 overflow-y-auto no-scrollbar space-y-8">
                                 <div className="space-y-1">
-                                    <div className="text-3xl font-black italic text-white uppercase tracking-tighter">Verification Needed</div>
+                                    <div className="text-3xl font-black text-white uppercase tracking-tighter">Verification Needed</div>
                                     <p className="text-xs text-gray-500 uppercase tracking-widest">Order ID: {selectedBooking.id}</p>
                                 </div>
 
@@ -126,7 +126,7 @@ const OrderManager: React.FC = () => {
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-gray-500 text-[10px] font-bold uppercase">Total Amount</span>
-                                        <span className="text-primary text-lg font-black italic tracking-tighter">₱{selectedBooking.amount}</span>
+                                        <span className="text-primary text-lg font-black tracking-tighter">₱{selectedBooking.amount}</span>
                                     </div>
                                 </div>
                             </div>

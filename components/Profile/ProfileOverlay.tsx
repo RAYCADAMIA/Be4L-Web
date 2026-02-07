@@ -72,7 +72,7 @@ const ProfileOverlay: React.FC<ProfileOverlayProps> = ({ userId, onClose }) => {
                     animate={{ y: 0 }}
                     exit={{ y: '100%' }}
                     transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                    className="relative w-full max-w-lg md:max-w-md bg-deep-black border-t md:border border-white/10 md:rounded-[2.5rem] overflow-hidden shadow-2xl pointer-events-auto pb-10 md:pb-0"
+                    className="relative w-full max-w-lg md:max-w-md bg-deep-black border-t md:border border-white/10 md:rounded-[2.5rem] overflow-y-auto max-h-[90vh] no-scrollbar shadow-2xl pointer-events-auto pb-10 md:pb-0"
                 >
                     {loading ? (
                         <div className="h-[60vh] flex items-center justify-center"><EKGLoader /></div>
@@ -105,7 +105,7 @@ const ProfileOverlay: React.FC<ProfileOverlayProps> = ({ userId, onClose }) => {
                                     <div className="flex gap-2">
                                         <button
                                             onClick={handleFollow}
-                                            className={`h-12 px-6 rounded-2xl flex items-center gap-2 font-black uppercase italic text-xs transition-all ${isFollowing ? 'bg-white/5 border border-white/10 text-gray-400' : 'bg-white text-black'}`}
+                                            className={`h-12 px-6 rounded-2xl flex items-center gap-2 font-black uppercase text-xs transition-all ${isFollowing ? 'bg-white/5 border border-white/10 text-gray-400' : 'bg-white text-black'}`}
                                         >
                                             {isFollowing ? <UserMinus size={16} /> : <UserPlus size={16} />}
                                             {isFollowing ? 'Following' : 'Follow'}
@@ -120,7 +120,7 @@ const ProfileOverlay: React.FC<ProfileOverlayProps> = ({ userId, onClose }) => {
                                 </div>
 
                                 <div className="space-y-1">
-                                    <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">
+                                    <h2 className="text-2xl font-black uppercase tracking-tighter text-white">
                                         {user.username}
                                     </h2>
                                     <div className="flex items-center gap-2 text-gray-500 font-bold text-[10px] uppercase tracking-[0.2em]">
@@ -129,7 +129,7 @@ const ProfileOverlay: React.FC<ProfileOverlayProps> = ({ userId, onClose }) => {
                                     </div>
                                 </div>
 
-                                <div className="mt-6 p-4 rounded-2xl bg-white/[0.03] border border-white/5 text-sm text-gray-400 leading-relaxed italic">
+                                <div className="mt-6 p-4 rounded-2xl bg-white/[0.03] border border-white/5 text-sm text-gray-400 leading-relaxed">
                                     "{user.bio || 'No status set.'}"
                                 </div>
 
@@ -141,7 +141,7 @@ const ProfileOverlay: React.FC<ProfileOverlayProps> = ({ userId, onClose }) => {
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-black text-gray-600 uppercase">Aura Points</p>
-                                            <p className="text-lg font-black italic">{user.aura || 0}</p>
+                                            <p className="text-lg font-black">{user.aura || 0}</p>
                                         </div>
                                     </div>
                                     <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center gap-4">
@@ -150,7 +150,7 @@ const ProfileOverlay: React.FC<ProfileOverlayProps> = ({ userId, onClose }) => {
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-black text-gray-600 uppercase">Quest Tier</p>
-                                            <p className="text-lg font-black italic">LVL {user.level || 1}</p>
+                                            <p className="text-lg font-black">LVL {user.level || 1}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -163,7 +163,7 @@ const ProfileOverlay: React.FC<ProfileOverlayProps> = ({ userId, onClose }) => {
                                             <div key={i} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/[0.02] transition-all group cursor-pointer">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-primary/40 group-hover:bg-primary transition-colors" />
                                                 <div className="flex-1">
-                                                    <p className="text-xs font-bold text-gray-300 uppercase italic">Completed Local Hunt</p>
+                                                    <p className="text-xs font-bold text-gray-300 uppercase">Completed Local Hunt</p>
                                                     <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">2 DAYS AGO</p>
                                                 </div>
                                                 <ChevronRight size={14} className="text-gray-800" />

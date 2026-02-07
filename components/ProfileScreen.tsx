@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DibbedDetailModal from './Dibs/DibbedDetailModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChevronLeft, Settings, User as UserIcon, Info, LogOut, Share2,
@@ -6,12 +7,13 @@ import {
     Check, X, Camera, Phone, Mail, Globe, Shield,
     Bell, Trash2, Smartphone, HelpCircle, Star, QrCode, Copy, Download,
     UserPlus, Users, Search, Activity, Compass, LayoutDashboard, ShoppingBag, Plus, Send,
-    Zap, ChevronRight
+    Zap, ChevronRight, MapPin
 } from 'lucide-react';
 import { CreatePostModal } from './CreatePostModal';
 import { User as UserType, Capture, Quest, QuestStatus, DibsItem } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigation } from '../contexts/NavigationContext';
+import OperatorProfileScreen from './Dibs/OperatorProfileScreen';
 import { supabaseService } from '../services/supabaseService';
 import { EKGLoader, GradientButton } from './ui/AestheticComponents';
 import QuestCard from './QuestCard';
@@ -19,9 +21,9 @@ import { useToast } from './Toast';
 import { COLORS, MOCK_USER, OTHER_USERS } from '../constants';
 import { dailyService } from '../services/dailyService';
 import OperatorOnboarding from './Dibs/OperatorOnboarding';
-import { Hero3DScene } from './Landing/Hero3DScene';
+import { HeroPhoneShowcase } from './Landing/HeroPhoneShowcase';
 import OperatorDashboard from './Dibs/OperatorDashboard';
-import OperatorProfileScreen from './Dibs/OperatorProfileScreen';
+
 import { Operator } from '../types';
 import ProfileHeader from './ProfileHeader';
 import DibsItemCard from './DibsItemCard';
@@ -59,7 +61,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
     const [showFollowers, setShowFollowers] = useState(false);
     const [showFollowing, setShowFollowing] = useState(false);
     const [showAuraModal, setShowAuraModal] = useState(false);
-    const [view, setView] = useState<'PROFILE' | 'SETTINGS'>('PROFILE');
+    const [view, setView] = useState<ProfileView>('MAIN');
     const [loadingQuests, setLoadingQuests] = useState(false);
     const [isFollowing, setIsFollowing] = useState(false);
     const [isFollowLoading, setIsFollowLoading] = useState(false);
@@ -155,10 +157,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
         setIsFollowLoading(true);
         try {
             if (isFollowing) {
-                await supabaseService.users.unfollow(user.id);
+                await supabaseService.profiles.unfollowUser(currentUserId, user.id);
                 setIsFollowing(false);
             } else {
-                await supabaseService.users.follow(user.id);
+                await supabaseService.profiles.followUser(currentUserId, user.id);
                 setIsFollowing(true);
             }
         } catch (err) {
@@ -176,8 +178,27 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
         if (isMe) setShowPfpModal(true);
     };
 
+    // If Operator AND NOT ME, delegate to Operator Profile Screen (Public View)
+    if (user.is_operator && myOperatorData && !isMe) {
+        return (
+            <OperatorProfileScreen
+                operatorData={myOperatorData}
+                isOwnerView={false}
+            />
+        );
+    }
+
+    // If we are in the Operator Portal view (Dashboard)
+    if (view === 'OPERATOR_PORTAL') {
+        return (
+            <div className="fixed inset-0 z-[100] bg-[#0A0A0A] overflow-y-auto">
+                <OperatorDashboard onBack={() => setView('MAIN')} />
+            </div>
+        );
+    }
+
     return (
-        <div className="flex-1 min-h-full bg-transparent text-white relative">
+        <div className="flex-1 h-full overflow-y-auto no-scrollbar bg-transparent text-white relative">
             <ProfileHeader
                 user={user}
                 isMe={isMe}
@@ -187,7 +208,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                 onEditProfile={() => setShowEditModal(true)}
                 onAddPost={() => setShowCreatePost(true)}
                 onLogout={() => setShowLogoutConfirm(true)}
-                onManagePage={() => setLocalTab('DIBS')}
+                onManagePage={() => setView('OPERATOR_PORTAL')}
                 onFollow={handleFollowToggle}
                 onMessage={async () => {
                     const chat = await supabaseService.chat.getOrCreatePersonalChat(
@@ -206,13 +227,15 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                 onShowFollowers={() => setShowFollowers(true)}
                 onShowFollowing={() => setShowFollowing(true)}
                 onShowAuraStats={() => setShowAuraModal(true)}
+                onProfileUpdate={onProfileUpdate}
             />
 
-            <div className="sticky top-[72px] md:top-[80px] z-40 max-w-4xl mx-auto px-4 mt-4 w-full">
+            <div className="sticky top-[80px] md:top-[100px] z-40 max-w-4xl mx-auto px-4 mt-4 w-full">
                 <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] flex items-center justify-around px-2 shadow-2xl">
                     {(user.is_operator ? [
-                        { label: 'Lore', value: 'LORE' },
-                        { label: 'Dibs', value: 'DIBS' }
+                        { label: 'Posts', value: 'LORE' },
+                        { label: 'Dibs', value: 'DIBS' },
+                        { label: 'Deets', value: 'ABOUT' }
                     ] : [
                         { label: 'My Lore', value: 'LORE' },
                         { label: 'Side Quests', value: 'QUESTS' },
@@ -315,8 +338,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                                                         <div className="flex-1">
                                                             <div className="flex justify-between items-start mb-2">
                                                                 <div>
-                                                                    <h4 className="text-lg font-black italic text-white uppercase tracking-tight mb-0.5 animate-liquid-text">{bk.item?.title || 'Dibs Item'}</h4>
-                                                                    <p className="text-[9px] font-black uppercase tracking-widest text-electric-teal animate-liquid-text italic">{bk.operator?.business_name || 'Operator'}</p>
+                                                                    <h4 className="text-lg font-black text-white uppercase tracking-tight mb-0.5 animate-liquid-text">{bk.item?.title || 'Dibs Item'}</h4>
+                                                                    <p className="text-[9px] font-black uppercase tracking-widest text-electric-teal animate-liquid-text">{bk.operator?.business_name || 'Operator'}</p>
                                                                 </div>
                                                                 <div className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.2em] border ${bk.status === 'CONFIRMED'
                                                                     ? 'bg-electric-teal border-electric-teal text-black'
@@ -406,10 +429,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                                         <p className="text-[10px] font-black uppercase tracking-[0.4em] animate-liquid-text">Capturing Lore coming soon</p>
                                         <div className="space-y-4">
                                             <p className="text-sm font-bold text-gray-400 leading-relaxed px-4">
-                                                <span className="animate-liquid-text italic">Lore</span> is a social feed of your memories and your friends' captures. Revisit your collected lores and personal legacy anytime on your <span className="animate-liquid-text italic">profile</span>.
+                                                <span className="animate-liquid-text">Lore</span> is a social feed of your memories and your friends' captures. Revisit your collected lores and personal legacy anytime on your <span className="animate-liquid-text">profile</span>.
                                             </p>
                                             <p className="text-sm font-bold text-gray-400 leading-relaxed">
-                                                Join our waitlist to be among the first founding members of <span className="animate-liquid-text italic">Be4L</span>.
+                                                Join our waitlist to be among the first founding members of <span className="animate-liquid-text">Be4L</span>.
                                             </p>
                                         </div>
                                         <div className="pt-4 max-w-sm mx-auto w-full">
@@ -450,9 +473,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: 0.5, duration: 1 }}
-                                    className="relative w-full h-[60vh] -mt-12"
+                                    className="relative w-full py-12"
                                 >
-                                    <Hero3DScene />
+                                    <HeroPhoneShowcase />
                                 </motion.div>
                             </div>
                         )}
@@ -465,7 +488,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                     </motion.div>
                 )}
 
-                {localTab === 'QUESTS' && (
+                {localTab === 'QUESTS' && !user.is_operator && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -528,6 +551,54 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                         </div>
                     </motion.div>
                 )}
+
+                {localTab === 'ABOUT' && user.is_operator && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="py-6 space-y-6"
+                    >
+                        <div className="bg-white/[0.03] border border-white/5 rounded-[2.5rem] p-8 shadow-2xl backdrop-blur-xl">
+                            <h3 className="text-xs font-black uppercase tracking-widest mb-6 flex items-center gap-2">
+                                <Info size={14} className="text-electric-teal" />
+                                <span className="animate-liquid-text">About {myOperatorData?.business_name}</span>
+                            </h3>
+                            <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                                {myOperatorData?.bio || user.bio || "No description provided."}
+                            </p>
+                        </div>
+
+                        {/* Additional Info Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-white/[0.03] border border-white/5 rounded-[2.5rem] p-8">
+                                <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-6 flex items-center gap-2">
+                                    <MapPin size={12} className="text-electric-teal" />
+                                    Location
+                                </h3>
+                                <p className="text-sm font-bold text-white mb-2">{myOperatorData?.location_text || 'Davao City, Philippines'}</p>
+                                <div className="h-32 w-full bg-white/5 rounded-2xl border border-white/5 flex items-center justify-center opacity-50 grayscale">
+                                    <MapPin size={24} className="text-gray-700" />
+                                </div>
+                            </div>
+                            <div className="bg-white/[0.03] border border-white/5 rounded-[2.5rem] p-8">
+                                <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-6 flex items-center gap-2">
+                                    <Activity size={12} className="text-electric-teal" />
+                                    Details
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-gray-500 font-bold uppercase tracking-widest">Type</span>
+                                        <span className="font-black text-white">{myOperatorData?.operator_type || 'Brand'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-gray-500 font-bold uppercase tracking-widest">Status</span>
+                                        <span className="text-electric-teal font-black uppercase">Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
             </div>
 
             {showQr && (
@@ -580,7 +651,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                             <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <LogOut size={32} className="text-red-500" />
                             </div>
-                            <h3 className="text-xl font-black uppercase italic tracking-tighter text-white mb-2">Are you sure?</h3>
+                            <h3 className="text-xl font-black uppercase tracking-tighter text-white mb-2">Are you sure?</h3>
                             <p className="text-xs font-bold text-gray-500 leading-relaxed mb-8">
                                 You're about to log out of Be4L. You'll need to sign in again to access your lore and quests.
                             </p>
@@ -626,7 +697,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                             <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
                                 <Trash2 size={40} className="text-red-500" />
                             </div>
-                            <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white mb-4">PERMANENT DELETION</h3>
+                            <h3 className="text-2xl font-black uppercase tracking-tighter text-white mb-4">PERMANENT DELETION</h3>
                             <p className="text-sm font-bold text-gray-400 leading-relaxed mb-10">
                                 This action is <span className="text-red-500 font-black underline">irreversible</span>. All your memories (Lore), quests history, and aura points will be permanently scrubbed from the Be4L network.
                             </p>
@@ -653,67 +724,12 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                 )}
             </AnimatePresence>
 
-            {/* Ticket Modal */}
-            <AnimatePresence>
-                {selectedBooking && (
-                    <div className="fixed inset-0 z-[150] flex items-center justify-center p-6">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-black/90 backdrop-blur-2xl"
-                            onClick={() => setSelectedBooking(null)}
-                        />
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="bg-electric-teal border-none rounded-[3rem] w-full max-w-sm relative z-10 shadow-[0_20px_60px_rgba(45,212,191,0.4)] overflow-hidden text-black p-8 flex flex-col items-center"
-                        >
-                            {/* Checkmark Icon */}
-                            <div className="w-16 h-16 bg-black/10 rounded-full flex items-center justify-center mb-6">
-                                <Check size={32} />
-                            </div>
-
-                            <h3 className="text-3xl font-black italic uppercase tracking-tighter mb-1">Dibs Called!</h3>
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-8 opacity-60">Booking Submitted</p>
-
-                            {/* Booking Code Box */}
-                            <div className="w-full bg-black/10 rounded-3xl p-8 mb-8 text-center border border-black/5">
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-2 opacity-50">Booking Code</p>
-                                <p className="text-4xl font-mono font-black tracking-tighter">{selectedBooking.booking_ref}</p>
-                            </div>
-
-                            {/* Divider Line */}
-                            <div className="w-full h-px bg-black/10 mb-8" />
-
-                            {/* Reservation Details */}
-                            <div className="w-full space-y-4">
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50">Reservation Details</p>
-                                <div className="flex justify-between items-end">
-                                    <span className="text-xs font-bold leading-tight max-w-[70%]">{selectedBooking.item?.title}</span>
-                                    <span className="text-xs font-black">x1</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-xs opacity-60 font-bold uppercase tracking-widest">Date</span>
-                                    <span className="text-xs font-black">{new Date(selectedBooking.created_at).toLocaleDateString()}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-xs opacity-60 font-bold uppercase tracking-widest">Operator</span>
-                                    <span className="text-xs font-black">{selectedBooking.operator?.business_name}</span>
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={() => setSelectedBooking(null)}
-                                className="mt-8 px-8 py-3 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
-                            >
-                                Done
-                            </button>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+            {/* Dibbed Detail Modal (New Ticket View) */}
+            <DibbedDetailModal
+                isOpen={!!selectedBooking}
+                onClose={() => setSelectedBooking(null)}
+                booking={selectedBooking}
+            />
 
             {/* Edit Profile Modal */}
             <AnimatePresence>
@@ -733,7 +749,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                             className="bg-[#0A0A0A] border border-white/10 rounded-[3rem] w-full max-w-md relative z-10 shadow-3xl overflow-hidden flex flex-col max-h-[90vh]"
                         >
                             <div className="p-8 border-b border-white/5 flex items-center justify-between">
-                                <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Edit Profile</h3>
+                                <h3 className="text-xl font-black uppercase tracking-tighter text-white">Edit Profile</h3>
                                 <button onClick={() => setShowEditModal(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors">
                                     <X size={20} className="text-white" />
                                 </button>
@@ -833,8 +849,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                                             <img src={u.avatar_url} className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-xs font-black text-white group-hover:text-electric-teal transition-colors animate-liquid-text italic">{u.name}</p>
-                                            <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest animate-liquid-text italic">@{u.username}</p>
+                                            <p className="text-xs font-black text-white group-hover:text-electric-teal transition-colors animate-liquid-text">{u.name}</p>
+                                            <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest animate-liquid-text">@{u.username}</p>
                                         </div>
                                         <ChevronRight size={14} className="text-gray-700 group-hover:text-white transition-colors" />
                                     </div>
@@ -859,7 +875,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                                 <div className="flex items-center gap-3 text-electric-teal">
                                     <Activity size={24} />
                                     <div>
-                                        <h3 className="text-xl font-black italic tracking-tighter leading-none animate-liquid-text">
+                                        <h3 className="text-xl font-black tracking-tighter leading-none animate-liquid-text">
                                             {Math.round((user.aura?.score || user.reliability_score || 4.8) * 100).toLocaleString()}
                                         </h3>
                                         <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Social Reputation</p>
@@ -887,7 +903,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                                                     <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{new Date(tx.created_at).toLocaleDateString()}</p>
                                                 </div>
                                             </div>
-                                            <span className={`text-xs font-black italic ${tx.amount > 0 ? 'text-electric-teal' : 'text-red-500'}`}>
+                                            <span className={`text-xs font-black ${tx.amount > 0 ? 'text-electric-teal' : 'text-red-500'}`}>
                                                 {tx.amount > 0 ? '+' : ''}{tx.amount}
                                             </span>
                                         </div>

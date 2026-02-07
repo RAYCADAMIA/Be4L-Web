@@ -1,37 +1,53 @@
+import React, { Suspense, lazy } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { PlatformLayout } from './components/layouts/PlatformLayout';
 import { PublicLayout } from './components/layouts/PublicLayout';
-import { FeedPage } from './pages/FeedPage';
-import { QuestPage } from './pages/QuestPage';
-import { ChatPage } from './pages/ChatPage';
-import { BookPage } from './pages/BookPage';
-import OperatorProfileScreen from './components/Dibs/OperatorProfileScreen';
-import { ProfilePage } from './pages/ProfilePage';
-import QuestDetailScreen from './components/Quest/QuestDetailScreen';
-import { LorePage } from './pages/LorePage';
+// Lazy Load Components
+const FeedPage = lazy(() => import('./pages/FeedPage').then(module => ({ default: module.FeedPage })));
+const QuestPage = lazy(() => import('./pages/QuestPage').then(module => ({ default: module.QuestPage })));
+const ChatPage = lazy(() => import('./pages/ChatPage').then(module => ({ default: module.ChatPage })));
+const BookPage = lazy(() => import('./pages/BookPage').then(module => ({ default: module.BookPage })));
+const OperatorProfileScreen = lazy(() => import('./components/Dibs/OperatorProfileScreen'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const QuestDetailScreen = lazy(() => import('./components/Quest/QuestDetailScreen'));
+const LorePage = lazy(() => import('./pages/LorePage').then(module => ({ default: module.LorePage })));
+const OperatorDashboard = lazy(() => import('./components/Dibs/OperatorDashboard'));
+const AdminDashboard = lazy(() => import('./components/Dibs/AdminDashboard'));
+const LandingPage = lazy(() => import('./components/LandingPage'));
 
 const OperatorProfileScreenWrapper = () => <OperatorProfileScreen />; // Wrap if needed or use directly
-import OperatorDashboard from './components/Dibs/OperatorDashboard';
-import AdminDashboard from './components/Dibs/AdminDashboard';
 
 
-import { HomePage } from './components/HomePage';
+// import { HomePage } from './components/HomePage'; // Lazy loaded
 import { ErrorBoundary } from './components/ErrorBoundary';
-import LandingPage from './components/LandingPage';
+// import LandingPage from './components/LandingPage'; // Converted to lazy
 import { AnimationOrchestrator } from './components/Landing/AnimationOrchestrator';
 
 // New Static & Partner Pages
-import { PartnerPitchPage } from './pages/Partner/PartnerPitchPage';
-import { PartnerApplyPage } from './pages/Partner/PartnerApplyPage';
-import { PartnerPendingPage } from './pages/Partner/PartnerPendingPage';
-import { AboutPage } from './pages/AboutPage';
-import { PrivacyPage } from './pages/PrivacyPage';
-import { TermsPage } from './pages/TermsPage';
-import { TeamPage } from './pages/TeamPage';
+const PartnerPitchPage = lazy(() => import('./pages/Partner/PartnerPitchPage').then(module => ({ default: module.PartnerPitchPage })));
+const PartnerApplyPage = lazy(() => import('./pages/Partner/PartnerApplyPage').then(module => ({ default: module.PartnerApplyPage })));
+const PartnerPendingPage = lazy(() => import('./pages/Partner/PartnerPendingPage').then(module => ({ default: module.PartnerPendingPage })));
+const AboutPage = lazy(() => import('./pages/AboutPage').then(module => ({ default: module.AboutPage })));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
+const TermsPage = lazy(() => import('./pages/TermsPage').then(module => ({ default: module.TermsPage })));
+const TeamPage = lazy(() => import('./pages/TeamPage').then(module => ({ default: module.TeamPage })));
+const HomePage = lazy(() => import('./components/HomePage').then(module => ({ default: module.HomePage })));
 
 // Auth & Onboarding
 import { AuthWrapper } from './components/Auth/AuthWrapper';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { HeartbeatLoader } from './components/HeartbeatLoader';
+import { useParams } from 'react-router-dom';
+
+const QuestRedirect = () => {
+    const { questId } = useParams();
+    return <Navigate to={`/app/quests?quest=${questId}`} replace />;
+};
+
+const ProfileRedirect = () => {
+    const { userId } = useParams();
+    return <Navigate to={`/app/profile/${userId}`} replace />;
+};
 
 export const router = createBrowserRouter([
     {
@@ -45,7 +61,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'login',
-                element: <LandingPage />
+                element: <Suspense fallback={<HeartbeatLoader />}><LandingPage /></Suspense>
             },
             {
                 path: 'onboarding',
@@ -53,31 +69,39 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'partner',
-                element: <PartnerPitchPage />
+                element: <Suspense fallback={<HeartbeatLoader />}><PartnerPitchPage /></Suspense>
             },
             {
                 path: 'partner/apply',
-                element: <PartnerApplyPage />
+                element: <Suspense fallback={<HeartbeatLoader />}><PartnerApplyPage /></Suspense>
             },
             {
                 path: 'partner/pending',
-                element: <PartnerPendingPage />
+                element: <Suspense fallback={<HeartbeatLoader />}><PartnerPendingPage /></Suspense>
             },
             {
                 path: 'about',
-                element: <AboutPage />
+                element: <Suspense fallback={<HeartbeatLoader />}><AboutPage /></Suspense>
             },
             {
                 path: 'privacy',
-                element: <PrivacyPage />
+                element: <Suspense fallback={<HeartbeatLoader />}><PrivacyPage /></Suspense>
             },
             {
                 path: 'terms',
-                element: <TermsPage />
+                element: <Suspense fallback={<HeartbeatLoader />}><TermsPage /></Suspense>
             },
             {
                 path: 'team',
-                element: <TeamPage />
+                element: <Suspense fallback={<HeartbeatLoader />}><TeamPage /></Suspense>
+            },
+            {
+                path: 'dashboard/*',
+                element: <Navigate to="/app/dashboard" replace />
+            },
+            {
+                path: 'profile/:userId',
+                element: <ProfileRedirect />
             }
         ]
     },
@@ -92,7 +116,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'home',
-                element: <HomePage />
+                element: <Suspense fallback={<HeartbeatLoader />}><HomePage /></Suspense>
             },
             {
                 path: 'feed',
@@ -100,23 +124,23 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'quests',
-                element: <QuestPage />
+                element: <Suspense fallback={<HeartbeatLoader />}><QuestPage /></Suspense>
             },
             {
                 path: 'lore',
-                element: <LorePage />
+                element: <Suspense fallback={<HeartbeatLoader />}><LorePage /></Suspense>
             },
             {
                 path: 'quest/:questId',
-                element: <QuestDetailScreen />
+                element: <QuestRedirect />
             },
             {
                 path: 'chat',
-                element: <ChatPage />
+                element: <Suspense fallback={<HeartbeatLoader />}><ChatPage /></Suspense>
             },
             {
                 path: 'dibs',
-                element: <BookPage />
+                element: <Suspense fallback={<HeartbeatLoader />}><BookPage /></Suspense>
             },
             {
                 path: 'book',
@@ -124,23 +148,23 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'shop/:slug',
-                element: <OperatorProfileScreenWrapper />
+                element: <Suspense fallback={<HeartbeatLoader />}><OperatorProfileScreenWrapper /></Suspense>
             },
             {
                 path: 'dashboard/*',
-                element: <OperatorDashboard />
+                element: <Suspense fallback={<HeartbeatLoader />}><OperatorDashboard /></Suspense>
             },
             {
                 path: 'admin',
-                element: <AdminDashboard />
+                element: <Suspense fallback={<HeartbeatLoader />}><AdminDashboard /></Suspense>
             },
             {
                 path: 'myprofile',
-                element: <ProfilePage />
+                element: <Suspense fallback={<HeartbeatLoader />}><ProfilePage /></Suspense>
             },
             {
                 path: 'profile/:userId',
-                element: <ProfilePage />
+                element: <Suspense fallback={<HeartbeatLoader />}><ProfilePage /></Suspense>
             }
         ]
     }

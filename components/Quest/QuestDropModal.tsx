@@ -69,7 +69,7 @@ const QuestDropModal: React.FC<QuestDropModalProps> = ({ drop, onClose }) => {
                                     <img src={drop.brand_logo} className="w-4 h-4 rounded-full opacity-60" alt="" />
                                     <span className="text-[9px] font-black uppercase tracking-widest text-white/40">{drop.brand} Verified</span>
                                 </div>
-                                <h2 className="text-2xl font-black italic uppercase italic tracking-tighter text-white leading-tight">
+                                <h2 className="text-2xl font-black uppercase tracking-tighter text-white leading-tight">
                                     {drop.title}
                                 </h2>
                                 <p className="text-[11px] text-gray-400 font-medium leading-relaxed opacity-80">
@@ -85,7 +85,7 @@ const QuestDropModal: React.FC<QuestDropModalProps> = ({ drop, onClose }) => {
                                         <div className="w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
                                             <CreditCard size={12} />
                                         </div>
-                                        <span className="text-lg font-black italic tracking-tighter text-white">{drop.reward}</span>
+                                        <span className="text-lg font-black tracking-tighter text-white">{drop.reward}</span>
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-end">
@@ -96,7 +96,7 @@ const QuestDropModal: React.FC<QuestDropModalProps> = ({ drop, onClose }) => {
 
                             {/* Action */}
                             <div className="pt-2">
-                                <GradientButton fullWidth className="h-14 font-black italic uppercase tracking-[0.2em] text-[10px] gap-3">
+                                <GradientButton fullWidth className="h-14 font-black uppercase tracking-[0.2em] text-[10px] gap-3">
                                     Accept Challenge <ArrowRight size={16} />
                                 </GradientButton>
                                 <p className="text-center mt-4 text-[7px] font-black text-gray-600 uppercase tracking-[0.3em]">

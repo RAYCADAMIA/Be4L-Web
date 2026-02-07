@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, Compass, Zap } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, Compass, Zap, SlidersHorizontal, Settings2, MapPin } from 'lucide-react';
 import { UNIVERSAL_CATEGORIES } from '../../constants';
 
 interface QuestFiltersProps {
@@ -12,6 +12,8 @@ interface QuestFiltersProps {
     activeTab: 'CANON' | 'SPONTY';
     setActiveTab: (tab: 'CANON' | 'SPONTY') => void;
     loading?: boolean;
+    viewingLocation: string;
+    setViewingLocation: (loc: string) => void;
 }
 
 /**
@@ -101,7 +103,9 @@ export const QuestSidebar: React.FC<QuestFiltersProps> = ({
     activeCat,
     setActiveCat,
     activeTab,
-    setActiveTab
+    setActiveTab,
+    viewingLocation,
+    setViewingLocation
 }) => {
 
     // Generate next 3 days
@@ -115,6 +119,39 @@ export const QuestSidebar: React.FC<QuestFiltersProps> = ({
 
     return (
         <div className="flex flex-col w-full h-full relative select-none px-2 pb-4">
+            {/* City Filter Toggle & List */}
+            <div className="mb-4 pt-2 w-full">
+                <button
+                    onClick={() => setViewingLocation(viewingLocation === 'Global' ? 'Manila' : 'Global')} // Simple toggle or open menu
+                    className="w-full h-10 mb-2 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all group relative"
+                >
+                    <MapPin size={18} />
+                    {viewingLocation !== 'Global' && (
+                        <div className="absolute top-2 right-3 w-1.5 h-1.5 bg-primary rounded-full" />
+                    )}
+                </button>
+
+                {/* Expandable City List (Only showed if we want, but for now lets just show the list of cities cleanly) */}
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-[8px] font-black text-white/20 uppercase tracking-widest text-center mb-1">City</label>
+                    {['Global', 'Manila', 'Davao', 'Cebu'].map((city) => {
+                        const isActive = viewingLocation === city;
+                        return (
+                            <button
+                                key={city}
+                                onClick={() => setViewingLocation(city)}
+                                className={`
+                                    w-full py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all
+                                    ${isActive ? 'bg-primary text-black' : 'text-white/30 hover:text-white hover:bg-white/5'}
+                                `}
+                            >
+                                {city === 'Global' ? 'All' : city}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
             {/* Minimal Tab Switcher */}
             <div className="flex flex-col gap-2 mb-6 w-full">
                 {/* Canon */}
@@ -240,14 +277,21 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
     activeCat,
     setActiveCat,
     activeTab,
-    setActiveTab
+    setActiveTab,
+    viewingLocation,
+    setViewingLocation,
+    onOpenCalendar
 }) => {
+    const [showFilter, setShowFilter] = React.useState(false);
+
     // Re-implement simplified MissionTimeline for Mobile Header
     return (
-        <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-700 relative z-40">
+
+
             {/* Tab Switcher */}
             <div className="px-4 pt-1">
-                <div className="flex p-0.5 bg-white/[0.08] rounded-full border border-white/10 backdrop-blur-3xl shadow-lg">
+                <div className="flex p-0.5 bg-white/[0.04] rounded-full border border-white/5 backdrop-blur-3xl shadow-2xl">
                     <button
                         onClick={() => setActiveTab('CANON')}
                         className={`
@@ -294,7 +338,7 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
                                 onClick={() => setActiveCat(cat)}
                                 className={`
                                     relative h-7 px-4 rounded-full whitespace-nowrap text-[9px] font-black uppercase tracking-[0.15em] transition-all duration-300 shrink-0
-                                    ${isActive ? 'bg-primary text-black' : 'bg-white/[0.08] backdrop-blur-md text-gray-400 border border-white/10 hover:bg-white/10'}
+                                    ${isActive ? 'bg-primary text-black shadow-[0_0_15px_rgba(204,255,0,0.2)]' : 'bg-white/[0.03] backdrop-blur-xl text-gray-400 border border-white/5 hover:bg-white/10'}
                                 `}
                             >
                                 {cat}
@@ -320,36 +364,91 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
                             exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                             className="px-4 border-b border-white/5 pb-4 overflow-hidden"
                         >
-                            <div className="flex justify-between items-center bg-white/[0.02] rounded-2xl p-1.5 border border-white/5">
-                                <button
-                                    onClick={() => {
-                                        const d = new Date(selectedDate);
-                                        d.setDate(d.getDate() - 1);
-                                        if (d >= new Date(new Date().setHours(0, 0, 0, 0))) onDateChange(d);
-                                    }}
-                                    className="p-2 text-gray-500 hover:text-white"
-                                >
-                                    <ChevronLeft size={16} />
-                                </button>
+                            <div className="flex items-center gap-2 relative z-50">
+                                {/* Filter Icon with Dropdown */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowFilter(!showFilter)}
+                                        className={`p-3 rounded-2xl border transition-all active:scale-95 ${showFilter || viewingLocation !== 'Global' ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(204,255,0,0.4)]' : 'bg-white/[0.03] border-white/5 text-gray-400 hover:text-primary'}`}
+                                    >
+                                        <SlidersHorizontal size={14} />
+                                    </button>
 
-                                <div className="flex flex-col items-center">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary">
-                                        {selectedDate.toDateString() === new Date().toDateString() ? 'TODAY' : selectedDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}
-                                    </span>
-                                    <span className="text-xs text-white/60 font-medium">
-                                        {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                    </span>
+                                    {/* Minimalistic Glassy City Picker Window */}
+                                    <AnimatePresence>
+                                        {showFilter && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                className="absolute top-full left-0 mt-2 p-1.5 min-w-[140px] bg-[#0A0A0A]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 flex flex-col gap-1"
+                                            >
+                                                <div className="px-2 py-1 mb-1 border-b border-white/5">
+                                                    <span className="text-[9px] font-black text-white/50 uppercase tracking-widest">Filter Location</span>
+                                                </div>
+                                                {['Global', 'Davao City', 'Manila', 'Cebu'].map((loc) => {
+                                                    const isSelected = viewingLocation === loc;
+                                                    return (
+                                                        <button
+                                                            key={loc}
+                                                            onClick={() => {
+                                                                setViewingLocation(loc);
+                                                                setShowFilter(false);
+                                                            }}
+                                                            className={`
+                                                                w-full text-left px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all
+                                                                ${isSelected ? 'bg-primary text-black' : 'text-gray-400 hover:text-white hover:bg-white/5'}
+                                                            `}
+                                                        >
+                                                            {loc === 'Global' ? 'All Cities' : loc}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
 
+                                {/* Date Scrubber Pill */}
+                                <div className="flex-1 flex justify-between items-center bg-white/[0.02] rounded-2xl p-1 border border-white/5 backdrop-blur-xl">
+                                    <button
+                                        onClick={() => {
+                                            const d = new Date(selectedDate);
+                                            d.setDate(d.getDate() - 1);
+                                            if (d >= new Date(new Date().setHours(0, 0, 0, 0))) onDateChange(d);
+                                        }}
+                                        className="p-2 text-gray-500 hover:text-white transition-colors"
+                                    >
+                                        <ChevronLeft size={16} />
+                                    </button>
+
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-primary drop-shadow-[0_0_8px_rgba(204,255,0,0.3)]">
+                                            {selectedDate.toDateString() === new Date().toDateString() ? 'TODAY' : selectedDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}
+                                        </span>
+                                        <span className="text-[10px] text-white/40 font-bold uppercase tracking-tight">
+                                            {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                        </span>
+                                    </div>
+
+                                    <button
+                                        onClick={() => {
+                                            const d = new Date(selectedDate);
+                                            d.setDate(d.getDate() + 1);
+                                            onDateChange(d);
+                                        }}
+                                        className="p-2 text-gray-500 hover:text-white transition-colors"
+                                    >
+                                        <ChevronRight size={16} />
+                                    </button>
+                                </div>
+
+                                {/* Calendar Icon */}
                                 <button
-                                    onClick={() => {
-                                        const d = new Date(selectedDate);
-                                        d.setDate(d.getDate() + 1);
-                                        onDateChange(d);
-                                    }}
-                                    className="p-2 text-gray-500 hover:text-white"
+                                    onClick={onOpenCalendar}
+                                    className="p-3 bg-white/[0.03] rounded-2xl border border-white/5 text-gray-400 hover:text-primary transition-all active:scale-90"
                                 >
-                                    <ChevronRight size={16} />
+                                    <CalendarIcon size={14} />
                                 </button>
                             </div>
                         </motion.div>

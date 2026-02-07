@@ -23,7 +23,7 @@ const CompetitionDetailsScreen: React.FC<CompetitionDetailsScreenProps> = ({ com
                         <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> {competition.status.replace('_', ' ')}
                     </span>
                 </div>
-                <h1 className="text-3xl font-black italic text-white uppercase tracking-tighter mb-1">
+                <h1 className="text-3xl font-black text-white uppercase tracking-tighter mb-1">
                     {competition.title}
                 </h1>
                 <p className="text-gray-500 text-xs font-bold uppercase tracking-wide">• Registration Ends Soon</p>
@@ -33,11 +33,11 @@ const CompetitionDetailsScreen: React.FC<CompetitionDetailsScreenProps> = ({ com
             <div className="px-6 grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-card border border-white/10 p-4 rounded-2xl">
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Prize Pool</p>
-                    <p className="text-electric-teal font-black italic text-xl">{competition.prize_pool}</p>
+                    <p className="text-electric-teal font-black text-xl">{competition.prize_pool}</p>
                 </div>
                 <div className="bg-card border border-white/10 p-4 rounded-2xl">
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Organizer</p>
-                    <p className="text-white font-bold italic text-md truncate">{competition.organizer || 'TBA'}</p>
+                    <p className="text-white font-bold text-md truncate">{competition.organizer || 'TBA'}</p>
                 </div>
             </div>
 

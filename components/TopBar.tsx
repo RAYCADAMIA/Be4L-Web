@@ -53,7 +53,7 @@ const TopBar: React.FC<TopBarProps> = ({ visible = true, translateY = 0, onOpenP
             <div className="bg-deep-black/30 backdrop-blur-2xl px-6 pt-[15px] pb-[15px] flex justify-between items-center border-b border-transparent shadow-2xl relative">
                 <div className="flex items-center gap-4">
                     <button onClick={onLogoClick} className="focus:outline-none flex items-center gap-2">
-                        <h1 className="text-xl font-black tracking-tighter cursor-pointer animate-liquid-text italic">Be4L</h1>
+                        <h1 className="text-xl font-black tracking-tighter cursor-pointer animate-liquid-text">Be4L</h1>
                         <span className="text-[10px] font-black bg-white/5 px-1.5 py-0.5 rounded border border-white/10 animate-liquid-text opacity-70">BETA</span>
                     </button>
                     <button onClick={onSearchClick} className="text-primary-text/70 hover:text-primary transition-colors ml-1">

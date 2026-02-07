@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Check, X, Building, MapPin, User, Mail, Phone } from 'lucide-react';
 import { EKGLoader } from '../ui/AestheticComponents';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 interface PendingOperator {
     id: string;
@@ -15,6 +16,7 @@ interface PendingOperator {
 }
 
 const AdminDashboard: React.FC = () => {
+    useDocumentTitle('Admin Command');
     const [loading, setLoading] = useState(true);
     const [requests, setRequests] = useState<PendingOperator[]>([]);
 
@@ -60,7 +62,7 @@ const AdminDashboard: React.FC = () => {
     return (
         <div className="min-h-screen bg-deep-void text-white p-6 pb-24">
             <header className="mb-8">
-                <h1 className="text-3xl font-black italic uppercase tracking-tighter text-white">Admin Command</h1>
+                <h1 className="text-3xl font-black uppercase tracking-tighter text-white">Admin Command</h1>
                 <p className="text-gray-500 text-sm">Review partnership applications and manage platform integrity.</p>
             </header>
 

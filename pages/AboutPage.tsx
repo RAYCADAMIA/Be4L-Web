@@ -2,9 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Starfield, HUDMenu } from '../components/Landing/LandingComponents';
 import { useNavigate } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export const AboutPage: React.FC = () => {
     const navigate = useNavigate();
+    useDocumentTitle('About');
 
     return (
         <div className="relative min-h-screen bg-[#09090b] text-white selection:bg-electric-teal/30 overflow-x-hidden">
@@ -36,7 +38,7 @@ export const AboutPage: React.FC = () => {
                             </p>
 
                             <div className="pt-8 border-t border-white/10">
-                                <p className="text-base text-white/60 leading-relaxed italic">
+                                <p className="text-base text-white/60 leading-relaxed">
                                     "We choose side quests over main plots. We choose stories over status. We choose life."
                                 </p>
                             </div>

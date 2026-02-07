@@ -67,7 +67,7 @@ export const ImageCropper = ({ imageSrc, onCancel, onComplete }: { imageSrc: str
     return (
         <div className="absolute inset-0 z-[60] bg-black flex flex-col items-center justify-center p-6 animate-in fade-in duration-300">
             <div className="w-full max-w-sm flex flex-col items-center">
-                <h3 className="text-white font-black text-2xl mb-8 italic tracking-tighter uppercase">Adjust Photo</h3>
+                <h3 className="text-white font-black text-2xl mb-8 tracking-tighter uppercase">Adjust Photo</h3>
                 <div
                     className="relative bg-black border-2 border-primary overflow-hidden touch-none cursor-move shadow-[0_0_30px_rgba(45,212,191,0.1)]"
                     style={{ width: VIEWPORT_SIZE, height: VIEWPORT_SIZE, borderRadius: '50%' }}

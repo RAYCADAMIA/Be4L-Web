@@ -59,7 +59,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const updateUser = (updates: Partial<UserType>) => {
-        setUser(prev => prev ? { ...prev, ...updates } : null);
+        setUser(prev => {
+            const newUser = prev ? { ...prev, ...updates } : null;
+            if (newUser) {
+                localStorage.setItem('be4l_session', JSON.stringify(newUser));
+            }
+            return newUser;
+        });
     };
 
     return (

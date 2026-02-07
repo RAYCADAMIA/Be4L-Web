@@ -2,28 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import ChatListScreen from '../components/Chat/ChatListScreen';
 import ChatDetailScreen from '../components/Chat/ChatDetailScreen';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Plus, Info, ChevronRight, X } from 'lucide-react';
 
 export const ChatPage: React.FC = () => {
+    useDocumentTitle('Messages');
     const { user } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [activeChatId, setActiveChatId] = useState<string | null>(null);
-    const [activeChatName, setActiveChatName] = useState<string>('');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeChatId = searchParams.get('id');
+    const activeChatName = searchParams.get('name') || 'Echo';
     const [showInfo, setShowInfo] = useState(false);
 
     // Auto-open chat if passed in location state (e.g. from joining a quest)
     useEffect(() => {
         const state = location.state as { openChatId?: string; openChatName?: string } | null;
         if (state?.openChatId) {
-            setActiveChatId(state.openChatId);
-            setActiveChatName(state.openChatName || 'Echo');
-            window.history.replaceState({}, document.title);
+            setSearchParams({ id: state.openChatId, name: state.openChatName || 'Echo' });
         }
-    }, [location]);
+    }, [location, setSearchParams]);
 
     if (!user) return null;
 
@@ -39,8 +40,7 @@ export const ChatPage: React.FC = () => {
                 `}>
                     <ChatListScreen
                         onOpenChat={(id, name) => {
-                            setActiveChatId(id);
-                            setActiveChatName(name);
+                            setSearchParams({ id, name });
                         }}
                         onOpenProfile={() => navigate('/app/myprofile')}
                         currentUser={user}
@@ -68,7 +68,7 @@ export const ChatPage: React.FC = () => {
                                 <ChatDetailScreen
                                     chatId={activeChatId}
                                     chatName={activeChatName}
-                                    onBack={() => setActiveChatId(null)}
+                                    onBack={() => setSearchParams({})}
                                     onLaunchCamera={() => { }}
                                     onToggleInfo={() => setShowInfo(!showInfo)}
                                 />
@@ -78,7 +78,7 @@ export const ChatPage: React.FC = () => {
                                 <div className="w-24 h-24 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-center mb-6">
                                     <Search size={40} className="text-gray-500" />
                                 </div>
-                                <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-2">Select a frequency</h2>
+                                <h2 className="text-2xl font-black uppercase tracking-tighter mb-2">Select a frequency</h2>
                                 <p className="text-xs font-bold text-gray-400 max-w-xs">Your echoes and lobbies will appear here when selected.</p>
                             </div>
                         )}
@@ -107,7 +107,7 @@ export const ChatPage: React.FC = () => {
                                         <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                                         <div className="w-full h-full rounded-[2.2rem] bg-zinc-800 overflow-hidden relative z-10" />
                                     </div>
-                                    <h2 className="text-2xl font-black italic tracking-tighter uppercase mb-2">{activeChatName}</h2>
+                                    <h2 className="text-2xl font-black tracking-tighter uppercase mb-2">{activeChatName}</h2>
                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Active Session</p>
                                 </div>
 

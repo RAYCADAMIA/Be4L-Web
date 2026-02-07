@@ -36,7 +36,7 @@ export const PartnerApplyForm: React.FC = () => {
                 <div className="w-20 h-20 bg-electric-teal/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-electric-teal/20">
                     <CheckCircle className="text-electric-teal w-10 h-10" />
                 </div>
-                <h2 className="text-3xl font-black text-white mb-4 italic uppercase tracking-tighter">Application Received!</h2>
+                <h2 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter">Application Received!</h2>
                 <p className="text-gray-400 max-w-xs mx-auto mb-10">
                     Our team will review your application and get back to you via email within 48 hours.
                 </p>
