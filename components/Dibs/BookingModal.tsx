@@ -891,6 +891,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                 )}
                                                             </AnimatePresence>
                                                         </div>
+                                                    ) : null}
+
                                                     {/* Common Quantity Picker - Only for simple quantity items in Step 0 */}
                                                     {bookingType === 'QUANTITY_BASED' && (
                                                         <div className="p-3.5 bg-white/[0.03] border border-white/10 rounded-2xl flex items-center justify-between">
