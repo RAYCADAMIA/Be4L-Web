@@ -145,10 +145,9 @@ export const PartnerPitchPage: React.FC = () => {
                         </div>
                     </motion.div>
 
-                    {/* Value Sections */}
                     <div className="space-y-40">
                         {sections.map((section, i) => (
-                            <div key={section.id} className={`flex flex-col md:flex-row items-center gap-16 ${i % 2 === 1 ? 'md:flex-row-reverse' : ''}`}>
+                            <div id={section.id} key={section.id} className={`flex flex-col md:flex-row items-center gap-16 ${i % 2 === 1 ? 'md:flex-row-reverse' : ''} scroll-mt-32`}>
                                 <motion.div
                                     initial={{ opacity: 0, x: i % 2 === 0 ? -40 : 40 }}
                                     whileInView={{ opacity: 1, x: 0 }}

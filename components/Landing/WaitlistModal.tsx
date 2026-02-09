@@ -70,7 +70,7 @@ export const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose })
                                     </h3>
                                     <p className="text-cool-grey font-medium text-sm leading-relaxed">
                                         We are doing the final touches for the Be4L app for a more OBX experience.<br /><br />
-                                        Join the waitlist to be among the first founding members and receive perks on your accounts 🤟
+                                        Join our waitlist for the mobile app to be among the first users and receive perks on your accounts 🤟
                                     </p>
                                 </div>
 

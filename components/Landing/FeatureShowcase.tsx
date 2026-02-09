@@ -112,7 +112,7 @@ const FeatureBlock: React.FC<{ feature: typeof FEATURES[0], index: number }> = (
                             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-4 mx-auto md:mx-0 group-hover:bg-white/10 transition-colors">
                                 <detail.icon size={20} className="opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" style={{ color: feature.color }} />
                             </div>
-                            <h4 className="text-xs font-black text-white mb-2 font-display uppercase tracking-[0.15em] animate-liquid-text">{detail.title}</h4>
+                            <h3 className="text-xs font-black text-white mb-2 font-display uppercase tracking-[0.15em] animate-liquid-text">{detail.title}</h3>
                             <p className="text-[10px] text-cool-grey/80 leading-relaxed font-sans font-medium">{detail.desc}</p>
                         </div>
                     ))}

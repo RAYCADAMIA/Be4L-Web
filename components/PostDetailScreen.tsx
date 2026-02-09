@@ -169,7 +169,7 @@ const PostDetailScreen: React.FC<{
                 </button>
                 <div className="flex flex-col items-center pt-1">
                     <span className="font-bold text-white text-base shadow-sm">
-                        <span className="animate-liquid-text">
+                        <span className="text-gradient-static">
                             {capture.user?.username || 'Unknown User'}
                         </span>
                     </span>
@@ -250,7 +250,7 @@ const PostDetailScreen: React.FC<{
                                     <img src={r.image_url} className="w-full h-full object-cover" />
                                 </button>
                                 <span className="text-[9px] font-bold text-gray-400 max-w-[60px] truncate">
-                                    <span className="animate-liquid-text">
+                                    <span className="text-gradient-static">
                                         {r.user.username}
                                     </span>
                                 </span>
@@ -279,7 +279,7 @@ const PostDetailScreen: React.FC<{
                                     <div className="flex-1">
                                         <div className="flex items-baseline gap-2">
                                             <span className="font-bold text-white text-sm">
-                                                <span className="animate-liquid-text">
+                                                <span className="text-gradient-static">
                                                     {c.user}
                                                 </span>
                                             </span>
@@ -337,7 +337,7 @@ const PostDetailScreen: React.FC<{
                             <img src={selectedReaction.image_url} className="w-full h-full object-cover transform scale-x-[-1]" />
                         </div>
                         <h3 className="text-center font-bold text-white">
-                            <span className="animate-liquid-text">
+                            <span className="text-gradient-static">
                                 {selectedReaction.user.username}
                             </span>
                         </h3>

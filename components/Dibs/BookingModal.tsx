@@ -1548,7 +1548,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                             <div className="text-left">
                                                                 <p className="text-[7px] font-black uppercase text-zinc-600 tracking-widest mb-1">Pass Holder</p>
                                                                 <p className="text-[10px] font-black text-white uppercase truncate">
-                                                                    <span className="animate-liquid-text">
+                                                                    <span className="text-gradient-static">
                                                                         {userInfo.name || 'Guest'}
                                                                     </span>
                                                                 </p>
@@ -1564,7 +1564,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                             <div className="text-right">
                                                                 <p className="text-[7px] font-black uppercase text-zinc-600 tracking-widest mb-1">Operator</p>
                                                                 <p className="text-[10px] font-black text-white uppercase truncate">
-                                                                    <span className="animate-liquid-text">
+                                                                    <span className="text-gradient-static">
                                                                         {operator.business_name}
                                                                     </span>
                                                                 </p>

@@ -82,6 +82,7 @@ export interface User {
   onboarding_completed?: boolean;
   is_new_user?: boolean;
   is_guest?: boolean;
+  aura_points?: number; // New Gamification Field
 }
 
 // 0. LORE SYSTEM DEFINITION (LOCK)

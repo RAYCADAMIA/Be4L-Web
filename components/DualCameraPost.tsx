@@ -243,7 +243,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                         )}
                         <div className="flex items-center">
                             <p className="font-black text-[13px] mr-1 cursor-pointer hover:underline" onClick={(e) => { e.stopPropagation(); capture.user && onUserClick?.(capture.user); }}>
-                                <span className="animate-liquid-text">
+                                <span className="text-gradient-static">
                                     {capture.user?.username || 'Unknown User'}
                                 </span>
                             </p>

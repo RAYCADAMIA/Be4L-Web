@@ -87,7 +87,14 @@ const QuestCard: React.FC<Props> = ({ quest, onOpenDetail }) => {
                     <span className="text-gray-700 mx-1">•</span>
                     <Clock size={10} className="text-gray-600 group-hover:text-primary/60 transition-colors" />
                     <span className={`text-[9px] font-bold uppercase tracking-widest transition-colors ${isStartingSoon ? 'text-electric-teal' : 'text-gray-600 group-hover:text-gray-400'}`}>
-                        {isLive ? 'NOW' : (isStartingSoon ? `${formatCountdown(diffMs)} • ${new Date(quest.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : `${new Date(quest.start_time).toLocaleDateString()} • ${new Date(quest.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)}
+                        {isLive ? 'NOW' : (() => {
+                            const date = new Date(quest.start_time);
+                            const hasTime = date.getHours() !== 0 || date.getMinutes() !== 0;
+                            const timeStr = hasTime ? ` • ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '';
+                            return isStartingSoon
+                                ? `${formatCountdown(diffMs)}${timeStr}`
+                                : `${date.toLocaleDateString()}${timeStr}`;
+                        })()}
                     </span>
                 </div>
             </div>

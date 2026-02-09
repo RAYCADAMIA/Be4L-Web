@@ -64,7 +64,7 @@ export const TeamPage: React.FC = () => {
                             className="text-5xl md:text-8xl font-black tracking-tighter uppercase leading-[0.85] font-display"
                         >
                             BE MORE THAN <br />
-                            <span className="animate-liquid-text">A USER.</span>
+                            <span className="text-gradient-static">A USER.</span>
                         </motion.h1>
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}

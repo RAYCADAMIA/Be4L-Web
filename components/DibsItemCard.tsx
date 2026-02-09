@@ -67,7 +67,7 @@ const DibsItemCard: React.FC<DibsItemCardProps> = ({ item, operator, onClick }) 
                                 alt={operator.business_name}
                             />
                         </div>
-                        <span className="text-[7px] md:text-[9px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white transition-colors animate-liquid-text truncate">
+                        <span className="text-[7px] md:text-[9px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white transition-colors text-gradient-static truncate">
                             {operator.business_name}
                         </span>
                     </div>

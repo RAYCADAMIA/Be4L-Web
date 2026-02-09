@@ -201,7 +201,7 @@ const QuestDetailScreen: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-white group-hover:text-primary transition-colors animate-liquid-text">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-white group-hover:text-primary transition-colors text-gradient-static">
                                     {quest.host?.username || "Quest Host"}
                                 </p>
                                 <p className="text-[8px] font-bold text-gray-500 uppercase tracking-[0.2em]">Mission Lead</p>
@@ -275,7 +275,10 @@ const QuestDetailScreen: React.FC = () => {
                                             </div>
                                             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2">MISSION START</h4>
                                             <p className="text-lg font-black text-white leading-tight">
-                                                {new Date(quest.start_time).toLocaleDateString([], { month: 'short', day: 'numeric' })} @ {new Date(quest.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                {new Date(quest.start_time).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                                                {(new Date(quest.start_time).getHours() !== 0 || new Date(quest.start_time).getMinutes() !== 0) && (
+                                                    ` @ ${new Date(quest.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                                                )}
                                             </p>
                                         </div>
                                     </div>
@@ -442,7 +445,7 @@ const QuestDetailScreen: React.FC = () => {
                                 <div className="space-y-3">
                                     <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em]">
                                         <span className="text-gray-500">POTENTIAL LOOT</span>
-                                        <span className="text-primary animate-liquid-text">+{quest.aura_reward || 100} EXP</span>
+                                        <span className="text-primary text-gradient-static">+{quest.aura_reward || 100} Aura</span>
                                     </div>
                                     <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
                                         <motion.div
@@ -488,7 +491,7 @@ const QuestDetailScreen: React.FC = () => {
                                                     exit={{ opacity: 0, y: -10 }}
                                                     className="flex items-center gap-3"
                                                 >
-                                                    Request to Join <ArrowRight size={18} />
+                                                    Request to Join (+{quest.aura_reward || 100} Aura) <ArrowRight size={18} />
                                                 </motion.div>
                                             )}
                                             {joinState === 'requested' && (

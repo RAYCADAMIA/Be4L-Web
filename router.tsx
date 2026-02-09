@@ -13,14 +13,15 @@ const QuestDetailScreen = lazy(() => import('./components/Quest/QuestDetailScree
 const LorePage = lazy(() => import('./pages/LorePage').then(module => ({ default: module.LorePage })));
 const OperatorDashboard = lazy(() => import('./components/Dibs/OperatorDashboard'));
 const AdminDashboard = lazy(() => import('./components/Dibs/AdminDashboard'));
+const CreateQuestPage = lazy(() => import('./components/CreateQuestScreen'));
 const LandingPage = lazy(() => import('./components/LandingPage'));
+const BookScreen = lazy(() => import('./components/BookScreen'));
+const VerifyBooking = lazy(() => import('./components/Dibs/VerifyBooking'));
+const CompetitionDetailScreen = lazy(() => import('./components/CompetitionDetailsScreen'));
 
-const OperatorProfileScreenWrapper = () => <OperatorProfileScreen />; // Wrap if needed or use directly
+const OperatorProfileScreenWrapper = () => <OperatorProfileScreen />;
 
-
-// import { HomePage } from './components/HomePage'; // Lazy loaded
 import { ErrorBoundary } from './components/ErrorBoundary';
-// import LandingPage from './components/LandingPage'; // Converted to lazy
 import { AnimationOrchestrator } from './components/Landing/AnimationOrchestrator';
 
 // New Static & Partner Pages
@@ -46,7 +47,7 @@ const QuestRedirect = () => {
 
 const ProfileRedirect = () => {
     const { userId } = useParams();
-    return <Navigate to={`/app/profile/${userId}`} replace />;
+    return <Navigate to={`/app/${userId}`} replace />;
 };
 
 export const router = createBrowserRouter([
@@ -123,6 +124,10 @@ export const router = createBrowserRouter([
                 element: <Navigate to="/app/home" replace />
             },
             {
+                path: 'quests/create',
+                element: <Suspense fallback={<HeartbeatLoader />}><CreateQuestPage /></Suspense>
+            },
+            {
                 path: 'quests',
                 element: <Suspense fallback={<HeartbeatLoader />}><QuestPage /></Suspense>
             },
@@ -163,7 +168,7 @@ export const router = createBrowserRouter([
                 element: <Suspense fallback={<HeartbeatLoader />}><ProfilePage /></Suspense>
             },
             {
-                path: 'profile/:userId',
+                path: ':userId',
                 element: <Suspense fallback={<HeartbeatLoader />}><ProfilePage /></Suspense>
             }
         ]

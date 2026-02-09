@@ -7,6 +7,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { MOCK_QUESTS } from '../constants';
 import QuestCard from './QuestCard';
+import { generateRandomQuests } from '../utils/questGenerator';
+import { QuestType } from '../types';
 import DibsItemCard from './DibsItemCard';
 import DibsCard, { Operator } from './DibsCard';
 import { PhoneShowcaseSection } from './Landing/PhoneShowcaseSection';
@@ -35,11 +37,18 @@ export const HomePage: React.FC = () => {
                     supabaseService.quests.getQuests()
                 ]);
 
-                if (questData) {
-                    setDiscoveryQuests(questData.slice(0, 10));
-                } else {
-                    setDiscoveryQuests(MOCK_QUESTS.slice(0, 5));
-                }
+                // Mix real quests with generated ones for a more alive feed
+                const canonRandom = generateRandomQuests('All', new Date(), 8, QuestType.CANON);
+                const spontyRandom = generateRandomQuests('All', new Date(), 4, QuestType.SPONTY);
+
+                const allQuests = [
+                    ...(questData || []),
+                    ...canonRandom,
+                    ...spontyRandom
+                ];
+
+                // Shuffle for variety and take top 12
+                setDiscoveryQuests(allQuests.sort(() => Math.random() - 0.5).slice(0, 12));
 
                 if (opData) {
                     // Match BookScreen filtering: only venue and event

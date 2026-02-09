@@ -13,6 +13,7 @@ interface AestheticTimeGridProps {
     value: string; // "HH:MM"
     onChange: (time: string, ampm?: string) => void;
     onClose: () => void;
+    minTime?: string; // "HH:MM" 24h format for comparison
 }
 
 const flipTransition = {
@@ -113,16 +114,20 @@ export const AestheticDayPicker: React.FC<AestheticDayPickerProps> = ({ value, o
     );
 };
 
-export const AestheticTimeGrid: React.FC<AestheticTimeGridProps> = ({ value, onChange, onClose }) => {
-    // 10:00 AM, 11:00 AM ... 
-    const timeSlots = [
-        "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM",
-        "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM",
-        "6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM"
-    ];
+export const AestheticTimeGrid: React.FC<AestheticTimeGridProps> = ({ value, onChange, onClose, minTime }) => {
+    // Generate all 24 hours
+    const timeSlots = Array.from({ length: 24 }).map((_, i) => {
+        const h = i;
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const displayH = h % 12 || 12;
+        return {
+            display: `${displayH}${ampm}`,
+            value: `${h.toString().padStart(2, '0')}:00`,
+            hour: h
+        };
+    });
 
-    // Parse current value to match closest slot for highlight
-    // value format "HH:mm" (24h) or "HH:mm" (12h) ... assuming input matches the creation state "12:00"
+    const minHour = minTime ? parseInt(minTime.split(':')[0], 10) : -1;
 
     return (
         <div style={{ perspective: '1000px' }} className="w-full max-w-sm">
@@ -139,31 +144,32 @@ export const AestheticTimeGrid: React.FC<AestheticTimeGridProps> = ({ value, onC
                     <button onClick={onClose} className="hover:bg-white/10 p-1 rounded-full text-gray-500 hover:text-white"><X size={16} /></button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto no-scrollbar">
-                    {timeSlots.map(slot => (
-                        <button
-                            key={slot}
-                            onClick={() => {
-                                // Convert "1:00 PM" to "13:00" for internal state if needed, or stick to string
-                                // Assuming parent handles 24h conversion if needed, but for visual consistency pass as string first
-                                // Actually, let's just return the slot and let parent parse
-                                onChange(slot);
-                                setTimeout(onClose, 200);
-                            }}
-                            className={`
-                                py-4 rounded-2xl border transition-all flex items-center justify-center text-xs font-black tracking-widest
-                                ${false
-                                    ? 'bg-white text-black border-white shadow-lg'
-                                    : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10 hover:text-white hover:border-white/20'}
-                            `}
-                        >
-                            {slot}
-                        </button>
-                    ))}
-                    {/* Dibbed/Blocked Slots Example (Visual Only as per user request context) */}
-                    <button disabled className="py-4 rounded-2xl border border-white/5 bg-black/40 text-gray-700 text-[10px] font-black tracking-widest cursor-not-allowed">
-                        DIBBED
-                    </button>
+                <div className="grid grid-cols-3 gap-2 max-h-[350px] overflow-y-auto no-scrollbar pb-2">
+                    {timeSlots.map(slot => {
+                        const isBlocked = slot.hour <= minHour;
+                        const isSelected = value === slot.value;
+
+                        return (
+                            <button
+                                key={slot.value}
+                                disabled={isBlocked}
+                                onClick={() => {
+                                    onChange(slot.value); // Pass back HH:mm for internal state
+                                    setTimeout(onClose, 200);
+                                }}
+                                className={`
+                                    py-3 rounded-xl border transition-all flex items-center justify-center text-[10px] font-black tracking-widest
+                                    ${isSelected
+                                        ? 'bg-white text-black border-white shadow-lg'
+                                        : isBlocked
+                                            ? 'bg-white/[0.02] border-white/5 text-gray-700 cursor-not-allowed opacity-30'
+                                            : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10 hover:text-white hover:border-white/20'}
+                                `}
+                            >
+                                {slot.display}
+                            </button>
+                        );
+                    })}
                 </div>
             </motion.div>
         </div>

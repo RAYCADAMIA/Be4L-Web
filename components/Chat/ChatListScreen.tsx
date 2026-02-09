@@ -194,7 +194,7 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-center mb-0.5">
                                             <h3 className="text-sm font-black text-white group-hover:text-electric-teal transition-colors tracking-tight uppercase truncate">
-                                                <span className="animate-liquid-text">
+                                                <span className="text-gradient-static">
                                                     {chat.name}
                                                 </span>
                                             </h3>

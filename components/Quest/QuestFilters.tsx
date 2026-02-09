@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, Compass, Zap, SlidersHorizontal, Settings2, MapPin } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, Compass, Zap, MapPin } from 'lucide-react';
 import { UNIVERSAL_CATEGORIES } from '../../constants';
 
 interface QuestFiltersProps {
@@ -107,6 +107,7 @@ export const QuestSidebar: React.FC<QuestFiltersProps> = ({
     viewingLocation,
     setViewingLocation
 }) => {
+    const [isLocExpanded, setIsLocExpanded] = React.useState(false);
 
     // Generate next 3 days
     const dates = React.useMemo(() => {
@@ -118,38 +119,54 @@ export const QuestSidebar: React.FC<QuestFiltersProps> = ({
     }, []);
 
     return (
-        <div className="flex flex-col w-full h-full relative select-none px-2 pb-4">
+        <div className="flex flex-col w-full h-full relative select-none px-4 pb-4">
             {/* City Filter Toggle & List */}
             <div className="mb-4 pt-2 w-full">
                 <button
-                    onClick={() => setViewingLocation(viewingLocation === 'Global' ? 'Manila' : 'Global')} // Simple toggle or open menu
-                    className="w-full h-10 mb-2 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all group relative"
+                    onClick={() => setIsLocExpanded(!isLocExpanded)}
+                    className={`
+                        w-full h-10 mb-2 flex items-center justify-center rounded-xl border transition-all group relative
+                        ${isLocExpanded ? 'bg-primary border-primary text-black' : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10'}
+                    `}
                 >
                     <MapPin size={18} />
-                    {viewingLocation !== 'Global' && (
-                        <div className="absolute top-2 right-3 w-1.5 h-1.5 bg-primary rounded-full" />
+                    {!isLocExpanded && viewingLocation !== 'Global' && (
+                        <div className="absolute top-2 right-3 w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_8px_rgba(204,255,0,0.5)]" />
                     )}
                 </button>
 
-                {/* Expandable City List (Only showed if we want, but for now lets just show the list of cities cleanly) */}
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-[8px] font-black text-white/20 uppercase tracking-widest text-center mb-1">City</label>
-                    {['Global', 'Manila', 'Davao', 'Cebu'].map((city) => {
-                        const isActive = viewingLocation === city;
-                        return (
-                            <button
-                                key={city}
-                                onClick={() => setViewingLocation(city)}
-                                className={`
-                                    w-full py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all
-                                    ${isActive ? 'bg-primary text-black' : 'text-white/30 hover:text-white hover:bg-white/5'}
-                                `}
-                            >
-                                {city === 'Global' ? 'All' : city}
-                            </button>
-                        );
-                    })}
-                </div>
+                <AnimatePresence>
+                    {isLocExpanded && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                        >
+                            <div className="flex flex-col gap-1.5 pb-4 px-2">
+                                <label className="text-[8px] font-black text-white/20 uppercase tracking-widest text-center mb-1">Active Cities</label>
+                                {['Global', 'Davao', 'Manila', 'Cebu'].map((city) => {
+                                    const isActive = viewingLocation === city;
+                                    return (
+                                        <button
+                                            key={city}
+                                            onClick={() => {
+                                                setViewingLocation(city);
+                                                setIsLocExpanded(false);
+                                            }}
+                                            className={`
+                                                w-full py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all
+                                                ${isActive ? 'bg-primary text-black shadow-[0_4px_12px_rgba(204,255,0,0.2)]' : 'text-white/30 hover:text-white hover:bg-white/5'}
+                                            `}
+                                        >
+                                            {city === 'Global' ? 'Global Feed' : city}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Minimal Tab Switcher */}
@@ -289,8 +306,8 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
         <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-700 relative z-40">
 
 
-            {/* Tab Switcher */}
-            <div className="px-4 pt-1">
+            {/* Tab Switcher - Hidden on Desktop Sidebar already handled */}
+            <div className="px-4 pt-1 md:hidden">
                 <div className="flex p-0.5 bg-white/[0.04] rounded-full border border-white/5 backdrop-blur-3xl shadow-2xl">
                     <button
                         onClick={() => setActiveTab('CANON')}
@@ -327,8 +344,8 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
                 </div>
             </div>
 
-            {/* Categories */}
-            <div className="px-4">
+            {/* Categories - Hidden on Desktop Sidebar handled */}
+            <div className="px-4 md:hidden">
                 <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                     {UNIVERSAL_CATEGORIES.map(cat => {
                         const isActive = activeCat === cat;
@@ -362,49 +379,56 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
                             initial={{ opacity: 0, height: 0, marginBottom: 0 }}
                             animate={{ opacity: 1, height: 'auto', marginBottom: 8 }}
                             exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                            className="px-4 border-b border-white/5 pb-4 overflow-hidden"
+                            className="px-4 border-b border-white/5 pb-4"
                         >
                             <div className="flex items-center gap-2 relative z-50">
-                                {/* Filter Icon with Dropdown */}
-                                <div className="relative">
+                                {/* Location Filter Icon - Clickable City Picker */}
+                                <div className="relative block">
                                     <button
                                         onClick={() => setShowFilter(!showFilter)}
-                                        className={`p-3 rounded-2xl border transition-all active:scale-95 ${showFilter || viewingLocation !== 'Global' ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(204,255,0,0.4)]' : 'bg-white/[0.03] border-white/5 text-gray-400 hover:text-primary'}`}
+                                        className={`p-3 rounded-2xl border transition-all active:scale-95 ${showFilter || viewingLocation !== 'Global' ? 'bg-white/10 text-white border-white/20 shadow-[0_8px_32px_rgba(255,255,255,0.1)] backdrop-blur-2xl' : 'bg-white/[0.03] border-white/5 text-gray-400 hover:text-white'}`}
                                     >
-                                        <SlidersHorizontal size={14} />
+                                        <MapPin size={14} />
                                     </button>
 
                                     {/* Minimalistic Glassy City Picker Window */}
                                     <AnimatePresence>
                                         {showFilter && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                className="absolute top-full left-0 mt-2 p-1.5 min-w-[140px] bg-[#0A0A0A]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 flex flex-col gap-1"
-                                            >
-                                                <div className="px-2 py-1 mb-1 border-b border-white/5">
-                                                    <span className="text-[9px] font-black text-white/50 uppercase tracking-widest">Filter Location</span>
-                                                </div>
-                                                {['Global', 'Davao City', 'Manila', 'Cebu'].map((loc) => {
-                                                    const isSelected = viewingLocation === loc;
-                                                    return (
-                                                        <button
-                                                            key={loc}
-                                                            onClick={() => {
-                                                                setViewingLocation(loc);
-                                                                setShowFilter(false);
-                                                            }}
-                                                            className={`
+                                            <>
+                                                {/* Invisible Backdrop for click-outside behavior */}
+                                                <div
+                                                    className="fixed inset-0 z-40 cursor-default"
+                                                    onClick={() => setShowFilter(false)}
+                                                />
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    className="absolute top-full left-0 mt-2 p-1.5 min-w-[140px] bg-white/[0.05] backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 flex flex-col gap-1"
+                                                >
+                                                    <div className="px-2 py-1 mb-1 border-b border-white/5">
+                                                        <span className="text-[9px] font-black text-white/50 uppercase tracking-widest">Active Cities</span>
+                                                    </div>
+                                                    {['Global', 'Davao', 'Manila', 'Cebu'].map((loc) => {
+                                                        const isSelected = viewingLocation === loc;
+                                                        return (
+                                                            <button
+                                                                key={loc}
+                                                                onClick={() => {
+                                                                    setViewingLocation(loc);
+                                                                    setShowFilter(false);
+                                                                }}
+                                                                className={`
                                                                 w-full text-left px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all
-                                                                ${isSelected ? 'bg-primary text-black' : 'text-gray-400 hover:text-white hover:bg-white/5'}
+                                                                ${isSelected ? 'bg-white/10 text-white border border-white/10 shadow-[0_4px_12px_rgba(255,255,255,0.05)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}
                                                             `}
-                                                        >
-                                                            {loc === 'Global' ? 'All Cities' : loc}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </motion.div>
+                                                            >
+                                                                {loc === 'Global' ? 'Global Feed' : loc}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </motion.div>
+                                            </>
                                         )}
                                     </AnimatePresence>
                                 </div>

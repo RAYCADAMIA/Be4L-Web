@@ -90,7 +90,7 @@ export const LorePage: React.FC = () => {
 
                         {(!user.is_operator) && (
                             <div className="max-w-xl mx-auto py-12 px-6 text-center">
-                                <p className="text-xl md:text-2xl font-black uppercase tracking-tighter mb-4 animate-liquid-text">
+                                <p className="text-xl md:text-2xl font-black uppercase tracking-tighter mb-4 text-gradient-static">
                                     "A glance of your memories"
                                 </p>
                                 <div className="relative p-10 bg-white/[0.03] backdrop-blur-3xl rounded-[3rem] border border-white/10 shadow-2xl overflow-hidden group">
@@ -98,13 +98,13 @@ export const LorePage: React.FC = () => {
                                     <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500/10 blur-[80px]" />
 
                                     <div className="relative z-10 space-y-4">
-                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] animate-liquid-text">Capturing Lore coming soon</p>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gradient-static">Capturing Lore coming soon</p>
                                         <div className="space-y-4">
                                             <p className="text-sm font-bold text-gray-400 leading-relaxed px-4">
-                                                <span className="animate-liquid-text">Lore</span> is a social feed of your memories and your friends' captures. Revisit your collected lores and personal legacy anytime on your <span className="animate-liquid-text">profile</span>.
+                                                <span className="text-gradient-static">Lore</span> is a social feed of your memories and your friends' captures. Revisit your collected lores and personal legacy anytime on your <span className="text-gradient-static">profile</span>.
                                             </p>
                                             <p className="text-sm font-bold text-gray-400 leading-relaxed">
-                                                Join our waitlist to be among the first founding members of <span className="animate-liquid-text">Be4L</span>.
+                                                Join our waitlist for the mobile app to be among the first users.
                                             </p>
                                         </div>
                                         <div className="pt-4 max-w-sm mx-auto w-full">

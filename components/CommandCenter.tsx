@@ -49,7 +49,7 @@ export const CommandCenter: React.FC = () => {
                     <div>
                         <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Command Center</h2>
                         <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter">
-                            Welcome back, <span className="animate-liquid-text">{user.name?.split(' ')[0] || 'Agent'}</span>
+                            Welcome back, <span className="text-gradient-static">{user.name?.split(' ')[0] || 'Agent'}</span>
                         </h1>
                     </div>
                     <div className="hidden md:block text-right">
@@ -83,7 +83,7 @@ export const CommandCenter: React.FC = () => {
                                 </div>
 
                                 <div className="absolute bottom-8 left-8 right-8">
-                                    <h3 className="text-4xl font-black animate-liquid-text uppercase tracking-tight mb-2 leading-none">
+                                    <h3 className="text-4xl font-black text-gradient-static uppercase tracking-tight mb-2 leading-none">
                                         {trendingQuest.title}
                                     </h3>
                                     <p className="text-gray-300 line-clamp-2 max-w-xl text-sm font-medium mb-6">
@@ -123,7 +123,7 @@ export const CommandCenter: React.FC = () => {
                                             <stat.icon size={14} className={stat.color} />
                                             <span className="text-[10px] font-bold text-gray-500 uppercase">{stat.label}</span>
                                         </div>
-                                        <div className="text-2xl font-black animate-liquid-text">{stat.value}</div>
+                                        <div className="text-2xl font-black text-gradient-static">{stat.value}</div>
                                     </div>
                                 ))}
                             </div>

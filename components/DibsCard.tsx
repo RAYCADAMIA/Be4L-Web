@@ -70,7 +70,7 @@ const DibsCard: React.FC<Props> = ({ operator, onClick, isMe }) => {
 
                     <div className="space-y-1">
                         <h3 className="text-xs md:text-base font-black uppercase tracking-tighter leading-none group-hover:text-primary transition-colors line-clamp-1">
-                            <span className="animate-liquid-text">
+                            <span className="text-gradient-static">
                                 {operator.business_name}
                             </span>
                             {operator.is_verified && <BadgeCheck size={12} className="inline ml-1 text-primary fill-primary/20 md:w-[14px]" />}

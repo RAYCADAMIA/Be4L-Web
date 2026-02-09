@@ -33,10 +33,11 @@ const formatTime12to24 = (time12: string) => {
 };
 
 const formatTime24to12 = (time24: string) => {
-    const [h, m] = time24.split(':').map(Number);
+    if (!time24) return "";
+    const [h] = time24.split(':').map(Number);
     const ampm = h >= 12 ? 'PM' : 'AM';
     const hour = h % 12 || 12;
-    return `${hour}:${m.toString().padStart(2, '0')} ${ampm}`;
+    return `${hour}${ampm}`;
 };
 
 const SlideToLaunch: React.FC<{ onLaunch: () => void, loading: boolean }> = ({ onLaunch, loading }) => {
@@ -73,7 +74,7 @@ const SlideToLaunch: React.FC<{ onLaunch: () => void, loading: boolean }> = ({ o
             <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="flex items-center gap-2">
                     <span className="text-[10px] font-black text-electric-teal uppercase tracking-[0.4em] ml-12 drop-shadow-[0_0_5px_rgba(45,212,191,0.5)]">
-                        {loading ? 'LAUNCHING...' : 'SLIDE TO DEPLOY'}
+                        {loading ? 'LAUNCHING...' : 'SLIDE TO DEPLOY (+100 AURA)'}
                     </span>
                     {!loading && (
                         <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
@@ -115,8 +116,8 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
     const [category, setCategory] = useState('');
     const [activity, setActivity] = useState('');
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [startTime, setStartTime] = useState('12:00');
-    const [endTime, setEndTime] = useState('14:00');
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
     const [locationName, setLocationName] = useState('TBD');
     const [locationCoords, setLocationCoords] = useState<{ latitude: number; longitude: number } | null>(null);
     const [capacity, setCapacity] = useState(10);
@@ -207,7 +208,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
 
         // Enhanced Validation
         if (!title.trim()) { showToast("Missing Title!", "info"); return; }
-        if (!locationName.trim()) { showToast("Missing Location!", "info"); return; }
+        // if (!locationName.trim()) { showToast("Missing Location!", "info"); return; }
         if (!finalCategory) { showToast("Select a Category!", "info"); return; }
         if (!finalActivity) { showToast("Select an Activity!", "info"); return; }
 
@@ -463,7 +464,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                                     onClick={() => setShowStartTimePicker(true)}
                                                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm font-bold outline-none hover:bg-white/10 transition-all text-center tracking-widest focus:border-primary/50"
                                                 >
-                                                    {startTime ? formatTime24to12(startTime) : <span className="text-gray-600 text-[10px] uppercase">-- : --</span>}
+                                                    {startTime ? formatTime24to12(startTime) : <span className="text-gray-700/40 text-[10px] font-black uppercase tracking-widest italic">Select time</span>}
                                                 </button>
                                             </div>
 
@@ -475,10 +476,14 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                                     <span className="text-[7px] font-bold text-gray-700 uppercase tracking-widest">Optional</span>
                                                 </div>
                                                 <button
-                                                    onClick={() => setShowEndTimePicker(true)}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm font-bold outline-none hover:bg-white/10 transition-all text-center tracking-widest focus:border-primary/50"
+                                                    disabled={!startTime}
+                                                    onClick={() => {
+                                                        if (startTime) setShowEndTimePicker(true);
+                                                        else showToast("Pick start time first", "info");
+                                                    }}
+                                                    className={`w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm font-bold outline-none transition-all text-center tracking-widest focus:border-primary/50 ${!startTime ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10'}`}
                                                 >
-                                                    {endTime ? formatTime24to12(endTime) : <span className="text-gray-600 text-[10px] uppercase">-- : --</span>}
+                                                    {endTime ? formatTime24to12(endTime) : <span className="text-gray-700/40 text-[10px] font-black uppercase tracking-widest italic">{startTime ? 'Select time' : '...'}</span>}
                                                 </button>
                                             </div>
                                         </div>
@@ -627,7 +632,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center px-1">
                                         <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Location</label>
-                                        <span className="text-[7px] font-bold text-primary uppercase tracking-widest opacity-50">Required</span>
+                                        <span className="text-[7px] font-bold text-gray-700 uppercase tracking-widest opacity-50">Optional</span>
                                     </div>
 
                                     {/* Manual Location Input & Presets */}
@@ -644,7 +649,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                             autoFocus
                                         />
                                         <p className="text-[7px] text-electric-teal/60 font-bold uppercase tracking-widest mt-2 ml-1 animate-pulse">
-                                            * Manual Entry Mode. Interactive Maps integrating soon...
+                                            Integrating interactive map coming soon. Enter location manually for now.
                                         </p>
 
                                         <div className="space-y-2">
@@ -654,10 +659,10 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                                     <button
                                                         key={city}
                                                         onClick={() => {
-                                                            setLocationName(prev => prev ? `${prev}, ${city}` : city);
+                                                            setLocationName(city);
                                                             setLocationCoords({ latitude: 14.5995, longitude: 120.9842 }); // Mock coords
                                                         }}
-                                                        className="px-3 py-1.5 rounded-lg border border-white/5 bg-white/5 text-[9px] font-black uppercase text-gray-400 hover:text-white hover:bg-white/10 transition-all active:scale-95"
+                                                        className={`px-3 py-1.5 rounded-lg border transition-all active:scale-95 text-[9px] font-black uppercase ${locationName === city ? 'bg-primary border-primary text-black shadow-[0_0_10px_rgba(204,255,0,0.3)]' : 'bg-white/5 border-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}
                                                     >
                                                         {city}
                                                     </button>
@@ -691,32 +696,55 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                                         <button onClick={() => setItinerary(prev => prev.filter((_, i) => i !== idx))} className="text-gray-500 hover:text-red-500"><X size={12} /></button>
                                                     </div>
                                                 ))}
-                                                <div className="flex gap-2">
-                                                    <input value={itinTime} onChange={e => setItinTime(e.target.value)} placeholder="00:00" className="w-16 bg-white/5 border border-white/5 rounded-xl px-2 py-2 text-xs text-center text-white outline-none focus:border-primary/50" />
+                                                <div className="flex gap-2 min-h-[40px]">
+                                                    <div className="w-24 relative group">
+                                                        <select
+                                                            value={itinTime}
+                                                            onChange={e => setItinTime(e.target.value)}
+                                                            className="w-full h-full bg-white/5 border border-white/5 rounded-xl px-2 text-[10px] font-black uppercase text-white outline-none focus:border-primary/50 appearance-none text-center cursor-pointer hover:bg-white/10 transition-all"
+                                                        >
+                                                            <option value="" disabled className="bg-black text-gray-500">TIME</option>
+                                                            {Array.from({ length: 24 }).map((_, i) => {
+                                                                const hour = i === 0 ? 12 : i > 12 ? i - 12 : i;
+                                                                const ampm = i < 12 ? 'AM' : 'PM';
+                                                                const val = `${hour}${ampm}`;
+                                                                return <option key={val} value={val} className="bg-black text-white">{val}</option>;
+                                                            })}
+                                                        </select>
+                                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 group-hover:text-white transition-colors">
+                                                            <ChevronDown size={10} />
+                                                        </div>
+                                                    </div>
                                                     <input
                                                         value={itinDesc}
                                                         onChange={e => setItinDesc(e.target.value)}
                                                         onKeyDown={(e) => {
-                                                            if (e.key === 'Enter' && itinTime && itinDesc) {
-                                                                setItinerary([...itinerary, { time: itinTime, description: itinDesc }]);
-                                                                setItinTime('');
-                                                                setItinDesc('');
+                                                            if (e.key === 'Enter') {
+                                                                e.preventDefault();
+                                                                if (itinDesc) {
+                                                                    const finalTime = itinTime || "TBD";
+                                                                    setItinerary([...itinerary, { time: finalTime, description: itinDesc }]);
+                                                                    setItinTime('');
+                                                                    setItinDesc('');
+                                                                }
                                                             }
                                                         }}
                                                         placeholder="Activity..."
-                                                        className="flex-1 bg-white/5 border border-white/5 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
+                                                        className="flex-1 bg-white/5 border border-white/5 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-primary/50 font-medium"
                                                     />
                                                     <button
+                                                        type="button"
                                                         onClick={() => {
-                                                            if (itinTime && itinDesc) {
-                                                                setItinerary([...itinerary, { time: itinTime, description: itinDesc }]);
+                                                            if (itinDesc) {
+                                                                const finalTime = itinTime || "TBD";
+                                                                setItinerary([...itinerary, { time: finalTime, description: itinDesc }]);
                                                                 setItinTime('');
                                                                 setItinDesc('');
                                                             }
                                                         }}
-                                                        className="bg-primary text-black p-2 rounded-xl"
+                                                        className="bg-primary text-black p-2.5 rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20"
                                                     >
-                                                        <Plus size={16} />
+                                                        <Plus size={16} strokeWidth={3} />
                                                     </button>
                                                 </div>
                                             </div>
@@ -765,7 +793,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
 
                                     <div className="flex justify-between items-center">
                                         <div>
-                                            <p className="text-white text-xs font-black uppercase tracking-widest">Approval Hub</p>
+                                            <p className="text-white text-xs font-black uppercase tracking-widest">Approval</p>
                                             <p className="text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em] mt-0.5">Manually review joiners</p>
                                         </div>
                                         <button onClick={() => setRequiresApproval(!requiresApproval)} className={`w-10 h-6 rounded-full transition-all relative ${requiresApproval ? 'bg-primary' : 'bg-white/10'}`}>
@@ -871,8 +899,8 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                 {/* Modals */}
                 <AnimatePresence>
                     {showDatePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticDayPicker value={selectedDate} onChange={setSelectedDate} onClose={() => setShowDatePicker(false)} /></div>}
-                    {showStartTimePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={startTime} onChange={(ex) => setStartTime(formatTime12to24(ex))} onClose={() => setShowStartTimePicker(false)} /></div>}
-                    {showEndTimePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={endTime} onChange={(ex) => setEndTime(formatTime12to24(ex))} onClose={() => setShowEndTimePicker(false)} /></div>}
+                    {showStartTimePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={startTime} onChange={setStartTime} onClose={() => setShowStartTimePicker(false)} /></div>}
+                    {showEndTimePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={endTime} onChange={setEndTime} onClose={() => setShowEndTimePicker(false)} minTime={startTime} /></div>}
                     {showMapPicker && <div className="absolute inset-0 z-[60] bg-black"><MapPicker onSelect={(loc, addr) => { setLocationCoords(loc); setLocationName(addr); setShowMapPicker(false); }} onClose={() => setShowMapPicker(false)} /></div>}
                 </AnimatePresence>
             </motion.div>

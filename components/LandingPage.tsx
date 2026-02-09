@@ -18,9 +18,14 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
 
     useEffect(() => {
         const handleScroll = () => {
-            setScrolled(window.scrollY > 100);
+            const y = window.scrollY;
+            if (y > 100) {
+                setScrolled(true);
+            } else if (y < 30) {
+                setScrolled(false);
+            }
         };
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
@@ -42,7 +47,7 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                     <main className="relative">
                         <HeroSection onJoinClick={() => setShowAuth(true)} />
 
-                        <div id="vibe-check-section">
+                        <div id="vibe-check-section" className="scroll-mt-32">
                             <UserCTA onJoinClick={() => setShowAuth(true)} />
                         </div>
 
@@ -51,12 +56,12 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                             <PhoneShowcaseSection />
                         </div>
 
-                        <div id="vision">
+                        <div id="vision" className="scroll-mt-32">
                             <VisionSection />
                         </div>
 
 
-                        <div id="features">
+                        <div id="features" className="scroll-mt-32">
                             <FeatureShowcase />
                         </div>
 
@@ -64,7 +69,7 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                             <PoweredBy />
                         </div>
 
-                        <div id="roadmap">
+                        <div id="roadmap" className="scroll-mt-32">
                             <RoadmapSection />
                         </div>
 
@@ -179,6 +184,10 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                         }
                         body {
                             background-color: #05050A;
+                        }
+                        /* Added global scroll-margin-top for anchors */
+                        [id] {
+                            scroll-margin-top: 100px;
                         }
                     `}</style>
                 </motion.div>

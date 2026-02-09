@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface UserCTAProps {
     onJoinClick: () => void;
@@ -138,6 +138,8 @@ interface HUDMenuProps {
 
 export const HUDMenu: React.FC<HUDMenuProps> = ({ onJoinClick, isScrolled = true, onReset }) => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const isPartnerPage = location.pathname.startsWith('/partner');
 
     return (
         <motion.nav
@@ -149,20 +151,25 @@ export const HUDMenu: React.FC<HUDMenuProps> = ({ onJoinClick, isScrolled = true
                 scale: isScrolled ? 1 : 0.8
             }}
             transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
-            className={`fixed top-4 md:top-6 left-1/2 z-50 px-4 md:px-6 py-2 md:py-3 rounded-full glass-panel flex items-center gap-4 md:gap-8 shadow-2xl transition-all ${!isScrolled ? 'pointer-events-none' : ''}`}
+            className={`fixed top-4 md:top-6 left-1/2 z-50 px-4 md:px-6 py-2 md:py-3 rounded-full glass-panel flex items-center gap-4 md:gap-8 shadow-2xl ${!isScrolled ? 'pointer-events-none' : ''}`}
         >
             <motion.div
                 layoutId="main-logo"
                 className="flex items-center gap-2 cursor-pointer group"
                 onClick={() => {
-                    if (window.scrollY < 10) {
-                        if (onReset) {
-                            onReset();
-                        } else {
-                            window.location.reload();
-                        }
-                    } else {
+                    if (isPartnerPage) {
+                        navigate('/');
                         window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                        if (window.scrollY < 10) {
+                            if (onReset) {
+                                onReset();
+                            } else {
+                                window.location.reload();
+                            }
+                        } else {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
                     }
                 }}
             >
@@ -187,24 +194,41 @@ export const HUDMenu: React.FC<HUDMenuProps> = ({ onJoinClick, isScrolled = true
                 </div>
                 <div className="flex flex-col leading-none">
                     <span className="text-sm md:text-base font-black tracking-tighter font-display animate-liquid-text">Be4L</span>
-                    <span className="text-[6px] md:text-[8px] font-black uppercase tracking-widest animate-liquid-text opacity-50">Beta</span>
+                    <span className="text-[6px] md:text-[8px] font-black uppercase tracking-widest animate-liquid-text opacity-50">{isPartnerPage ? 'Operator' : 'Beta'}</span>
                 </div>
             </motion.div>
+
             <div className="hidden md:flex items-center gap-6">
-                <a href="#vision" className="text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Vision</a>
-                <a href="#roadmap" className="text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Roadmap</a>
-                <button
-                    onClick={() => navigate('/partner')}
-                    className="text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display"
-                >
-                    Partner
-                </button>
+                {isPartnerPage ? (
+                    <>
+                        <button onClick={() => navigate('/')} className="text-[9px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Home</button>
+                        <a href="#engine" className="text-[9px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Engine</a>
+                        <a href="#verification" className="text-[9px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Verification</a>
+                        <a href="#branding" className="text-[9px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Branding</a>
+                        <a href="#community" className="text-[9px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Community</a>
+                    </>
+                ) : (
+                    <>
+                        <a href="#vision" className="text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Vision</a>
+                        <a href="#roadmap" className="text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Roadmap</a>
+                        <button onClick={() => navigate('/partner')} className="text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Partner</button>
+                    </>
+                )}
             </div>
+
             <button
-                onClick={onJoinClick}
-                className="px-5 py-2 bg-white text-deep-void text-[10px] font-black uppercase tracking-widest rounded-full hover:scale-105 transition-all whitespace-nowrap font-display shadow-lg group"
+                onClick={() => {
+                    if (isPartnerPage) {
+                        navigate('/partner/apply');
+                    } else {
+                        onJoinClick();
+                    }
+                }}
+                className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-full hover:scale-105 transition-all whitespace-nowrap font-display shadow-lg group ${isPartnerPage ? 'bg-electric-teal text-black' : 'bg-white text-deep-void'}`}
             >
-                <span className="animate-text-gradient">Join the chat</span>
+                <span className={isPartnerPage ? "" : "animate-text-gradient"}>
+                    {isPartnerPage ? 'APPLY FOR PILOT' : 'Join the chat'}
+                </span>
             </button>
         </motion.nav>
     );

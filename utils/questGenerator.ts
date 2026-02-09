@@ -111,6 +111,8 @@ function getRandomInt(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+const CITIES = ['Davao City, PH', 'Manila, PH', 'Cebu, PH'];
+
 // Generate random quests for a specific category and date
 export function generateRandomQuests(category: string, date: Date, count: number = 10, specificType?: QuestType): Quest[] {
     const quests: Quest[] = [];
@@ -147,6 +149,7 @@ export function generateRandomQuests(category: string, date: Date, count: number
         const maxParticipants = getRandomInt(4, 12);
         const currentParticipants = getRandomInt(1, maxParticipants - 1);
         const fee = 0;
+        const city = getRandomElement(CITIES);
 
         // Use specific type if provided, otherwise random between SPONTY and RANDOM
         const questType = specificType || (Math.random() > 0.7 ? QuestType.SPONTY : QuestType.RANDOM);
@@ -208,7 +211,7 @@ export function generateRandomQuests(category: string, date: Date, count: number
                 lat: locationCoords?.latitude || 7.0707,
                 lng: locationCoords?.longitude || 125.6087,
                 place_name: getRandomElement(LOCATIONS),
-                address_full: 'Davao City, PH'
+                address_full: city
             },
             location_coords: locationCoords,
             host_capture_url: questType === QuestType.SPONTY ? getRandomElement(sampleCaptures) : undefined,

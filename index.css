@@ -507,4 +507,20 @@ select {
   animation: liquid-text-flow 6s linear infinite;
   padding-right: 0.2em;
   /* Fixes ending letter cutoff */
+  will-change: background-position;
+}
+
+/* Static Gradient Text - Performance Optimized */
+.text-gradient-static {
+  background: var(--liquid-gradient-text);
+  background-size: 300% auto;
+  background-position: 0% 50%;
+  /* Fixed position */
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  vertical-align: baseline;
+  padding-right: 0.2em;
 }

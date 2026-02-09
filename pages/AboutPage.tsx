@@ -8,6 +8,18 @@ export const AboutPage: React.FC = () => {
     const navigate = useNavigate();
     useDocumentTitle('About');
 
+    React.useEffect(() => {
+        const meta = document.createElement('meta');
+        meta.name = "robots";
+        meta.content = "noindex";
+        document.head.appendChild(meta);
+        return () => {
+            if (document.head.contains(meta)) {
+                document.head.removeChild(meta);
+            }
+        };
+    }, []);
+
     return (
         <div className="relative min-h-screen bg-[#09090b] text-white selection:bg-electric-teal/30 overflow-x-hidden">
             <Starfield />

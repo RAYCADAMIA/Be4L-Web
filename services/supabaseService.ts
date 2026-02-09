@@ -43,9 +43,8 @@ const awardQuestRewardsImpl = async (userId: string, auraAmount: number, expAmou
     let newExp = (profile.life_exp || 0) + expAmount;
     let newLevel = profile.level || 1;
     while (newExp >= newLevel * 1000) { newLevel += 1; }
-    const newAuraScore = (profile.aura?.score || profile.reliability_score || 0) + auraAmount;
-    const newAura = { ...profile.aura, score: newAuraScore, last_updated_at: new Date().toISOString() };
-    const { error } = await supabase.from('profiles').update({ life_exp: newExp, level: newLevel, aura: newAura, reliability_score: newAuraScore }).eq('id', userId);
+    const newAuraScore = (profile.aura_points || 0) + auraAmount;
+    const { error } = await supabase.from('profiles').update({ life_exp: newExp, level: newLevel, aura_points: newAuraScore }).eq('id', userId);
     return !error;
   } catch (e) { return false; }
 };
@@ -124,7 +123,19 @@ export const supabaseService = {
       if (data.user) {
         const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
         if (profile) return { user: { ...profile, email: data.user.email } as User };
-        const newUser: any = { id: data.user.id, username: `user_${data.user.id.slice(0, 5)}`, name: phone, avatar_url: `https://ui-avatars.com/api/?name=${phone}`, streak_count: 0, aura: { score: 1000, trend: 0, last_updated_at: new Date().toISOString() }, reliability_score: 1000, life_exp: 0, level: 1, life_streak: 0, bio: 'Joined Be4L!' };
+        const newUser: any = {
+          id: data.user.id,
+          username: `user_${data.user.id.slice(0, 5)}`,
+          name: phone,
+          avatar_url: `https://ui-avatars.com/api/?name=${phone}`,
+          streak_count: 0,
+          aura_points: 1000,
+          tour_completed: false,
+          life_exp: 0,
+          level: 1,
+          life_streak: 0,
+          bio: 'Joined Be4L!'
+        };
         await supabase.from('profiles').insert(newUser);
         return { user: { ...newUser, email: data.user.email } as User };
       }
@@ -181,7 +192,12 @@ export const supabaseService = {
       if (!user) return null;
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       if (!profile) return null;
-      const synced = await syncStreak(profile);
+      let synced = await syncStreak(profile);
+      // Ensure initial aura points for legacy users if needed
+      if ((synced.aura_points || 0) === 0 && !synced.tour_completed) {
+        synced.aura_points = 1000;
+        await supabase.from('profiles').update({ aura_points: 1000 }).eq('id', user.id);
+      }
       return { ...synced, email: user.email } as User;
     },
     signInWithEmail: async (email: string, pass: string) => {
@@ -253,7 +269,18 @@ export const supabaseService = {
       return !!data;
     },
     awardQuestRewards: awardQuestRewardsImpl,
-    updateUserAura: async (uid: string, d: number) => awardQuestRewardsImpl(uid, d, 0)
+    awardQuestRewards: awardQuestRewardsImpl,
+    updateUserAura: async (uid: string, d: number) => awardQuestRewardsImpl(uid, d, 0),
+    completeTour: async (uid: string) => {
+      // Use awardQuestRewardsImpl to increment aura by 100
+      const { data: profile } = await supabase.from('profiles').select('aura_points').eq('id', uid).single();
+      const currentAura = profile?.aura_points || 0;
+      const { error } = await supabase.from('profiles').update({
+        tour_completed: true,
+        aura_points: currentAura + 100
+      }).eq('id', uid);
+      return !error;
+    }
   },
   captures: {
     getFeed: async (type: 'discover' | 'friends' = 'discover', uid?: string): Promise<Capture[]> => {

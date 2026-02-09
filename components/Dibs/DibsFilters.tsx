@@ -164,42 +164,102 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
     setLocationFilter,
 }) => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [tempPrice, setTempPrice] = useState<[number, number]>(priceRange);
-    const [tempLocation, setTempLocation] = useState(locationFilter);
     const MAX_VAL = 10000;
-
-    // Sync temp state when modal opens
-    useEffect(() => {
-        if (isFilterOpen) {
-            setTempPrice(priceRange);
-            setTempLocation(locationFilter);
-        }
-    }, [isFilterOpen, priceRange, locationFilter]);
-
-    const handleApply = () => {
-        setPriceRange?.(tempPrice);
-        setLocationFilter?.(tempLocation);
-        setIsFilterOpen(false);
-    };
 
     return (
         <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-700">
             {/* Categories & Filter Toggle */}
-            <div className="px-4">
-                <div className="flex gap-2 items-center overflow-x-auto no-scrollbar pb-1">
-                    {/* Mobile Filter Toggle */}
+            <div className="flex gap-2 items-center relative z-[100] w-full">
+                {/* Single Consolidated Filter Toggle - Replicating Quest Behavior */}
+                <div className="relative shrink-0">
                     <button
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
                         className={`
-                            h-8 w-8 flex items-center justify-center rounded-full shrink-0 border transition-all duration-300
-                            ${isFilterOpen ? 'bg-primary border-primary text-black shadow-[0_0_15px_rgba(45,212,191,0.4)]' : 'bg-white/[0.08] backdrop-blur-3xl border-white/10 text-gray-400 hover:bg-white/10'}
-                        `}
+                                h-8 w-8 flex items-center justify-center rounded-full shrink-0 border transition-all duration-300
+                                ${isFilterOpen || locationFilter !== '' || (priceRange[1] < MAX_VAL) ? 'bg-white/10 border-white/20 text-white shadow-[0_8px_32px_rgba(255,255,255,0.1)] backdrop-blur-2xl' : 'bg-white/[0.08] backdrop-blur-3xl border-white/10 text-gray-400 hover:bg-white/10'}
+                            `}
                     >
                         <ListFilter size={14} strokeWidth={2.5} />
                     </button>
 
-                    <div className="h-4 w-px bg-white/10 shrink-0 mx-1" />
+                    {/* Premium Frozen Glass Filter Window - Same as Quest */}
+                    <AnimatePresence>
+                        {isFilterOpen && (
+                            <>
+                                {/* Invisible Backdrop for click-outside behavior */}
+                                <div
+                                    className="fixed inset-0 z-[150] cursor-default"
+                                    onClick={() => setIsFilterOpen(false)}
+                                />
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className="absolute top-full left-0 mt-2 p-1.5 min-w-[260px] bg-white/[0.05] backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[200] space-y-6"
+                                >
+                                    {/* Location Section */}
+                                    <div className="space-y-3">
+                                        <label className="text-[9px] font-black uppercase text-white/20 tracking-widest flex items-center gap-1.5 px-1">
+                                            Select City
+                                        </label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['All Cities', 'Manila', 'Davao', 'Cebu', 'Makati'].map(city => {
+                                                const isAll = city === 'All Cities';
+                                                const value = isAll ? '' : city;
+                                                const isActive = (locationFilter === value);
+                                                return (
+                                                    <button
+                                                        key={city}
+                                                        onClick={() => setLocationFilter?.(value)}
+                                                        className={`px-3 py-1.5 rounded-[0.75rem] text-[8px] font-black uppercase tracking-widest transition-all ${isActive ? 'bg-white/10 text-white border border-white/20 shadow-[0_4px_12px_rgba(255,255,255,0.05)]' : 'bg-white/5 text-white/40 hover:bg-white/10 border border-white/5'}`}
+                                                    >
+                                                        {city}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
 
+                                    {/* Price Range Section */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between px-1">
+                                            <label className="text-[9px] font-black uppercase text-white/20 tracking-widest">
+                                                Max Price
+                                            </label>
+                                            <span className="text-[12px] font-black text-white tracking-widest">
+                                                ₱{priceRange[1].toLocaleString()}
+                                                {priceRange[1] === MAX_VAL && '+'}
+                                            </span>
+                                        </div>
+                                        <div className="relative h-4 flex items-center">
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max={MAX_VAL}
+                                                step="100"
+                                                value={priceRange[1]}
+                                                onChange={(e) => setPriceRange?.([priceRange[0], Number(e.target.value)])}
+                                                className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => setIsFilterOpen(false)}
+                                        className="w-full py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95 shadow-[0_10px_30px_rgba(255,255,255,0.1)]"
+                                    >
+                                        Close Filters
+                                    </button>
+                                </motion.div>
+                            </>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                <div className="h-4 w-px bg-white/10 shrink-0 mx-1" />
+
+                {/* Categories - Now in a dedicated scrolling container to avoid clipping the absolute window above */}
+                <div className="flex-1 overflow-x-auto no-scrollbar flex items-center gap-2 pb-1">
                     {DIB_CATEGORIES.map(cat => {
                         const isActive = activeCat === cat.id;
                         return (
@@ -207,107 +267,16 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
                                 key={cat.id}
                                 onClick={() => setActiveCat(cat.id)}
                                 className={`
-                                    relative h-8 px-5 rounded-full whitespace-nowrap text-[9px] font-black uppercase tracking-[0.15em] transition-all duration-300 shrink-0
-                                    ${isActive ? 'bg-primary text-black shadow-[0_0_15px_rgba(45,212,191,0.2)]' : 'bg-white/[0.03] backdrop-blur-xl text-gray-400 border border-white/5 hover:bg-white/10'}
+                                    h-8 px-4 rounded-full shrink-0 text-[10px] font-black uppercase tracking-widest transition-all relative border
+                                    ${isActive ? 'bg-white border-white text-black' : 'bg-white/[0.08] backdrop-blur-3xl border-white/5 text-gray-400 hover:bg-white/10'}
                                 `}
                             >
-                                <span className="relative z-10">{cat.label}</span>
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="dibsCatActiveMobile"
-                                        className="absolute inset-0 bg-primary/20 rounded-full blur-md -z-10"
-                                    />
-                                )}
+                                {cat.label}
                             </button>
                         );
                     })}
                 </div>
             </div>
-
-            {/* Mobile Filter Dropdown */}
-            <AnimatePresence>
-                {isFilterOpen && (
-                    <>
-                        {/* Backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsFilterOpen(false)}
-                            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm md:hidden"
-                        />
-
-                        {/* Dropdown Card */}
-                        <motion.div
-                            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                            className="fixed top-24 left-4 right-4 z-[101] md:hidden"
-                        >
-                            <div className="bg-[#0A0A0A]/95 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-6 shadow-3xl space-y-6">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Refine Sector</h3>
-                                    <button
-                                        onClick={handleApply}
-                                        className="text-[10px] font-black uppercase text-primary hover:text-white transition-colors bg-primary/10 px-4 py-1.5 rounded-full border border-primary/20"
-                                    >
-                                        Done
-                                    </button>
-                                </div>
-
-                                {/* Price Range */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-[9px] font-black uppercase text-white/20 tracking-widest flex items-center gap-1.5">
-                                            <DollarSign size={10} /> Maximum Price
-                                        </label>
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="text-[14px] font-black text-primary uppercase tracking-widest">
-                                                ₱{tempPrice[1].toLocaleString()}
-                                            </span>
-                                            {tempPrice[1] === MAX_VAL && <span className="text-[8px] font-black text-white/20 uppercase">+</span>}
-                                        </div>
-                                    </div>
-                                    <div className="relative h-6 flex items-center">
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max={MAX_VAL}
-                                            step="100"
-                                            value={tempPrice[1]}
-                                            onChange={(e) => setTempPrice([tempPrice[0], Number(e.target.value)])}
-                                            className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-primary"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Location Presets */}
-                                <div className="space-y-3">
-                                    <label className="text-[9px] font-black uppercase text-white/20 tracking-widest flex items-center gap-1.5">
-                                        <MapPin size={10} /> Select City
-                                    </label>
-                                    <div className="flex flex-wrap gap-2 pt-1">
-                                        {['All Cities', 'Manila', 'Davao', 'Cebu', 'Makati'].map(city => {
-                                            const isAll = city === 'All Cities';
-                                            const value = isAll ? '' : city;
-                                            const isActive = (tempLocation === value);
-                                            return (
-                                                <button
-                                                    key={city}
-                                                    onClick={() => setTempLocation(value)}
-                                                    className={`px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${isActive ? 'bg-primary text-black' : 'bg-white/5 text-white/40 hover:bg-white/10 border border-white/5'}`}
-                                                >
-                                                    {city}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
         </div>
     );
 };

@@ -10,6 +10,7 @@ interface AuthContextType {
     login: (user: UserType) => void;
     logout: () => void;
     updateUser: (updates: Partial<UserType>) => void;
+    refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,14 +19,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<UserType | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const fetchUser = async () => {
+    const fetchUser = async (forceRefresh = false) => {
         try {
             // Check for persistent session first
-            const savedUser = localStorage.getItem('be4l_session');
-            if (savedUser) {
-                setUser(JSON.parse(savedUser));
-                setLoading(false);
-                return;
+            if (!forceRefresh) {
+                const savedUser = localStorage.getItem('be4l_session');
+                if (savedUser) {
+                    setUser(JSON.parse(savedUser));
+                    setLoading(false);
+                    return;
+                }
             }
 
             const fetchedUser = await supabaseService.auth.getCurrentUser();
@@ -44,7 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     useEffect(() => {
-        fetchUser();
+        fetchUser(false);
     }, []);
 
     const login = (userData: UserType) => {
@@ -75,7 +78,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             loading,
             login,
             logout,
-            updateUser
+            updateUser,
+            refreshProfile: () => fetchUser(true)
         }}>
             {children}
         </AuthContext.Provider>

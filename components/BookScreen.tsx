@@ -146,8 +146,8 @@ const BookScreen: React.FC<{
     });
 
     return (
-        <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-transparent">
-            <div className="flex-1 h-full overflow-hidden flex flex-col md:flex-row max-w-[1600px] mx-auto w-full">
+        <div className="flex-1 flex flex-col h-full relative bg-transparent">
+            <div className="flex-1 h-full flex flex-col md:flex-row max-w-[1600px] mx-auto w-full">
 
                 {/* Desktop Sidebar (Left) */}
                 <div className="hidden md:flex flex-col w-40 shrink-0 pt-28 border-r border-white/[0.02] sticky top-0 h-full overflow-y-auto no-scrollbar">
@@ -172,7 +172,7 @@ const BookScreen: React.FC<{
 
 
                     {/* Mobile Header (Filters) - Sticky Floating Style */}
-                    <div className="md:hidden pb-4 sticky top-[80px] z-30 pointer-events-none">
+                    <div className="md:hidden pb-4 sticky top-[80px] z-[100] pointer-events-none">
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -190,7 +190,7 @@ const BookScreen: React.FC<{
                     </div>
 
                     {/* Feed Grid - Removed internal overflow to fix sticky block look */}
-                    <div className="flex-1 pt-4 md:pt-8 pb-0 space-y-16 px-4 relative">
+                    <div className="flex-1 pt-4 md:pt-8 pb-0 space-y-16 px-4 relative z-0">
 
                         {/* Discovery Row (Items) */}
                         {!loading && filteredItems.length > 0 && (
@@ -284,7 +284,7 @@ const BookScreen: React.FC<{
                                                 onClick={() => navigate('/partner')}
                                                 className="px-8 py-4 bg-electric-teal/5 hover:bg-electric-teal/10 border-2 border-electric-teal/30 hover:border-electric-teal rounded-full transition-all group active:scale-95"
                                             >
-                                                <span className="text-electric-teal font-black text-xs tracking-[0.3em] uppercase animate-liquid-text">
+                                                <span className="text-electric-teal font-black text-xs tracking-[0.3em] uppercase text-gradient-static">
                                                     Partner With Be4L
                                                 </span>
                                             </button>

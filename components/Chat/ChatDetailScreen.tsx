@@ -96,7 +96,7 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
                         className="flex flex-col ml-1 group text-left active:scale-[0.98] transition-transform"
                     >
                         <h2 className="text-xl font-black tracking-tighter uppercase text-white flex items-center gap-2 leading-none group-hover:text-primary transition-colors">
-                            <span className="animate-liquid-text">
+                            <span className="text-gradient-static">
                                 {chatName}
                             </span>
                             {isLobby && <Zap size={14} className="text-primary fill-primary" />}

@@ -8,6 +8,8 @@ import { useNavigation } from '../../contexts/NavigationContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProfileOverlay from '../Profile/ProfileOverlay';
 import QuestOverlay from '../Quest/QuestOverlay';
+import { OnboardingTour } from '../Onboarding/OnboardingTour';
+import { AuraParticles } from '../Effects/AuraParticles';
 
 export const PlatformLayout: React.FC = () => {
     const { user, loading } = useAuth();
@@ -88,6 +90,7 @@ export const PlatformLayout: React.FC = () => {
                     return (
                         <button
                             key={item.path}
+                            id={`nav-${item.label.toLowerCase()}-mobile`}
                             onClick={() => navigate(item.path)}
                             className={`group flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-300 relative ${isActive ? 'text-primary' : 'text-white/40 hover:text-white'}`}
                         >
@@ -116,6 +119,8 @@ export const PlatformLayout: React.FC = () => {
                 questId={selectedQuestId}
                 onClose={closeQuest}
             />
+            {/* <OnboardingTour /> */}
+            <AuraParticles trigger={user?.aura_points || 0} />
         </div>
     );
 };

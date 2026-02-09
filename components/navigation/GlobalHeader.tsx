@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Search, Bell, User, CheckSquare, Plus, X, Menu } from 'lucide-react';
+import { Search, Bell, User, CheckSquare, Plus, X, Menu, Zap } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigation } from '../../contexts/NavigationContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { TaskWindow, NotificationWindow } from './ControlDropdowns';
 
 export const GlobalHeader: React.FC = () => {
     const { user } = useAuth();
@@ -12,6 +13,7 @@ export const GlobalHeader: React.FC = () => {
     const location = useLocation();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [activeControl, setActiveControl] = useState<'tasks' | 'notifications' | null>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
     if (!user) return null;
@@ -24,7 +26,7 @@ export const GlobalHeader: React.FC = () => {
             <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 pointer-events-none">
 
                 {/* 1. Floating Logo (Left) + Search */}
-                <div className={`pointer-events-auto flex items-center gap-3 transition-all duration-500 ${isChatDetail && isMobile ? 'opacity-0 -translate-y-4 scale-95 pointer-events-none' : 'opacity-100'}`}>
+                <div className="pointer-events-auto flex items-center gap-3 transition-all duration-500 opacity-100">
                     <button
                         onClick={() => {
                             if (location.pathname === '/app/home' || location.pathname === '/app/quests') {
@@ -128,6 +130,7 @@ export const GlobalHeader: React.FC = () => {
                             return (
                                 <button
                                     key={item.path}
+                                    id={`nav-${item.label.toLowerCase()}`}
                                     onClick={() => navigate(item.path)}
                                     className={`relative h-10 px-6 flex items-center justify-center rounded-full text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 z-10 ${isActive ? 'text-white' : 'text-white/40 hover:text-white'}`}
                                 >
@@ -148,23 +151,56 @@ export const GlobalHeader: React.FC = () => {
                 </div>
 
                 {/* 3. Floating Control Pill (Right) */}
-                <div className={`pointer-events-auto transition-all duration-500 ${isChatDetail && isMobile ? 'opacity-0 translate-y-4 scale-95 pointer-events-none' : 'opacity-100'}`}>
-                    <nav className="flex items-center gap-1 h-[52px] p-1.5 bg-white/[0.08] backdrop-blur-3xl border border-white/10 rounded-full shadow-lg transition-all hover:border-white/20">
+                <div className="pointer-events-auto transition-all duration-500 opacity-100">
+                    <nav className="flex items-center gap-1 h-[52px] p-1.5 bg-white/[0.08] backdrop-blur-3xl border border-white/10 rounded-full shadow-lg transition-all hover:border-white/20 relative">
                         {/* Control Icons - Now visible on both Mobile & Desktop */}
-                        <div className="flex items-center gap-0.5">
-                            <button className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-colors" aria-label="Tasks">
-                                <CheckSquare size={18} strokeWidth={2.5} />
-                            </button>
+                        <div className="flex items-center gap-0.5 relative">
+                            {/* Invisible Backdrop for click-outside behavior */}
+                            {activeControl && (
+                                <div
+                                    className="fixed inset-0 z-10 cursor-default"
+                                    onClick={() => setActiveControl(null)}
+                                />
+                            )}
 
-                            <button className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-colors relative" aria-label="Notifications">
-                                <Bell size={18} strokeWidth={2.5} />
-                                <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-primary rounded-full border border-black" />
-                            </button>
+                            {/* Task List Toggle */}
+                            <div className="relative z-20">
+                                <button
+                                    id="nav-tasks"
+                                    onClick={() => setActiveControl(activeControl === 'tasks' ? null : 'tasks')}
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${activeControl === 'tasks' ? 'bg-white/10 text-white shadow-xl backdrop-blur-3xl border border-white/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                                    aria-label="Tasks"
+                                >
+                                    <CheckSquare size={18} strokeWidth={2.5} />
+                                </button>
+
+                                <AnimatePresence>
+                                    {activeControl === 'tasks' && <TaskWindow />}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Notifications Toggle */}
+                            <div className="relative z-20">
+                                <button
+                                    id="nav-notifications"
+                                    onClick={() => setActiveControl(activeControl === 'notifications' ? null : 'notifications')}
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 relative ${activeControl === 'notifications' ? 'bg-white/10 text-white shadow-xl backdrop-blur-3xl border border-white/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                                    aria-label="Notifications"
+                                >
+                                    <Bell size={18} strokeWidth={2.5} />
+                                    <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-primary rounded-full border border-black" />
+                                </button>
+
+                                <AnimatePresence>
+                                    {activeControl === 'notifications' && <NotificationWindow />}
+                                </AnimatePresence>
+                            </div>
                         </div>
 
                         {/* User Profile */}
                         <div className="flex items-center pl-1 pr-1">
                             <button
+                                id="nav-profile"
                                 onClick={() => navigate('/app/myprofile')}
                                 className="w-9 h-9 rounded-full overflow-hidden border border-white/10 hover:border-primary transition-all relative group flex items-center justify-center"
                             >

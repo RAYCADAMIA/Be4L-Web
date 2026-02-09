@@ -202,7 +202,7 @@ const DibbedDetailModal: React.FC<DibbedDetailModalProps> = ({ isOpen, onClose, 
                                             <div className="text-left">
                                                 <p className="text-[7px] font-black uppercase text-zinc-600 tracking-widest mb-1">Pass Holder</p>
                                                 <p className="text-[10px] font-black text-white uppercase truncate">
-                                                    <span className="animate-liquid-text">
+                                                    <span className="text-gradient-static">
                                                         {booking.metadata?.name || 'Guest'}
                                                     </span>
                                                 </p>
@@ -218,7 +218,7 @@ const DibbedDetailModal: React.FC<DibbedDetailModalProps> = ({ isOpen, onClose, 
                                             <div className="text-right">
                                                 <p className="text-[7px] font-black uppercase text-zinc-600 tracking-widest mb-1">Operator</p>
                                                 <p className="text-[10px] font-black text-white uppercase truncate">
-                                                    <span className="animate-liquid-text">
+                                                    <span className="text-gradient-static">
                                                         {booking.operator?.business_name}
                                                     </span>
                                                 </p>

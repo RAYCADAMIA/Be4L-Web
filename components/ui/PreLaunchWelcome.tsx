@@ -13,6 +13,7 @@ export const PreLaunchWelcome = () => {
 
     const handleDismiss = () => {
         setIsVisible(false);
+        window.dispatchEvent(new Event('disclaimerDismissed'));
     };
 
     return (

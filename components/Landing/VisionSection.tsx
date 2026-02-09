@@ -26,7 +26,7 @@ export const VisionSection: React.FC = () => {
                         <div className="text-left max-w-2xl mx-auto space-y-6 relative z-10">
                             <div className="flex flex-wrap items-baseline gap-4">
                                 <h3 className="text-3xl md:text-7xl font-black tracking-tighter font-display animate-liquid-text uppercase">Side Quest</h3>
-                                <span className="text-cool-grey font-mono text-xs md:text-sm uppercase tracking-[0.2em] font-bold opacity-60">
+                                <span className="text-cool-grey font-mono text-xs md:text-sm uppercase tracking-[0.2em] font-bold">
                                     [noun, slang]
                                 </span>
                             </div>

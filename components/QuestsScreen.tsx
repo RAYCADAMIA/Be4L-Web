@@ -162,6 +162,32 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
         });
     }, [activeTab, activeCat, selectedDate, refreshTrigger, localRefresh]);
 
+    const filteredQuests = useMemo(() => {
+        return quests.filter(q => {
+            // Mode filter
+            if (q.mode !== QuestType.CANON) return false;
+
+            // Category filter
+            if (activeCat !== 'All' && q.category !== activeCat) return false;
+
+            // Location filter
+            if (viewingLocation !== 'Global') {
+                const locStr = typeof q.location === 'string'
+                    ? q.location
+                    : `${q.location?.address_full || ''} ${q.location?.place_name || ''}`;
+
+                const filter = viewingLocation.toLowerCase();
+                if (!locStr.toLowerCase().includes(filter)) return false;
+            }
+
+            // Date filter
+            const qDate = new Date(q.start_time);
+            return qDate.getFullYear() === selectedDate.getFullYear() &&
+                qDate.getMonth() === selectedDate.getMonth() &&
+                qDate.getDate() === selectedDate.getDate();
+        });
+    }, [quests, activeTab, activeCat, viewingLocation, selectedDate]);
+
     return (
         <div className="flex-1 flex flex-col h-full relative overflow-hidden">
 
@@ -174,7 +200,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                 className="flex-1 h-full overflow-hidden flex flex-col md:flex-row max-w-[1600px] mx-auto w-full"
             >
                 {/* Desktop Sidebar (Left) */}
-                <div className="hidden md:flex flex-col w-24 shrink-0 pt-28 sticky top-0 h-full overflow-y-auto no-scrollbar border-r border-white/[0.02]">
+                <div className="hidden md:flex flex-col w-40 shrink-0 pt-28 sticky top-0 h-full overflow-y-auto no-scrollbar border-r border-white/[0.02]">
                     <QuestSidebar
                         selectedDate={selectedDate}
                         onDateChange={(d) => {
@@ -200,11 +226,10 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                     {/* Header Spacer for Floating Nav */}
                     <div className="h-[60px] w-full shrink-0" />
 
-                    {/* Mobile Header (Filters) */}
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="md:hidden z-30 pb-2 pointer-events-none"
+                        className="z-[60] pb-2 pointer-events-none md:hidden"
                     >
                         <div className="pointer-events-auto pt-4 relative">
                             <QuestHeader
@@ -232,32 +257,8 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                                     <div className="col-span-full py-20 flex justify-center">
                                         <EKGLoader size={60} />
                                     </div>
-                                ) : quests.filter(q => {
-                                    if (q.mode !== QuestType.CANON) return false;
-                                    if (activeCat !== 'All' && q.category !== activeCat) return false;
-                                    if (viewingLocation !== 'Global') {
-                                        const loc = (q.location || '').toLowerCase();
-                                        const filter = viewingLocation.toLowerCase();
-                                        if (!loc.includes(filter)) return false;
-                                    }
-                                    const qDate = new Date(q.start_time);
-                                    return qDate.getFullYear() === selectedDate.getFullYear() &&
-                                        qDate.getMonth() === selectedDate.getMonth() &&
-                                        qDate.getDate() === selectedDate.getDate();
-                                }).length > 0 ? (
-                                    quests.filter(q => {
-                                        if (q.mode !== QuestType.CANON) return false;
-                                        if (activeCat !== 'All' && q.category !== activeCat) return false;
-                                        if (viewingLocation !== 'Global') {
-                                            const loc = (q.location || '').toLowerCase();
-                                            const filter = viewingLocation.toLowerCase();
-                                            if (!loc.includes(filter)) return false;
-                                        }
-                                        const qDate = new Date(q.start_time);
-                                        return qDate.getFullYear() === selectedDate.getFullYear() &&
-                                            qDate.getMonth() === selectedDate.getMonth() &&
-                                            qDate.getDate() === selectedDate.getDate();
-                                    }).map(q => (
+                                ) : filteredQuests.length > 0 ? (
+                                    filteredQuests.map(q => (
                                         <QuestCard
                                             key={q.id}
                                             quest={q}
@@ -322,63 +323,64 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                         </div>
                     )}
                 </div>
-
-                {/* Persistent Create FAB (Bottom Right) */}
-                <div className="fixed bottom-32 md:bottom-10 right-6 md:right-10 z-[60]">
-                    <motion.button
-                        whileHover={{ scale: 1.1, rotate: 90 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setShowCreate(true)}
-                        className="w-14 h-14 bg-white text-black rounded-full flex items-center justify-center shadow-[0_20px_40px_rgba(0,0,0,0.4)] hover:shadow-primary/20 transition-all border border-white/20"
-                    >
-                        <Plus size={28} strokeWidth={3} />
-                    </motion.button>
-                </div>
-
-                <AnimatePresence>
-                    {showCreate && (
-                        <CreateQuestScreen
-                            currentUser={currentUser}
-                            onClose={() => setShowCreate(false)}
-                            onQuestCreated={(id, title) => {
-                                setShowCreate(false);
-                                showToast(`Quest "${title}" deployed!`, "success");
-                                // Trigger refresh locally
-                                setLoading(true);
-                                setLocalRefresh(prev => prev + 1);
-                            }}
-                        />
-                    )}
-                </AnimatePresence>
-
-                <AnimatePresence>
-                    {showCalendar && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md" onClick={() => setShowCalendar(false)}>
-                            <div onClick={e => e.stopPropagation()} className="w-full max-w-xs relative">
-                                <MinimalCalendar
-                                    selectedDate={selectedDate}
-                                    onSelect={(d) => {
-                                        setSelectedDate(d);
-                                        setLoading(true);
-                                        setTimeout(() => setLoading(false), 400);
-                                        setShowCalendar(false);
-                                    }}
-                                    onClose={() => setShowCalendar(false)}
-                                />
-                            </div>
-                        </div>
-                    )}
-                </AnimatePresence>
-
-                <AnimatePresence>
-                    {activeDrop && (
-                        <QuestDropModal
-                            drop={activeDrop}
-                            onClose={() => setActiveDrop(null)}
-                        />
-                    )}
-                </AnimatePresence>
             </div>
+
+            {/* Persistent Create FAB (Bottom Right) */}
+            <div className="fixed bottom-32 md:bottom-10 right-6 md:right-10 z-[60]">
+                <motion.button
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowCreate(true)}
+                    id="create-quest-btn"
+                    className="w-14 h-14 bg-white text-black rounded-full flex items-center justify-center shadow-[0_20px_40px_rgba(0,0,0,0.4)] hover:shadow-primary/20 transition-all border border-white/20"
+                >
+                    <Plus size={28} strokeWidth={3} />
+                </motion.button>
+            </div>
+
+            <AnimatePresence>
+                {showCreate && (
+                    <CreateQuestScreen
+                        currentUser={currentUser}
+                        onClose={() => setShowCreate(false)}
+                        onQuestCreated={(id, title) => {
+                            setShowCreate(false);
+                            showToast(`Quest "${title}" deployed!`, "success");
+                            // Trigger refresh locally
+                            setLoading(true);
+                            setLocalRefresh(prev => prev + 1);
+                        }}
+                    />
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {showCalendar && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md" onClick={() => setShowCalendar(false)}>
+                        <div onClick={e => e.stopPropagation()} className="w-full max-w-xs relative">
+                            <MinimalCalendar
+                                selectedDate={selectedDate}
+                                onSelect={(d) => {
+                                    setSelectedDate(d);
+                                    setLoading(true);
+                                    setTimeout(() => setLoading(false), 400);
+                                    setShowCalendar(false);
+                                }}
+                                onClose={() => setShowCalendar(false)}
+                            />
+                        </div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {activeDrop && (
+                    <QuestDropModal
+                        drop={activeDrop}
+                        onClose={() => setActiveDrop(null)}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 };

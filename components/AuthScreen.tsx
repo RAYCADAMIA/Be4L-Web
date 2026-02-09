@@ -230,7 +230,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onClose }) => {
 
                             {/* Header */}
                             <div className="text-center mb-8 space-y-3">
-                                <h2 className="text-3xl font-black font-fui animate-liquid-text uppercase tracking-tighter transition-all">
+                                <h2 className="text-3xl font-black font-fui text-gradient-static uppercase tracking-tighter transition-all">
                                     {isLogin ? 'Welcome Back' : 'Start Your Lore'}
                                 </h2>
                                 <div className="space-y-1">
@@ -387,7 +387,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onClose }) => {
                                     onClick={handleGuestLogin}
                                     className="w-full py-3 bg-electric-teal/5 border border-electric-teal/10 rounded-full hover:bg-electric-teal/10 transition-all flex items-center justify-center gap-2 text-electric-teal text-[9px] uppercase font-black tracking-widest mt-1"
                                 >
-                                    Preview as guest to explore <span className="animate-liquid-text ml-1 normal-case">Be4L</span>
+                                    Preview as guest to explore <span className="text-gradient-static ml-1 normal-case">Be4L</span>
                                 </button>
 
                                 {!isLogin && (
