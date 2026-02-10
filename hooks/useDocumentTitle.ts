@@ -7,7 +7,7 @@ import { useEffect } from 'react';
  */
 export const useDocumentTitle = (title: string, prefix: string = 'Be4L') => {
     useEffect(() => {
-        const fullTitle = title ? `${prefix} | ${title}` : prefix;
+        const fullTitle = title ? `${prefix} - ${title}` : prefix;
         document.title = fullTitle;
 
         // Optional: Clean up title on unmount if needed, 

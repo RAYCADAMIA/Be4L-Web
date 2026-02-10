@@ -28,13 +28,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onJoinClick }) => {
                 className="relative z-10 text-center px-6"
             >
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, ease: [0.2, 0.8, 0.2, 1] }}
                 >
                     <div className="relative z-20 overflow-visible p-4 mb-8">
                         {/* Invisible Placeholder to reserve layout space for PersistentLogo */}
-                        <h1 className="opacity-0 pointer-events-none text-7xl md:text-[8rem] lg:text-[12rem] font-black tracking-tighter leading-[0.9] font-display flex items-center justify-center select-none">
+                        <h1 className="text-7xl md:text-[8rem] lg:text-[12rem] font-black tracking-tighter leading-[0.9] font-display flex items-center justify-center select-none opacity-0">
                             Be4L
                         </h1>
                     </div>

@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 
 // Asset Paths
 const SCREENS = {
-    QUEST: '/assets/screens/quest_screen.png',
-    DIBS: '/assets/screens/dibs_screen.png',
-    ECHO: '/assets/screens/echo_screen.png',
+    QUEST: '/assets/screens/quest_screen.webp',
+    DIBS: '/assets/screens/dibs_screen.webp',
+    ECHO: '/assets/screens/echo_screen.webp',
 };
 
 interface PhoneProps {

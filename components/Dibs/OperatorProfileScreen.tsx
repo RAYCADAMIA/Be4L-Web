@@ -15,6 +15,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import OperatorDashboard from './OperatorDashboard'; // Import Dashboard
 import ProfileHeader from '../ProfileHeader';
 import DibsItemCard from '../DibsItemCard';
+import CreatePostModal from './CreatePostModal';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 interface OperatorProfileScreenProps {
@@ -34,9 +35,11 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
     const [loading, setLoading] = useState(!operatorData);
     const [selectedItem, setSelectedItem] = useState<DibsItem | null>(null);
     const [isFollowing, setIsFollowing] = useState(false);
+    const [posts, setPosts] = useState<any[]>([]);
 
     // View State for Dashboard Overlay
     const [showDashboard, setShowDashboard] = useState(false);
+    const [showCreatePost, setShowCreatePost] = useState(false);
     const [initialDashboardTab, setInitialDashboardTab] = useState<'overview' | 'orders' | 'verify' | 'menu' | 'business'>('overview');
     const [isOwner, setIsOwner] = useState(isOwnerView);
 
@@ -72,6 +75,10 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                 if (currentUser && currentUser.id === opData.user_id) {
                     setIsOwner(true);
                 }
+
+                // Load Posts
+                const postsData = await supabaseService.partner.getPosts(opData.user_id);
+                setPosts(postsData);
             }
             setLoading(false);
         };
@@ -185,17 +192,72 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                             animate={{ opacity: 1, y: 0 }}
                             className="space-y-6"
                         >
-                            {/* Featured Photos Masonry */}
-                            <div className="columns-2 md:columns-3 gap-4 space-y-4">
-                                {operator.gallery && operator.gallery.map((photo: any, i: number) => (
-                                    <div key={i} className="break-inside-avoid rounded-2xl overflow-hidden border border-white/10 bg-white/5 relative group cursor-pointer">
-                                        <img src={photo.photo_url} className="w-full object-cover" loading="lazy" />
+                            {/* Add Post Button for Owner */}
+                            {isOwner && (
+                                <button
+                                    onClick={() => setShowCreatePost(true)}
+                                    className="w-full py-6 border-2 border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center gap-2 hover:border-electric-teal/50 hover:bg-electric-teal/5 transition-all group"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <Plus size={20} className="text-gray-400 group-hover:text-electric-teal" />
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 group-hover:text-white">Create New Update</span>
+                                </button>
+                            )}
+
+                            {/* Feed Style Posts */}
+                            <div className="space-y-8">
+                                {posts.map((post) => (
+                                    <div key={post.id} className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden">
+                                        {/* Media */}
+                                        <div className="aspect-square relative group">
+                                            <img src={post.media_urls[0]} className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                                            {post.tagged_item && (
+                                                <div className="absolute bottom-6 left-6 right-6">
+                                                    <button
+                                                        onClick={() => setSelectedItem(post.tagged_item)}
+                                                        className="w-full py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all"
+                                                    >
+                                                        <ShoppingBag size={14} /> Shop {post.tagged_item.title}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Stats & Caption */}
+                                        <div className="p-6 space-y-4">
+                                            <div className="flex items-center gap-6">
+                                                <button className="flex items-center gap-2 text-white">
+                                                    <Heart size={20} />
+                                                    <span className="text-xs font-bold">{post.likes_count}</span>
+                                                </button>
+                                                <button className="flex items-center gap-2 text-white">
+                                                    <MessageCircle size={20} />
+                                                    <span className="text-xs font-bold">{post.comments_count}</span>
+                                                </button>
+                                                <button className="ml-auto text-white/50">
+                                                    <Share2 size={20} />
+                                                </button>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-300 text-sm leading-relaxed">
+                                                    <span className="font-black text-white mr-2">{operator.business_name}</span>
+                                                    {post.caption}
+                                                </p>
+                                                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mt-2">
+                                                    {new Date(post.created_at).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
-                                {/* Fallback if empty */}
-                                {(!operator.gallery || operator.gallery.length === 0) && (
-                                    <div className="col-span-full h-32 flex items-center justify-center text-gray-600 text-xs font-bold uppercase tracking-widest border border-dashed border-white/10 rounded-2xl">
-                                        No media showcase yet
+
+                                {posts.length === 0 && (
+                                    <div className="h-64 flex flex-col items-center justify-center text-gray-600 space-y-4 opacity-50">
+                                        <Grid size={40} />
+                                        <p className="text-[10px] font-black uppercase tracking-widest">No updates posted yet</p>
                                     </div>
                                 )}
                             </div>
@@ -346,6 +408,22 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                     )
                 }
             </AnimatePresence >
+
+            {/* Create Post Modal */}
+            <AnimatePresence>
+                {showCreatePost && (
+                    <CreatePostModal
+                        isOpen={showCreatePost}
+                        onClose={() => setShowCreatePost(false)}
+                        operatorId={operator.user_id}
+                        onSuccess={async () => {
+                            // Reload posts
+                            const postsData = await supabaseService.partner.getPosts(operator.user_id);
+                            setPosts(postsData);
+                        }}
+                    />
+                )}
+            </AnimatePresence>
 
         </div >
     );

@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /about
 
 Sitemap: https://be4l.app/sitemap.xml

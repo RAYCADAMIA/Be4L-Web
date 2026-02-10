@@ -24,7 +24,7 @@ export const PartnerFeed: React.FC<PartnerFeedProps> = ({ posts, onOpenProfile }
     );
 };
 
-const PartnerPostCard: React.FC<{ post: PartnerPost; onOpenProfile: (id: string) => void }> = ({ post, onOpenProfile }) => {
+export const PartnerPostCard: React.FC<{ post: PartnerPost; onOpenProfile: (id: string) => void }> = ({ post, onOpenProfile }) => {
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [isLiked, setIsLiked] = useState(false);
     const navigate = useNavigate();
@@ -52,7 +52,7 @@ const PartnerPostCard: React.FC<{ post: PartnerPost; onOpenProfile: (id: string)
                     onClick={() => onOpenProfile(post.operator_id)}
                 >
                     <div className="w-8 h-8 rounded-full border border-electric-teal p-0.5">
-                        <img src={post.operator.avatar_url} className="w-full h-full rounded-full object-cover" />
+                        <img src={post.operator.logo_url} className="w-full h-full rounded-full object-cover" />
                     </div>
                     <div>
                         <p className="text-white text-xs font-bold">{post.operator.business_name}</p>
@@ -114,7 +114,10 @@ const PartnerPostCard: React.FC<{ post: PartnerPost; onOpenProfile: (id: string)
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md p-2 rounded-xl flex items-center gap-3 border border-white/10 cursor-pointer hover:bg-black/80 transition-colors"
-                        onClick={() => navigate(`/app/shop/${post.operator.slug}`)} // Assuming slug routing
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/app/shop/${post.operator.slug}`);
+                        }}
                     >
                         <div className="w-10 h-10 rounded-lg bg-gray-800 overflow-hidden shrink-0">
                             <img src={post.tagged_item.image_url} className="w-full h-full object-cover" />

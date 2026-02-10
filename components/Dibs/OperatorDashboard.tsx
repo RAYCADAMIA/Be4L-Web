@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Users, DollarSign, Calendar, ArrowUpRight, ArrowDownRight, Package, CheckCircle, Search, X, Shield, List, Store, ArrowLeft, MessageCircle } from 'lucide-react';
+import { BarChart3, Users, DollarSign, Calendar, ArrowUpRight, ArrowDownRight, Package, CheckCircle, Search, X, Shield, List, Store, ArrowLeft, MessageCircle, Send } from 'lucide-react';
 import { EKGLoader } from '../ui/AestheticComponents';
 import OrderManager from './OrderManager';
 import VerifyBooking from './VerifyBooking';
@@ -221,6 +221,7 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ onBack, initialTa
                             <OrderManager />
                         </motion.div>
                     )}
+
 
                     {activeTab === 'verify' && (
                         <motion.div key="verify" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>

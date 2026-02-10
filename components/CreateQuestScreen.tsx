@@ -74,7 +74,7 @@ const SlideToLaunch: React.FC<{ onLaunch: () => void, loading: boolean }> = ({ o
             <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="flex items-center gap-2">
                     <span className="text-[10px] font-black text-electric-teal uppercase tracking-[0.4em] ml-12 drop-shadow-[0_0_5px_rgba(45,212,191,0.5)]">
-                        {loading ? 'LAUNCHING...' : 'SLIDE TO DEPLOY (+100 AURA)'}
+                        {loading ? 'LAUNCHING...' : 'I\'M DOWN (+100 AURA)'}
                     </span>
                     {!loading && (
                         <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
@@ -858,7 +858,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
 
                                 <div className="pt-2">
                                     <div className="flex justify-between text-[9px] font-black uppercase text-gray-500 tracking-widest mb-2 px-1">
-                                        <span>Read to deploy?</span>
+                                        <span>Ready?</span>
                                         <span>{capacity} Spots</span>
                                     </div>
                                     <SlideToLaunch onLaunch={handleLaunch} loading={loading} />

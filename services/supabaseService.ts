@@ -793,5 +793,54 @@ export const supabaseService = {
       saveToStorage('be4l_local_bookings', localBookings);
       return { success: true };
     }
+  },
+  partner: {
+    getPosts: async (operatorId?: string): Promise<import('../types').PartnerPost[]> => {
+      try {
+        let query = supabase.from('partner_posts').select(`*, operator:operators(*), tagged_item:dibs_items(*)`);
+        if (operatorId) query = query.eq('operator_id', operatorId);
+        const { data } = await query.order('created_at', { ascending: false });
+        if (data && data.length > 0) return data as any;
+      } catch (e) { }
+
+      // Fallback to Mock + Local
+      const localPosts = loadFromStorage('be4l_local_partner_posts', []);
+      const mockPosts = (await import('../constants')).MOCK_PARTNER_POSTS;
+      const all = [...localPosts, ...mockPosts];
+
+      if (operatorId) {
+        return all.filter(p => p.operator_id === operatorId);
+      }
+      return all.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    },
+    createPost: async (postData: any): Promise<{ success: boolean; data?: any; error?: string }> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { success: false, error: 'Not authenticated' };
+
+      const newPost = {
+        id: `pp-${Date.now()}`,
+        operator_id: postData.operator_id || user.id,
+        caption: postData.caption,
+        media_urls: postData.media_urls || [postData.image_url],
+        tagged_item_id: postData.tagged_item_id,
+        likes_count: 0,
+        comments_count: 0,
+        created_at: new Date().toISOString()
+      };
+
+      // Try Supabase first
+      const { data, error } = await supabase.from('partner_posts').insert(newPost).select().single();
+
+      // Always update local for immediate feedback
+      const localPosts = loadFromStorage('be4l_local_partner_posts', []);
+      localPosts.unshift(data || newPost);
+      saveToStorage('be4l_local_partner_posts', localPosts);
+
+      return { success: !error, data: data || newPost, error: error?.message };
+    },
+    likePost: async (postId: string): Promise<boolean> => {
+      // Mock like for now
+      return true;
+    }
   }
 };

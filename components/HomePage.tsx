@@ -11,6 +11,7 @@ import { generateRandomQuests } from '../utils/questGenerator';
 import { QuestType } from '../types';
 import DibsItemCard from './DibsItemCard';
 import DibsCard, { Operator } from './DibsCard';
+import { PartnerPostCard } from './Dibs/PartnerFeed';
 import { PhoneShowcaseSection } from './Landing/PhoneShowcaseSection';
 import { useScrollBehavior } from '../hooks/useScrollBehavior';
 
@@ -25,16 +26,18 @@ export const HomePage: React.FC = () => {
     const [brands, setBrands] = useState<any[]>([]);
     const [discoveryItems, setDiscoveryItems] = useState<any[]>([]);
     const [discoveryQuests, setDiscoveryQuests] = useState<any[]>([]);
+    const [partnerPosts, setPartnerPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadHomePageData = async () => {
             setLoading(true);
             try {
-                const [opData, itemData, questData] = await Promise.all([
+                const [opData, itemData, questData, postData] = await Promise.all([
                     supabaseService.dibs.getOperators(),
                     supabaseService.dibs.getAllItems(),
-                    supabaseService.quests.getQuests()
+                    supabaseService.quests.getQuests(),
+                    supabaseService.partner.getPosts()
                 ]);
 
                 // Mix real quests with generated ones for a more alive feed
@@ -66,6 +69,10 @@ export const HomePage: React.FC = () => {
                         })
                         .slice(0, 7);
                     setDiscoveryItems(enrichedItems);
+                }
+
+                if (postData) {
+                    setPartnerPosts(postData.slice(0, 5)); // Show top 5 latest updates
                 }
             } catch (err) {
                 console.error("Home feed load failed", err);
@@ -160,6 +167,29 @@ export const HomePage: React.FC = () => {
                     </button>
                 </div>
             </section>
+
+            {/* Partner Updates Feed */}
+            {partnerPosts.length > 0 && (
+                <section className="mb-24">
+                    <div className="px-6 flex items-center justify-between mb-8">
+                        <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40 flex items-center gap-2 px-1">
+                            <Send size={14} className="text-electric-teal" /> PARTNER UPDATES
+                        </h2>
+                    </div>
+                    <div className="flex overflow-x-auto no-scrollbar gap-6 px-6 snap-x pb-4">
+                        {partnerPosts.map(post => (
+                            <PartnerPostCard
+                                key={post.id}
+                                post={post}
+                                onOpenProfile={(id) => {
+                                    const op = brands.find(b => b.user_id === id);
+                                    if (op) navigate('/app/shop/' + op.slug);
+                                }}
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
 
             {/* Discover Quest (Slidable) */}
             <section className="mb-20">
