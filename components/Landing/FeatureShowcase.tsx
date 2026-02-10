@@ -8,13 +8,12 @@ const FEATURES = [
         title: 'QUEST',
         subtitle: 'Your Daily Adventure Engine',
         description: "Create, discover, and join quests. Whether it's a casual pickleball game or a road trip to the unknown with your friends or with random people who loves doing side quests.",
-        color: '#10B981', // Neon Emerald
+        color: '#2DD4BF',
         icon: Compass,
-        image3d: '/assets/landing/quest_3d_icon.png',
         details: [
             { title: 'Canon', desc: 'Future-dated plans. "Pickleball tomorrow?"', icon: Calendar },
-            { title: 'Sponty', desc: 'Right now. "Who\'s free for a hike?"', icon: Zap },
-            { title: 'Quest Drop Feature', desc: 'Earn real money for challenges. Can you swim with your school uniform on for ₱500?', icon: Trophy }
+            { title: 'Sponty', desc: 'Happening Right now. "No destination, just driving. who\'s down?"', icon: Zap },
+            { title: 'Quest Drop', desc: 'Earn real money for real-world challenges. Will you swim with your school uniform on for ₱500?', icon: Trophy }
         ]
     },
     {
@@ -22,9 +21,8 @@ const FEATURES = [
         title: 'LORE',
         subtitle: 'Capture Life. Don\'t Just Post It.',
         description: "Capture unforgettable moments and share them with friends as they happen in real-time. every stories are worth to tell",
-        color: '#06B6D4', // Cyan
+        color: '#06B6D4',
         icon: Camera,
-        image3d: '/assets/landing/lore_3d_icon.png', // Fixed Broken Path
         details: [
             { title: 'Real-time', desc: 'No filters needed. Just raw life.', icon: Play },
             { title: 'Offline Mode', desc: 'Capture now, sync when you\'re back.', icon: Zap },
@@ -36,9 +34,8 @@ const FEATURES = [
         title: 'DIBS',
         subtitle: 'Social Booking for the Real World',
         description: "A smart booking system for everything. Compare operators, check profiles, and secure your spot.",
-        color: '#2DD4BF', // Electric Teal
-        icon: MapPin,
-        image3d: '/assets/landing/dibs_3d_icon.png',
+        color: '#10B981',
+        icon: Zap,
         details: [
             { title: 'Venues', desc: 'Courts, Studios, Fields', icon: MapPin },
             { title: 'Events', desc: 'Competitions, Concerts, Parties', icon: Globe },
@@ -50,9 +47,8 @@ const FEATURES = [
         title: 'CHAT',
         subtitle: 'The Lobby',
         description: "Coordinate quests and connect with people who share your intent. No more dead group chats.",
-        color: '#A5F3FC', // Light Cyan
+        color: '#8B5CF6',
         icon: MessageCircle,
-        image3d: '/assets/landing/chat_3d_icon.png', // Fixed Broken Path
         details: [
             { title: 'Lobbies', desc: 'Temporary spaces for active quests.', icon: Users },
             { title: 'Intent Based', desc: 'Connect with purpose.', icon: Compass },
@@ -119,27 +115,63 @@ const FeatureBlock: React.FC<{ feature: typeof FEATURES[0], index: number }> = (
                 </div>
             </div>
 
-            {/* Visual/Graphic */}
-            <div className="flex-1 w-full aspect-square md:aspect-[4/3] relative group">
-                <div className="absolute inset-0 flex items-center justify-center">
+            {/* Visual/Graphic - Stylized Debris Style Icon */}
+            <div className="flex-1 w-full flex items-center justify-center relative group">
+                <div className="relative w-full max-w-sm aspect-square flex items-center justify-center">
+                    {/* Background Glow */}
                     <motion.div
                         animate={{
-                            y: [0, -20, 0],
-                            rotate: [0, 3, -3, 0]
+                            scale: [1, 1.1, 1],
+                            opacity: [0.1, 0.2, 0.1],
                         }}
-                        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                        className="w-[90%] h-[90%] md:w-full md:h-full max-w-lg"
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute inset-0 blur-[80px] rounded-full"
+                        style={{ backgroundColor: feature.color }}
+                    />
+
+                    {/* Floating Main Icon Graphic */}
+                    <motion.div
+                        animate={{
+                            y: [0, -40, 0],
+                            rotate: [0, 5, -5, 0],
+                            scale: [1, 1.05, 1]
+                        }}
+                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                        className="relative z-10 w-48 h-48 md:w-64 md:h-64 rounded-[3rem] bg-white/[0.03] border border-white/10 backdrop-blur-xl flex items-center justify-center shadow-2xl shadow-black/40"
                     >
-                        <img
-                            src={feature.image3d}
-                            alt={feature.title}
-                            width={800}
-                            height={800}
-                            loading="lazy"
-                            decoding="async"
-                            className="w-full h-full object-contain filter drop-shadow-[0_0_80px_rgba(255,255,255,0.05)]"
+                        <feature.icon
+                            size={120}
+                            style={{ color: feature.color }}
+                            className="filter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] opacity-90"
                         />
+
+                        {/* Decorative internal rings */}
+                        <div className="absolute inset-4 rounded-[2.5rem] border border-white/5 pointer-events-none" />
+                        <div className="absolute inset-8 rounded-[2rem] border border-white/[0.02] pointer-events-none" />
                     </motion.div>
+
+                    {/* Orbiting particles */}
+                    {[...Array(3)].map((_, i) => (
+                        <motion.div
+                            key={i}
+                            animate={{
+                                rotate: 360,
+                                scale: [1, 1.5, 1],
+                            }}
+                            transition={{
+                                rotate: { duration: 10 + i * 5, repeat: Infinity, ease: "linear" },
+                                scale: { duration: 3, repeat: Infinity, ease: "easeInOut", delay: i }
+                            }}
+                            className="absolute w-2 h-2 rounded-full"
+                            style={{
+                                backgroundColor: feature.color,
+                                left: `${50 + 40 * Math.cos(i * (Math.PI * 2 / 3))}%`,
+                                top: `${50 + 40 * Math.sin(i * (Math.PI * 2 / 3))}%`,
+                                filter: `blur(2px) drop-shadow(0 0 5px ${feature.color})`,
+                                opacity: 0.5
+                            }}
+                        />
+                    ))}
                 </div>
             </div>
         </motion.div>

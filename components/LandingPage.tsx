@@ -7,7 +7,8 @@ import { PhoneShowcaseSection } from './Landing/PhoneShowcaseSection';
 import { RoadmapSection } from './Landing/RoadmapSection';
 import { FeatureShowcase } from './Landing/FeatureShowcase';
 import { PartnerPitch, UserCTA, HUDMenu, Starfield, TeamRecruitment, PoweredBy } from './Landing/LandingComponents';
-import { AuthScreen } from './AuthScreen';
+// Lazy Load AuthScreen
+const AuthScreen = React.lazy(() => import('./AuthScreen').then(module => ({ default: module.AuthScreen })));
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => void }> = ({ bypassSplash = false, onReset }) => {
@@ -103,7 +104,7 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                                         </span>
                                     </div>
                                     <p className="text-cool-grey text-base font-medium leading-[1.8] max-w-xs opacity-70 font-sans">
-                                        OBX-Inspired platform for the lore you're yet to live.
+                                        OBX-Inspired platform for the lore you've yet to live.
                                     </p>
                                     <div className="flex gap-4">
                                         <a
@@ -172,7 +173,9 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                                     className="w-full max-w-5xl mx-4"
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                                    <AuthScreen onClose={() => setShowAuth(false)} />
+                                    <React.Suspense fallback={<div className="text-white text-center">Loading...</div>}>
+                                        <AuthScreen onClose={() => setShowAuth(false)} />
+                                    </React.Suspense>
                                 </motion.div>
                             </motion.div>
                         )}

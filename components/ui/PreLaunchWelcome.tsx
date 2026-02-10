@@ -29,30 +29,31 @@ export const PreLaunchWelcome = () => {
                         {/* Status Bar */}
                         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-electric-teal via-cyan-500 to-electric-teal animate-liquid-text" />
 
-                        <div className="relative p-8 md:p-10 flex flex-col items-center">
+                        <div className="relative p-6 md:p-8 flex flex-col items-center">
                             {/* Close Button */}
                             <button
                                 onClick={handleDismiss}
+                                aria-label="Dismiss disclaimer"
                                 className="absolute top-6 right-6 p-2 text-white/20 hover:text-white transition-colors"
                             >
                                 <X size={20} />
                             </button>
 
                             {/* Badge */}
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-electric-teal/10 border border-electric-teal/20 text-electric-teal text-[9px] font-black uppercase tracking-[0.2em] mb-6">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-electric-teal/10 border border-electric-teal/20 text-electric-teal text-[9px] font-black uppercase tracking-[0.2em] mb-4">
                                 Pre-Launch disclaimer
                             </div>
 
-                            <h2 className="text-3xl font-black font-fui uppercase tracking-tighter mb-4 text-center">
+                            <h2 className="text-3xl font-black font-fui uppercase tracking-tighter mb-3 text-center">
                                 <span className="animate-liquid-text">Pre-Launch Access</span>
                             </h2>
 
-                            <div className="space-y-4 w-full">
+                            <div className="space-y-3 w-full">
                                 {/* Warning Box */}
-                                <div className="p-5 rounded-3xl bg-white/5 border border-white/10 flex flex-col items-center text-center space-y-3">
+                                <div className="p-4 rounded-3xl bg-white/5 border border-white/10 flex flex-col items-center text-center space-y-3">
                                     <div className="flex items-center gap-3 text-electric-teal">
                                         <AlertCircle size={18} />
-                                        <h4 className="text-[11px] font-black uppercase tracking-widest leading-none">Beta Testing</h4>
+                                        <h3 className="text-[11px] font-black uppercase tracking-widest leading-none">Beta Testing</h3>
                                     </div>
                                     <p className="text-[11px] text-gray-400 font-medium leading-relaxed">
                                         You are exploring a <span className="text-white">mock up version</span> of the platform. Core features like <span className="animate-liquid-text font-black">Dibs</span> and <span className="animate-liquid-text font-black">Quests</span> currently utilize mock data for demonstration purposes. <br />
@@ -61,12 +62,12 @@ export const PreLaunchWelcome = () => {
                                 </div>
 
                                 {/* Timer/Info Box */}
-                                <div className="p-5 rounded-3xl bg-white/5 border border-white/10 flex flex-col items-center text-center space-y-3">
+                                <div className="p-4 rounded-3xl bg-white/5 border border-white/10 flex flex-col items-center text-center space-y-3">
                                     <div className="flex items-center gap-3 text-cyan-400">
                                         <Rocket size={18} />
-                                        <h4 className="text-[11px] font-black uppercase tracking-widest leading-none">
+                                        <h3 className="text-[11px] font-black uppercase tracking-widest leading-none">
                                             <span className="animate-liquid-text">MVP Launch: Feb 14, 2026</span>
-                                        </h4>
+                                        </h3>
                                     </div>
                                     <p className="text-[11px] text-gray-400 font-medium leading-relaxed">
                                         The full ecosystem with real-time functionality drops this Saturday, Feb 14, 2026. <span className="text-white">Accounts created before launch will receive Aura Points.</span>
@@ -74,51 +75,50 @@ export const PreLaunchWelcome = () => {
                                 </div>
 
                                 {/* IG Integration */}
-                                <div className="pt-2">
-                                    <a
-                                        href="https://www.instagram.com/be4l.app/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-tr from-[#f09433]/10 via-[#dc2743]/10 to-[#bc1888]/10 border border-white/5 group hover:border-white/20 transition-all"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                                <Instagram size={16} className="text-white" />
-                                            </div>
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-white/50 group-hover:text-white transition-colors">
-                                                Follow Be4L on IG
-                                            </span>
+                                <a
+                                    href="https://www.instagram.com/be4l.app/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="Follow Be4L on Instagram"
+                                    className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-tr from-[#f09433]/10 via-[#dc2743]/10 to-[#bc1888]/10 border border-white/5 group hover:border-white/20 transition-all"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                            <Instagram size={16} className="text-white" />
                                         </div>
-                                        <ChevronRight size={16} className="text-white/20" />
-                                    </a>
-
-                                    {/* Partnership Section */}
-                                    <div className="pt-6 border-t border-white/5 flex items-center justify-center gap-4">
-                                        <h3 className="text-[9px] font-black uppercase tracking-[0.3em] font-display animate-liquid-text bg-clip-text text-transparent bg-gradient-to-r from-electric-teal via-cyan-400 to-indigo-400 shrink-0">
-                                            In Partnership With
-                                        </h3>
-                                        <img
-                                            src="/assets/partners_lockup.jpg"
-                                            alt="Partners: AdDU and DDVentures"
-                                            width={150}
-                                            height={36}
-                                            loading="lazy"
-                                            className="h-9 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity rounded-lg"
-                                        />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/50 group-hover:text-white transition-colors">
+                                            Follow Be4L on IG
+                                        </span>
                                     </div>
+                                    <ChevronRight size={16} className="text-white/20" />
+                                </a>
+
+                                {/* Partnership Section */}
+                                <div className="pt-4 border-t border-white/5 flex items-center justify-center gap-4">
+                                    <h3 className="text-[9px] font-black uppercase tracking-[0.3em] font-display animate-liquid-text bg-clip-text text-transparent bg-gradient-to-r from-electric-teal via-cyan-400 to-indigo-400 shrink-0">
+                                        In Partnership With
+                                    </h3>
+                                    <img
+                                        src="/assets/partners_lockup.jpg"
+                                        alt="Partners: AdDU and DDVentures"
+                                        width={150}
+                                        height={36}
+                                        loading="lazy"
+                                        className="h-9 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity rounded-lg"
+                                    />
                                 </div>
                             </div>
 
                             <button
                                 onClick={handleDismiss}
-                                className="w-full py-4 mt-8 bg-white text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] hover:bg-electric-teal transition-all active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.1)]"
+                                className="w-full py-4 mt-6 bg-white text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] hover:bg-electric-teal transition-all active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.1)]"
                             >
                                 <span className="animate-liquid-text text-black">Enter <span className="normal-case">Be4L</span></span>
                             </button>
                         </div>
                     </motion.div>
-                </div>
+                </div >
             )}
-        </AnimatePresence>
+        </AnimatePresence >
     );
 };

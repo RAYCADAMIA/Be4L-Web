@@ -177,24 +177,18 @@ export const HUDMenu: React.FC<HUDMenuProps> = ({ onJoinClick, isScrolled = true
                     {/* Simplified Logo SVG - Electric Teal */}
                     <svg viewBox="0 0 200 100" className="w-full h-full drop-shadow-[0_0_10px_rgba(45,212,191,0.5)]">
                         <defs>
-                            <linearGradient id="hudLogoGradient" x1="0%" y1="0%" x2="200%" y2="0%">
-                                <stop offset="0%" stopColor="#2dd4bf">
-                                    <animate attributeName="stop-color" values="#2dd4bf;#06b6d4;#a855f7;#06b6d4;#2dd4bf" dur="3s" repeatCount="indefinite" />
-                                </stop>
-                                <stop offset="50%" stopColor="#a855f7">
-                                    <animate attributeName="stop-color" values="#a855f7;#06b6d4;#2dd4bf;#06b6d4;#a855f7" dur="3s" repeatCount="indefinite" />
-                                </stop>
-                                <stop offset="100%" stopColor="#2dd4bf">
-                                    <animate attributeName="stop-color" values="#2dd4bf;#06b6d4;#a855f7;#06b6d4;#2dd4bf" dur="3s" repeatCount="indefinite" />
-                                </stop>
+                            <linearGradient id="hudLogoGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#2dd4bf" />
+                                <stop offset="40%" stopColor="#06b6d4" />
+                                <stop offset="100%" stopColor="#a855f7" />
                             </linearGradient>
                         </defs>
                         <path d="M100,30 C100,30 90,10 70,10 C50,10 40,30 40,50 C40,75 100,90 100,90 C100,90 160,75 160,50 C160,30 150,10 130,10 C110,10 100,30 100,30 Z" fill="url(#hudLogoGradient)" />
                     </svg>
                 </div>
                 <div className="flex flex-col leading-none">
-                    <span className="text-sm md:text-base font-black tracking-tighter font-display animate-liquid-text">Be4L</span>
-                    <span className="text-[6px] md:text-[8px] font-black uppercase tracking-widest animate-liquid-text opacity-50">{isPartnerPage ? 'Operator' : 'Beta'}</span>
+                    <span className="text-sm md:text-base font-black tracking-tighter font-display text-gradient-static">Be4L</span>
+                    <span className="text-[6px] md:text-[8px] font-black uppercase tracking-widest text-gradient-static opacity-50">{isPartnerPage ? 'Operator' : 'Beta'}</span>
                 </div>
             </motion.div>
 

@@ -496,16 +496,16 @@ select {
 .animate-liquid-text {
   background: var(--liquid-gradient-text);
   background-size: 300% auto;
+  background-position: 0% 50%;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
   vertical-align: baseline;
-  animation: liquid-text-flow 6s linear infinite;
   padding-right: 0.2em;
-  /* Fixes ending letter cutoff */
-  will-change: background-position;
+  /* Performance: Removed background-position animation (CPU intensive) */
+  /* animation: liquid-text-flow 6s linear infinite; */
 }
 
 /* Static Gradient Text - Performance Optimized */
@@ -521,4 +521,19 @@ select {
   display: inline-block;
   vertical-align: baseline;
   padding-right: 0.2em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  ::before,
+  ::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    background-attachment: initial !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
 }

@@ -12,6 +12,7 @@ export const PersistentLogo: React.FC<PersistentLogoProps> = ({ viewState, expan
     return (
         <motion.div
             layout
+            aria-hidden="true"
             className={`flex items-center justify-center font-black tracking-tighter font-display select-none pointer-events-none will-change-transform z-[1] leading-[0.9] ${viewState === 'splash'
                 ? 'fixed inset-0 text-5xl md:text-8xl pt-[35vh]' // Smaller on mobile splash
                 : 'absolute top-0 left-0 right-0 h-screen items-center pb-[15vh] md:pb-[10vh] text-6xl md:text-[8rem] lg:text-[12rem]'
@@ -93,6 +94,21 @@ export const PersistentLogo: React.FC<PersistentLogoProps> = ({ viewState, expan
                     </motion.div>
                 </div>
             </motion.div>
+
+            {/* Background Halo persists through layout changes */}
+            <motion.div
+                layoutId="shared-logo-halo"
+                className="absolute inset-0 bg-electric-teal/15 blur-[120px] rounded-full -z-10"
+                initial={false}
+                animate={{
+                    scale: viewState === 'splash' ? [1, 1.2, 1] : 1.1,
+                    opacity: viewState === 'splash' ? [0.2, 0.4, 0.2] : 0.3
+                }}
+                transition={{
+                    scale: { duration: 3, repeat: Infinity },
+                    opacity: { duration: 3, repeat: Infinity }
+                }}
+            />
         </motion.div>
     );
 };

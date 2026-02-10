@@ -66,8 +66,8 @@ export const VisionSection: React.FC = () => {
                     className="glass-panel p-6 md:p-14 rounded-[2.5rem] shadow-2xl max-w-4xl mx-auto"
                 >
                     <p className="text-xl md:text-3xl font-black text-white leading-tight font-display tracking-tighter">
-                        "Be4L is a giant friend group <br />
-                        always down for <span className="animate-liquid-text font-black uppercase tracking-tighter">side quests</span> and adventures."
+                        &ldquo;Be4L is a giant friend group <br />
+                        always down for <span className="animate-liquid-text font-black uppercase tracking-tighter">side quests</span> and adventures.&rdquo;
                     </p>
                     <p className="mt-8 text-lg font-bold tracking-[0.3em] text-electric-teal font-display">
                         We choose to be for life.

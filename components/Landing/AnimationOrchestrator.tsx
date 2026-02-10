@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
 import { SplashScreen } from './SplashScreen';
 import { PersistentLogo } from './PersistentLogo';
-import { LandingPage } from '../LandingPage'; // We need to refactor LandingPage to be a child or handle content
 
-// IMPORTANT: We need to restructure how LandingPage works. 
-// Currently LandingPage contains HeroSection etc.
-// The AnimationOrchestrator will essentially WRAP the transition.
+// Lazy Load LandingPage
+const LandingPageContent = React.lazy(() => import('../LandingPage').then(module => ({ default: module.LandingPage })));
 
 interface AnimationOrchestratorProps {
     children?: React.ReactNode;
@@ -62,52 +60,61 @@ export const AnimationOrchestrator: React.FC<AnimationOrchestratorProps> = () =>
     }, []);
 
     return (
-        <div className="relative w-full min-h-screen overflow-x-hidden">
+        <div className="relative w-full min-h-screen overflow-hidden">
+            {/* Shared Background Glow (Match & Move) */}
+            <motion.div
+                layoutId="shared-world-glow"
+                className="fixed inset-0 pointer-events-none z-0"
+                initial={false}
+                animate={{
+                    background: viewState === 'splash'
+                        ? 'radial-gradient(circle at 50% 50%, rgba(45, 212, 191, 0.12) 0%, transparent 70%)'
+                        : 'radial-gradient(circle at 50% 40%, rgba(45, 212, 191, 0.08) 0%, transparent 60%)',
+                    scale: viewState === 'splash' ? 1 : 1.5,
+                    opacity: viewState === 'splash' ? 1 : 0.6
+                }}
+                transition={{
+                    duration: 2.5,
+                    ease: [0.22, 1, 0.36, 1]
+                }}
+            />
+
             {/* The Single Persistent Logo */}
             <motion.div
                 style={{
                     opacity: viewState === 'hero' ? logoOpacity : 1,
                     scale: viewState === 'hero' ? logoScale : 1
                 }}
-                className="pointer-events-none"
+                className="relative z-50 pointer-events-none"
             >
                 <PersistentLogo viewState={viewState} expanded={expanded} />
             </motion.div>
-            {/* Splash Background & Debris (Unmounts when viewState changes to hero? Or just fades out?)
-                Actually, the user request says: "The SplashScreen component now only contains the black background overlay and the heartbeat pulse."
-                We should probably fade it out as the logo moves.
-            */}
-            <AnimatePresence>
+            {/* Splash Overlay Content */}
+            <AnimatePresence mode="wait">
                 {viewState === 'splash' && (
                     <motion.div
+                        key="splash-overlay"
                         initial={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-                        className="fixed inset-0 z-[90]" // Below logo (z-100), above content
+                        exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
+                        transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
+                        className="fixed inset-0 z-[40]" // Below logo (z-50), above content (z-10)
                     >
                         <SplashScreen onComplete={() => { }} />
-                        {/* onComplete is effectively handled by our internal timers now, 
-                            but we keep the prop to satisfy interface or for internal phases if needed */}
                     </motion.div>
                 )}
             </AnimatePresence>
 
             {/* Main Content (Hero, Vision, etc) */}
-            {/* We render it behind the logo. It should fade in as logo moves. */}
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: showContent ? 1 : 0 }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
                 className="relative"
             >
-                {/* We render LandingPage content directly here or import it. 
-                    Since LandingPage currently handles its own splash state, we need to bypass that.
-                    We will modify LandingPage to accept a "skipSplash" prop or just render its children.
-                */}
-                <LandingPageContent bypassSplash={true} onReset={reset} />
+                <React.Suspense fallback={null}>
+                    <LandingPageContent bypassSplash={true} onReset={reset} />
+                </React.Suspense>
             </motion.div>
         </div>
     );
 };
-
-import { LandingPage as LandingPageContent } from '../LandingPage';

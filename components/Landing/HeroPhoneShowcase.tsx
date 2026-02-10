@@ -41,6 +41,8 @@ const PhoneFrame: React.FC<PhoneProps> = ({ src, alt, className = "", isCenter =
                 <img
                     src={src}
                     alt={alt}
+                    width="450"
+                    height="896"
                     className="w-full h-full object-cover"
                     loading="eager"
                 />
