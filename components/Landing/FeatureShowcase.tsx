@@ -11,9 +11,9 @@ const FEATURES = [
         color: '#2DD4BF',
         icon: Compass,
         details: [
-            { title: 'Canon', desc: 'Future-dated plans. "Pickleball tomorrow?"', icon: Calendar },
-            { title: 'Sponty', desc: 'Happening Right now. "No destination, just driving. who\'s down?"', icon: Zap },
-            { title: 'Quest Drop', desc: 'Earn real money for real-world challenges. Will you swim with your school uniform on for ₱500?', icon: Trophy }
+            { title: 'Planned', desc: 'Future-dated plans. "Pickleball tomorrow?"', icon: Calendar },
+            { title: 'Spontaneous', desc: 'Happening Right now. "No destination, just driving."', icon: Zap },
+            { title: 'Challenges', desc: 'Earn real money for real-world challenges.', icon: Trophy }
         ]
     },
     {
@@ -26,41 +26,41 @@ const FEATURES = [
         details: [
             { title: 'Real-time', desc: 'No filters needed. Just raw life.', icon: Play },
             { title: 'Offline Mode', desc: 'Capture now, sync when you\'re back.', icon: Zap },
-            { title: 'My Lore', desc: 'Your personal archive of adventures.', icon: Globe }
+            { title: 'Memories', desc: 'Your personal archive of adventures.', icon: Globe }
         ]
     },
     {
         id: 'DIBS',
         title: 'DIBS',
-        subtitle: 'Social Booking for the Real World',
-        description: "A smart booking system for everything. Compare operators, check profiles, and secure your spot.",
+        subtitle: 'Smart Social Booking',
+        description: "Secure your spot with premium brands in a single tap. From midnight matches to exclusive socials—pick, book, and be there.",
         color: '#10B981',
         icon: Zap,
         details: [
-            { title: 'Venues', desc: 'Courts, Studios, Fields', icon: MapPin },
-            { title: 'Events', desc: 'Competitions, Concerts, Parties', icon: Globe },
-            { title: 'Services', desc: 'Coaches, Guides, Photographers', icon: Users }
+            { title: 'Explore Brands', desc: 'Find premium Courts, Hubs, Events, and Competitions.', icon: MapPin },
+            { title: 'Instant Booking', desc: 'No queues. No friction. Just instant booking.', icon: Zap },
+            { title: 'Live Discovery', desc: 'Find what to do and book it immediately.', icon: Globe }
         ]
     },
     {
         id: 'CHAT',
         title: 'CHAT',
-        subtitle: 'The Lobby',
-        description: "Coordinate quests and connect with people who share your intent. No more dead group chats.",
+        subtitle: 'Connect',
+        description: "Coordinate quests and connect with those who share your intent. Join squads or go global. Let's all be friends!",
         color: '#8B5CF6',
         icon: MessageCircle,
         details: [
-            { title: 'Lobbies', desc: 'Temporary spaces for active quests.', icon: Users },
-            { title: 'Intent Based', desc: 'Connect with purpose.', icon: Compass },
-            { title: 'Coordination', desc: 'Make it happen.', icon: MessageCircle }
+            { title: 'Global', desc: 'Talk to everyone.', icon: Users },
+            { title: 'Squads', desc: 'Groups for friends.', icon: Compass },
+            { title: 'Quests', desc: 'Coordinate plans.', icon: MessageCircle }
         ]
     }
 ];
 
 export const FeatureShowcase: React.FC = () => {
     return (
-        <section className="py-32 px-4 relative overflow-hidden">
-            <div className="max-w-7xl mx-auto space-y-40 relative z-10">
+        <section className="py-12 px-6 relative overflow-hidden">
+            <div className="max-w-4xl mx-auto space-y-32 relative z-10">
                 {FEATURES.map((feature, index) => (
                     <FeatureBlock key={feature.id} feature={feature} index={index} />
                 ))}
@@ -74,42 +74,42 @@ const FeatureBlock: React.FC<{ feature: typeof FEATURES[0], index: number }> = (
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 100 }}
+            initial={{ opacity: 0, y: 80 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-12 md:gap-20`}
+            viewport={{ once: true, margin: "-50px" }}
+            className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-10 md:gap-16`}
         >
             {/* Text Content */}
-            <div className="flex-1 space-y-10 text-center md:text-left">
-                {/* Horizontal Header: Pill + Title (From Image 3 & 4) */}
-                <div className="flex flex-row items-center gap-3 md:gap-6 justify-start flex-wrap md:flex-nowrap">
-                    <div className="inline-flex items-center gap-2 md:gap-3 glass-panel rounded-full px-3 py-1.5 md:px-5 md:py-2 border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)] shrink-0">
-                        <feature.icon size={14} className="md:size-4" style={{ color: feature.color }} />
-                        <span className="text-[8px] md:text-xs font-black tracking-[0.25em] text-white/90 uppercase font-display whitespace-nowrap">
+            <div className="flex-1 space-y-8 text-center md:text-left">
+                {/* Vertical Header: Title + Pill Below */}
+                <div className="flex flex-col items-center md:items-start gap-4">
+                    <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-white font-display animate-liquid-text uppercase leading-none">
+                        {feature.title}
+                    </h2>
+                    <div className="inline-flex items-center gap-2 md:gap-3 glass-panel rounded-full px-3 py-1.5 md:px-4 md:py-1.5 border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+                        <feature.icon size={12} className="md:size-3.5" style={{ color: feature.color }} />
+                        <span className="text-[8px] md:text-[10px] font-black tracking-[0.2em] text-white/80 uppercase font-display whitespace-nowrap">
                             {feature.subtitle}
                         </span>
                     </div>
-                    <h2 className="text-4xl md:text-8xl font-black tracking-tighter text-white font-display animate-liquid-text uppercase leading-none shrink-0">
-                        {feature.title}
-                    </h2>
                 </div>
 
-                <p className="text-lg md:text-xl text-cool-grey font-medium leading-relaxed max-w-xl mr-auto md:mx-0 font-sans opacity-80 text-left">
+                <p className="text-base md:text-lg text-cool-grey font-medium leading-relaxed max-w-xl mx-auto md:mx-0 font-sans opacity-80 text-center md:text-left">
                     {feature.description}
                 </p>
 
-                {/* Micro Features */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+                {/* Micro Features - Slightly Shrinked */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                     {feature.details.map((detail, i) => (
                         <div
                             key={i}
-                            className="p-5 rounded-[2rem] glass-panel border-white/5 hover:border-white/20 hover:-translate-y-1.5 transition-all duration-500 group cursor-default bg-white/[0.01]"
+                            className="p-4 rounded-[1.5rem] glass-panel border-white/5 hover:border-white/20 hover:-translate-y-1 transition-all duration-500 group cursor-default bg-white/[0.01]"
                         >
-                            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-4 mx-auto md:mx-0 group-hover:bg-white/10 transition-colors">
-                                <detail.icon size={20} className="opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" style={{ color: feature.color }} />
+                            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mb-3 mx-auto md:mx-0 group-hover:bg-white/10 transition-colors">
+                                <detail.icon size={16} className="opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" style={{ color: feature.color }} />
                             </div>
-                            <h3 className="text-xs font-black text-white mb-2 font-display uppercase tracking-[0.15em] animate-liquid-text">{detail.title}</h3>
-                            <p className="text-[10px] text-cool-grey/80 leading-relaxed font-sans font-medium">{detail.desc}</p>
+                            <h3 className="text-[10px] font-black text-white mb-1.5 font-display uppercase tracking-[0.1em] animate-liquid-text">{detail.title}</h3>
+                            <p className="text-[9px] text-cool-grey/80 leading-relaxed font-sans font-medium">{detail.desc}</p>
                         </div>
                     ))}
                 </div>
@@ -122,7 +122,7 @@ const FeatureBlock: React.FC<{ feature: typeof FEATURES[0], index: number }> = (
                     <motion.div
                         animate={{
                             scale: [1, 1.1, 1],
-                            opacity: [0.1, 0.2, 0.1],
+                            opacity: [0.05, 0.1, 0.05],
                         }}
                         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                         className="absolute inset-0 blur-[80px] rounded-full"
@@ -137,12 +137,12 @@ const FeatureBlock: React.FC<{ feature: typeof FEATURES[0], index: number }> = (
                             scale: [1, 1.05, 1]
                         }}
                         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                        className="relative z-10 w-48 h-48 md:w-64 md:h-64 rounded-[3rem] bg-white/[0.03] border border-white/10 backdrop-blur-xl flex items-center justify-center shadow-2xl shadow-black/40"
+                        className="relative z-10 w-40 h-40 md:w-56 md:h-56 rounded-[2.5rem] bg-white/[0.03] border border-white/10 backdrop-blur-xl flex items-center justify-center shadow-2xl shadow-black/40"
                     >
                         <feature.icon
-                            size={120}
+                            size={90}
                             style={{ color: feature.color }}
-                            className="filter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] opacity-90"
+                            className="md:size-[110px] filter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] opacity-90"
                         />
 
                         {/* Decorative internal rings */}

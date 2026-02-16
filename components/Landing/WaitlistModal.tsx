@@ -106,7 +106,7 @@ export const WaitlistModal: React.FC<WaitlistModalProps> = ({ isOpen, onClose })
                                             {status === 'submitting' ? (
                                                 <span className="animate-pulse">Adding you...</span>
                                             ) : (
-                                                <span className="group-hover:animate-liquid-text transition-all">Join Beta Waitlist</span>
+                                                <span className="group-hover:text-gradient-static transition-all">Join Beta Waitlist</span>
                                             )}
                                         </button>
                                     </form>

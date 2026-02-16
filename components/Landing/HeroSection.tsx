@@ -19,27 +19,27 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onJoinClick }) => {
 
 
     return (
-        <section ref={containerRef} className="relative h-screen w-full flex items-center justify-center overflow-hidden perspective-1000">
+        <section ref={containerRef} className="relative min-h-[75vh] w-full flex flex-col items-center justify-start overflow-hidden perspective-1000">
 
 
             {/* Content */}
             <motion.div
                 style={{ y, opacity }}
-                className="relative z-10 text-center px-6"
+                className="relative z-10 text-center px-6 max-w-4xl mx-auto w-full pt-[25vh] md:pt-[22vh]"
             >
                 <motion.div
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, ease: [0.2, 0.8, 0.2, 1] }}
                 >
-                    <div className="relative z-20 overflow-visible p-4 mb-8">
+                    <div className="relative z-20 overflow-visible p-0 mb-8 md:mb-12">
                         {/* Invisible Placeholder to reserve layout space for PersistentLogo */}
-                        <h1 className="text-7xl md:text-[8rem] lg:text-[12rem] font-black tracking-tighter leading-[0.9] font-display flex items-center justify-center select-none opacity-0">
+                        <h1 className="text-6xl md:text-[8rem] lg:text-[12rem] font-black tracking-tighter leading-[0.9] font-display flex items-center justify-center select-none opacity-0">
                             Be4L
                         </h1>
                     </div>
 
                     {/* Updated Text per User Request */}
-                    <p className="max-w-2xl mx-auto text-sm md:text-lg text-cool-grey font-medium leading-relaxed mb-8 md:mb-10 font-sans tracking-wide px-4">
+                    <p className="max-w-xl mx-auto text-xs md:text-base text-cool-grey font-medium leading-relaxed mb-6 font-sans tracking-wide px-4">
                         Life is too short for just the main plot. <br className="hidden md:block" />
                         Conquer <span className="animate-liquid-text font-black uppercase tracking-tighter">side quests</span>, collect lores to tell, and meet new people.
                     </p>
@@ -49,22 +49,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onJoinClick }) => {
                         <div className="relative group w-full md:w-auto px-4 md:px-0">
                             <button
                                 onClick={onJoinClick}
-                                className="relative w-full md:w-auto px-8 md:px-12 py-4 md:py-5 bg-white text-deep-void font-bold uppercase tracking-widest rounded-full hover:scale-105 active:scale-95 transition-transform font-display group overflow-hidden text-xs md:text-base"
+                                className="relative w-full md:w-auto px-12 md:px-16 py-4 md:py-5 bg-white text-deep-void font-bold uppercase tracking-widest rounded-full hover:scale-105 active:scale-95 transition-transform font-display group overflow-hidden text-xs md:text-base shadow-2xl shadow-primary/20"
                             >
                                 <span className="relative z-10 group-hover:animate-liquid-text transition-all">Start Your Quest</span>
                                 <div className="absolute inset-0 bg-gradient-to-r from-electric-teal/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </button>
-                        </div>
-
-                        <div className="w-full md:w-auto px-4 md:px-0">
-                            <button
-                                onClick={() => {
-                                    const nextSection = document.getElementById('vibe-check-section');
-                                    nextSection?.scrollIntoView({ behavior: 'smooth' });
-                                }}
-                                className="w-full md:w-auto px-8 md:px-10 py-4 md:py-5 bg-white/5 border border-white/10 text-white font-bold uppercase tracking-widest rounded-full hover:bg-white/10 transition-all hover:scale-105 active:scale-95 backdrop-blur-xl border-t-white/20 font-display group text-xs md:text-base"
-                            >
-                                <span className="group-hover:animate-liquid-text transition-all">Vibe Check</span>
                             </button>
                         </div>
                     </div>

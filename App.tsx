@@ -18,8 +18,8 @@ const App = () => {
                 <div className="blob blob-3" />
             </div>
             <Starfield />
+            <PreLaunchWelcome />
             <AuthProvider>
-                <PreLaunchWelcome />
                 <NavigationProvider>
                     <RouterProvider router={router} />
                 </NavigationProvider>

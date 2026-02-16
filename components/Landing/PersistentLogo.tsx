@@ -13,10 +13,9 @@ export const PersistentLogo: React.FC<PersistentLogoProps> = ({ viewState, expan
         <motion.div
             layout
             aria-hidden="true"
-            className={`flex items-center justify-center font-black tracking-tighter font-display select-none pointer-events-none will-change-transform z-[1] leading-[0.9] ${viewState === 'splash'
-                ? 'fixed inset-0 text-5xl md:text-8xl pt-[35vh]' // Smaller on mobile splash
-                : 'absolute top-0 left-0 right-0 h-screen items-center pb-[15vh] md:pb-[10vh] text-6xl md:text-[8rem] lg:text-[12rem]'
-                // Slightly higher pb on mobile to clear subtext
+            className={`flex flex-col items-center justify-start font-black tracking-tighter font-display select-none pointer-events-none will-change-transform z-[1] leading-[0.9] ${viewState === 'splash'
+                ? 'fixed inset-0 text-5xl md:text-8xl pt-[72vh] md:pt-[62vh]'
+                : 'absolute top-0 left-0 right-0 pt-[25vh] md:pt-[22vh] text-6xl md:text-[8rem] lg:text-[12rem]'
                 }`}
             initial={false}
             animate={{

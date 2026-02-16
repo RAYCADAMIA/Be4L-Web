@@ -55,8 +55,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     const [copied, setCopied] = React.useState(false);
 
     return (
-        <div className="relative w-full bg-deep-black text-white mb-6">
-            <div className="max-w-4xl mx-auto px-4 pt-16 md:pt-12">
+        <div className="relative w-full bg-transparent text-white mb-4">
+            <div className="max-w-4xl mx-auto px-4 pt-10 md:pt-8">
                 {/* Brand Access Modal */}
                 <React.Suspense fallback={null}>
                     <BrandAccessModal
@@ -178,16 +178,17 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                                                         <div className="h-px bg-white/5 mx-4 my-2" />
 
                                                         <button
-                                                            onClick={() => {
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
                                                                 onLogout?.();
                                                                 setShowSettingsMenu(false);
                                                             }}
-                                                            className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-4 group rounded-2xl"
+                                                            className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-500/20 transition-all flex items-center gap-4 group rounded-2xl active:scale-95 mt-1"
                                                         >
-                                                            <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-colors">
+                                                            <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-all shadow-sm">
                                                                 <LogOut size={16} />
                                                             </div>
-                                                            <span className="text-[10px] font-black uppercase tracking-widest">Log Out</span>
+                                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] group-hover:text-red-400 transition-colors">Log Out</span>
                                                         </button>
 
                                                         <div className="text-[9px] text-center text-gray-700 py-2 font-mono uppercase tracking-widest opacity-50">
@@ -216,9 +217,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     </div>
 
                     {/* PFP Circle - Tightened spacing for better flow */}
-                    <div className="mt-8 md:mt-12 mb-6 z-10 transition-all duration-500">
+                    <div className="mt-4 md:mt-6 mb-6 z-10 transition-all duration-500">
                         <div
-                            className="relative w-28 h-28 md:w-40 md:h-40 rounded-full border-[4px] md:border-[8px] border-deep-black bg-zinc-900 overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)] cursor-pointer hover:scale-105 transition-transform duration-500"
+                            className="relative w-28 h-28 md:w-40 md:h-40 rounded-full border-[4px] md:border-[8px] border-zinc-950/50 bg-zinc-900 overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-500"
                             onClick={isMe ? onAvatarClick : undefined}
                         >
                             {user.avatar_url ? (

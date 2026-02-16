@@ -7,13 +7,14 @@ import { PhoneShowcaseSection } from './Landing/PhoneShowcaseSection';
 import { RoadmapSection } from './Landing/RoadmapSection';
 import { FeatureShowcase } from './Landing/FeatureShowcase';
 import { PartnerPitch, UserCTA, HUDMenu, Starfield, TeamRecruitment, PoweredBy } from './Landing/LandingComponents';
+import { Footer } from './Shared/Footer';
 // Lazy Load AuthScreen
 const AuthScreen = React.lazy(() => import('./AuthScreen').then(module => ({ default: module.AuthScreen })));
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => void }> = ({ bypassSplash = false, onReset }) => {
     useDocumentTitle('Are you up for a side quest?');
-    const [showSplash, setShowSplash] = useState(!bypassSplash);
+    const [showSplash, setShowSplash] = useState(!bypassSplash && !(window as any).__hasSplashShown);
     const [showAuth, setShowAuth] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
@@ -33,7 +34,10 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
     return (
         <AnimatePresence>
             {showSplash ? (
-                <SplashScreen key="splash" onComplete={() => setShowSplash(false)} />
+                <SplashScreen key="splash" onComplete={() => {
+                    setShowSplash(false);
+                    (window as any).__hasSplashShown = true;
+                }} />
             ) : (
                 <motion.div
                     key="landing"
@@ -42,7 +46,6 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                     transition={{ duration: 1.5, ease: "easeOut" }}
                     className="relative w-full flex flex-col min-h-screen text-white selection:bg-electric-teal/30"
                 >
-                    <Starfield />
                     <HUDMenu onJoinClick={() => setShowAuth(true)} isScrolled={scrolled} onReset={onReset} />
 
                     <main className="relative">
@@ -80,81 +83,8 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                     </main>
 
                     {/* Footer - Precise Horizontal Layout (Matching Image 5) */}
-                    <footer className="relative py-24 px-6 border-t border-white/5 bg-black/40">
-                        <div className="max-w-7xl mx-auto">
-                            <div className="flex flex-row flex-wrap md:flex-nowrap items-start justify-between gap-12 md:gap-24">
-                                {/* 1. Brand Section */}
-                                <div className="space-y-8 min-w-[280px]">
-                                    <div className="flex items-center gap-4 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                                        <div className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 group-hover:border-electric-teal/40 transition-all shadow-lg shadow-black/20">
-                                            <svg viewBox="0 0 200 100" className="w-7 h-7">
-                                                <defs>
-                                                    <linearGradient id="footerLogoGradientV2" x1="0%" y1="0%" x2="200%" y2="0%">
-                                                        <stop offset="0%" stopColor="#2dd4bf" />
-                                                        <stop offset="50%" stopColor="#a855f7" />
-                                                        <stop offset="100%" stopColor="#2dd4bf" />
-                                                    </linearGradient>
-                                                </defs>
-                                                <path d="M100,30 C100,30 90,10 70,10 C50,10 40,30 40,50 C40,75 100,90 100,90 C100,90 160,75 160,50 C160,30 150,10 130,10 C110,10 100,30 100,30 Z" fill="url(#footerLogoGradientV2)" />
-                                            </svg>
-                                        </div>
-                                        <span className="text-3xl font-black tracking-tighter font-display flex items-center gap-2 animate-liquid-text">
-                                            Be4L
-                                            <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Beta</span>
-                                        </span>
-                                    </div>
-                                    <p className="text-cool-grey text-base font-medium leading-[1.8] max-w-xs opacity-70 font-sans">
-                                        OBX-Inspired platform for the lore you've yet to live.
-                                    </p>
-                                    <div className="flex gap-4">
-                                        <a
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            aria-label="Instagram"
-                                            className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white/[0.03] border border-white/5 text-cool-grey hover:text-white hover:border-electric-teal/40 transition-all hover:-translate-y-1 group"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:text-electric-teal transition-colors">
-                                                <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-                                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                                                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-                                            </svg>
-                                        </a>
-                                        {/* Placeholder for others */}
-                                        {['TW', 'TK'].map(social => (
-                                            <a key={social} href="#" aria-label={`Follow us on ${social}`} className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white/[0.03] border border-white/5 text-cool-grey hover:text-white hover:border-white/20 transition-all hover:-translate-y-1">
-                                                <div className="w-5 h-5 rounded-full bg-current opacity-20" />
-                                            </a>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Link Columns Group - Fixed Horizontal side-by-side */}
-                                <div className="flex gap-16 md:gap-32">
-                                    {/* 2. Platform Column */}
-                                    <div className="space-y-8">
-                                        <h4 className="text-xs font-black uppercase tracking-[0.4em] text-white/50 font-display">Platform</h4>
-                                        <ul className="space-y-4">
-                                            <li><a href="/about" className="text-sm font-bold text-cool-grey hover:text-white transition-colors block">About</a></li>
-                                            <li><a href="/partner" className="text-sm font-bold text-cool-grey hover:text-white transition-colors block">Partner</a></li>
-                                            <li><a href="#vision" className="text-sm font-bold text-cool-grey hover:text-white transition-colors block">Vision</a></li>
-                                        </ul>
-                                    </div>
-
-                                    {/* 3. Legal Column */}
-                                    <div className="space-y-8">
-                                        <h4 className="text-xs font-black uppercase tracking-[0.4em] text-white/50 font-display">Legal</h4>
-                                        <ul className="space-y-4">
-                                            <li><a href="/privacy" className="text-sm font-bold text-cool-grey hover:text-white transition-colors block">Privacy Policy</a></li>
-                                            <li><a href="/terms" className="text-sm font-bold text-cool-grey hover:text-white transition-colors block">Terms of Service</a></li>
-                                            <li><a href="#" className="text-sm font-bold text-cool-grey hover:text-white transition-colors block">Cookie Policy</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                        </div>
-                    </footer>
+                    {/* Footer - Shared Component */}
+                    <Footer />
 
                     {/* Auth Modal Overlay */}
                     <AnimatePresence>
@@ -186,7 +116,7 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                             scroll-behavior: smooth;
                         }
                         body {
-                            background-color: #05050A;
+                            background-color: transparent;
                         }
                         /* Added global scroll-margin-top for anchors */
                         [id] {

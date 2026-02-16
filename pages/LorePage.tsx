@@ -11,7 +11,7 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export const LorePage: React.FC = () => {
     useDocumentTitle('Lore');
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [vault, setVault] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [myOperatorData, setMyOperatorData] = useState<Operator | null>(null);
@@ -29,20 +29,27 @@ export const LorePage: React.FC = () => {
     };
 
     useEffect(() => {
-        if (!user) return;
+        // if (authLoading) return; // Wait for auth check
 
         const fetchData = async () => {
             setLoading(true);
             try {
-                // 1. Fetch Vault (Lore)
-                const captures = await supabaseService.captures.getVault(user.id);
-                setVault(captures || []);
+                if (user) {
+                    // 1. Fetch Vault (Lore) for User
+                    const captures = await supabaseService.captures.getVault(user.id);
+                    setVault(captures || []);
 
-                // 2. Operator Specific Data (if applicable)
-                if (user.is_operator) {
-                    const allOps = await supabaseService.dibs.getOperators();
-                    const myOp = allOps?.find(op => op.user_id === user.id);
-                    setMyOperatorData(myOp || null);
+                    // 2. Operator Specific Data (if applicable)
+                    if (user.is_operator) {
+                        const allOps = await supabaseService.dibs.getOperators();
+                        const myOp = allOps?.find(op => op.user_id === user.id);
+                        setMyOperatorData(myOp || null);
+                    }
+                } else {
+                    // Guest Mode: Fetch Recent Public Captures?
+                    // For now, maybe just show empty or a "Featured" set if we had one.
+                    // Or keep it empty and just show the "Memories" splash.
+                    setVault([]);
                 }
             } catch (err) {
                 console.error("Lore page data fetch error:", err);
@@ -52,9 +59,9 @@ export const LorePage: React.FC = () => {
         };
 
         fetchData();
-    }, [user]);
+    }, [user, authLoading]);
 
-    if (!user) return null;
+    if (authLoading) return null;
 
     return (
         <div className="min-h-full bg-transparent relative overflow-y-auto no-scrollbar px-4 pb-20">
@@ -70,7 +77,7 @@ export const LorePage: React.FC = () => {
                 ) : (
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {user.is_operator && myOperatorData?.gallery ? (
+                            {user?.is_operator && myOperatorData?.gallery ? (
                                 myOperatorData.gallery.map((photo: any, idx: number) => (
                                     <div key={idx} className="aspect-[4/3] rounded-[2.5rem] overflow-hidden border border-white/10 bg-white/5 relative group cursor-pointer shadow-xl">
                                         <img src={photo.photo_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="gallery" />
@@ -88,7 +95,7 @@ export const LorePage: React.FC = () => {
                             )}
                         </div>
 
-                        {(!user.is_operator) && (
+                        {(!user || !user.is_operator) && (
                             <div className="max-w-xl mx-auto py-12 px-6 text-center">
                                 <p className="text-xl md:text-2xl font-black uppercase tracking-tighter mb-4 text-gradient-static">
                                     "A glance of your memories"
@@ -152,7 +159,7 @@ export const LorePage: React.FC = () => {
                             </div>
                         )}
 
-                        {(user.is_operator && !myOperatorData?.gallery?.length && !vault.length) && (
+                        {((user?.is_operator && !myOperatorData?.gallery?.length && !vault.length)) && (
                             <div className="py-32 text-center opacity-30 flex flex-col items-center">
                                 <ImageIcon size={48} className="mb-4 text-gray-700" />
                                 <p className="text-xs font-black uppercase tracking-widest text-gray-500">No memories found</p>

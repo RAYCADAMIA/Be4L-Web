@@ -14,11 +14,11 @@ const milestones = [
 
 export const RoadmapSection: React.FC = () => {
     return (
-        <section className="py-32 px-6 relative overflow-hidden select-none">
-            <div className="max-w-6xl mx-auto relative z-10">
+        <section className="py-16 px-6 relative overflow-hidden select-none">
+            <div className="max-w-4xl mx-auto relative z-10">
                 <div className="mb-24 text-center">
                     <h2 className="text-xs uppercase tracking-[0.5em] text-electric-teal font-black mb-4 font-display opacity-60">The Adventure</h2>
-                    <h3 className="text-5xl md:text-7xl font-black text-white tracking-tighter font-display uppercase animate-liquid-text">Roadmap</h3>
+                    <h3 className="text-4xl md:text-6xl font-black text-white tracking-tighter font-display uppercase animate-liquid-text">Roadmap</h3>
                 </div>
 
                 <div className="relative">
@@ -48,8 +48,8 @@ export const RoadmapSection: React.FC = () => {
                                                 <span className="px-3 py-1 rounded-full bg-white/5 text-cool-grey text-[7px] font-black uppercase tracking-[0.2em] border border-white/10 font-display">INCOMING</span>
                                             )}
                                         </div>
-                                        <h4 className="text-3xl md:text-5xl font-black text-white mb-3 tracking-tighter font-display uppercase animate-liquid-text">{item.title}</h4>
-                                        <p className="text-cool-grey text-base md:text-lg font-medium leading-relaxed font-sans opacity-80">{item.desc}</p>
+                                        <h4 className="text-2xl md:text-4xl font-black text-white mb-3 tracking-tighter font-display uppercase animate-liquid-text">{item.title}</h4>
+                                        <p className="text-cool-grey text-sm md:text-base font-medium leading-relaxed font-sans opacity-80">{item.desc}</p>
                                     </div>
                                 </div>
                                 <div className="hidden md:block w-1/2" />

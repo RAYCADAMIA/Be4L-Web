@@ -27,10 +27,10 @@ const PhoneFrame: React.FC<PhoneProps> = ({ src, alt, className = "", isCenter =
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className={`
                 relative rounded-[1.2rem] md:rounded-[2.5rem] overflow-hidden bg-black
-                border-[3px] md:border-[8px] border-zinc-900 shadow-[0_10px_20px_rgba(0,0,0,0.5)] md:shadow-[0_20px_40px_rgba(0,0,0,0.5)]
+                border-[3px] md:border-[8px] border-zinc-900
                 flex-shrink-0
                 ${isCenter
-                    ? 'w-[110px] md:w-[220px] scale-110 shadow-[0_20px_40px_rgba(0,0,0,0.8)] md:shadow-[0_40px_80px_rgba(0,0,0,0.8)] z-20'
+                    ? 'w-[110px] md:w-[220px] scale-110 z-20'
                     : 'w-[90px] md:w-[190px] scale-90 opacity-90 hover:opacity-100 z-10'
                 }
                 ${className}

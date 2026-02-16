@@ -56,7 +56,7 @@ export const PartnerPostCard: React.FC<{ post: PartnerPost; onOpenProfile: (id: 
                     </div>
                     <div>
                         <p className="text-white text-xs font-bold">{post.operator.business_name}</p>
-                        <p className="text-electric-teal text-[10px] font-bold uppercase tracking-wider">Partner Update</p>
+                        <p className="text-electric-teal text-[10px] font-bold uppercase tracking-wider">Brand Update</p>
                     </div>
                 </div>
                 <button className="text-gray-400">

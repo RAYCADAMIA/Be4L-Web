@@ -6,14 +6,14 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export const BookPage: React.FC = () => {
     useDocumentTitle('Dibs');
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
     const navigate = useNavigate();
 
     const handleLegacyNavigate = (tab: string) => {
         if (tab === 'HOME') navigate('/app/home');
     };
 
-    if (!user) return <div>Loading Dibs...</div>;
+    if (loading) return <div>Loading...</div>;
 
     return (
         <BookScreen

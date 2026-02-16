@@ -34,7 +34,7 @@ const OperatorOnboarding: React.FC<Props> = ({ onComplete, onCancel }) => {
     };
 
     return (
-        <div className="flex-1 h-full bg-deep-void flex flex-col p-6 animate-in slide-in-from-bottom duration-500">
+        <div className="flex-1 h-full bg-transparent flex flex-col p-6 animate-in slide-in-from-bottom duration-500">
             {/* Nav */}
             <div className="flex justify-between items-center mb-10">
                 <button onClick={handleBack} className="p-2.5 bg-white/5 rounded-full text-gray-500">

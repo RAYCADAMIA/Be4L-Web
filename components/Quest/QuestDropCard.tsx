@@ -49,12 +49,7 @@ const QuestDropCard: React.FC<QuestDropCardProps> = ({ drop, onAccept }) => {
                     </div>
 
                     <div className="flex-1 flex flex-col items-center justify-center text-center py-2">
-                        <div className="relative mb-6">
-                            <div className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center text-gray-700">
-                                <Trophy size={18} className="opacity-20" />
-                            </div>
-                            <div className="absolute inset-0 rounded-full border-t border-primary/20 animate-spin" />
-                        </div>
+
 
                         <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40 mb-4">Core Objective</h3>
                         <p className="text-[10px] text-white font-bold uppercase tracking-[0.15em] px-4 leading-relaxed mb-6">

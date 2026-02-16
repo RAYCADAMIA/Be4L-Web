@@ -195,7 +195,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
     // If we are in the Operator Portal view (Dashboard)
     if (view === 'OPERATOR_PORTAL') {
         return (
-            <div className="fixed inset-0 z-[100] bg-[#0A0A0A] overflow-y-auto">
+            <div className="fixed inset-0 z-[100] bg-transparent overflow-y-auto">
                 <React.Suspense fallback={<div className="h-screen flex items-center justify-center bg-black"><EKGLoader /></div>}>
                     <OperatorDashboard onBack={() => setView('MAIN')} />
                 </React.Suspense>
@@ -618,7 +618,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
 
             {showPfpModal && (
                 <div className="fixed inset-0 z-[70] bg-black/95 flex items-center justify-center p-6 animate-in fade-in duration-200" onClick={() => setShowPfpModal(false)}>
-                    <img src={user.avatar_url} className="w-full max-w-md aspect-square rounded-full object-cover border-4 border-electric-teal shadow-[0_0_50px_rgba(45,212,191,0.3)]" alt="full pfp" />
+                    <img src={user.avatar_url} className="w-full max-w-md aspect-square rounded-full object-cover border-4 border-electric-teal" alt="full pfp" />
                 </div>
             )}
 

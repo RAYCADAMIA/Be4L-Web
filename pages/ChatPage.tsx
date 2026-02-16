@@ -5,7 +5,7 @@ import ChatDetailScreen from '../components/Chat/ChatDetailScreen';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, Info, ChevronRight, X } from 'lucide-react';
+import { ChatGuestTeaser } from '../components/Chat/ChatGuestTeaser';
 
 export const ChatPage: React.FC = () => {
     useDocumentTitle('Messages');
@@ -26,7 +26,7 @@ export const ChatPage: React.FC = () => {
         }
     }, [location, setSearchParams]);
 
-    if (!user) return null;
+    // If guest, we pass a dummy user or handle null in ChatListScreen
 
     return (
         <div className="flex flex-1 h-full w-full overflow-hidden bg-transparent">
@@ -74,13 +74,13 @@ export const ChatPage: React.FC = () => {
                                 />
                             </motion.div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center opacity-20 pointer-events-none p-12 text-center">
-                                <div className="w-24 h-24 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-center mb-6">
-                                    <Search size={40} className="text-gray-500" />
+                            user ? (
+                                <div className="flex-1 h-full flex flex-col items-center justify-center opacity-20 pointer-events-none">
+                                    {/* Empty Canvas for Logged In Users */}
                                 </div>
-                                <h2 className="text-2xl font-black uppercase tracking-tighter mb-2">Select a frequency</h2>
-                                <p className="text-xs font-bold text-gray-400 max-w-xs">Your echoes and lobbies will appear here when selected.</p>
-                            </div>
+                            ) : (
+                                <ChatGuestTeaser />
+                            )
                         )}
                     </AnimatePresence>
                 </main>

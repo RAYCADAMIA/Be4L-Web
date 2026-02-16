@@ -13,6 +13,10 @@ import DibsItemCard from './DibsItemCard';
 import DibsCard, { Operator } from './DibsCard';
 import { PartnerPostCard } from './Dibs/PartnerFeed';
 import { PhoneShowcaseSection } from './Landing/PhoneShowcaseSection';
+import { VisionSection } from './Landing/VisionSection';
+import { RoadmapSection } from './Landing/RoadmapSection';
+import { FeatureShowcase } from './Landing/FeatureShowcase';
+import { PartnerPitch, UserCTA, PoweredBy, TeamRecruitment } from './Landing/LandingComponents';
 import { useScrollBehavior } from '../hooks/useScrollBehavior';
 
 export const HomePage: React.FC = () => {
@@ -102,7 +106,7 @@ export const HomePage: React.FC = () => {
     if (!user) return null;
 
     return (
-        <div onScroll={handleScroll} className="flex-1 h-full relative overflow-y-auto no-scrollbar bg-deep-black pb-0">
+        <div onScroll={handleScroll} className="flex-1 h-full relative overflow-y-auto no-scrollbar bg-transparent pb-0">
             {/* Header Spacer for Floating Nav - Increased to 80px for Hero Breathing Room */}
             <div className="h-[80px] w-full shrink-0" />
 
@@ -266,8 +270,9 @@ export const HomePage: React.FC = () => {
                 </div>
             </section>
 
+
             {/* Dynamic Community Feedback & Coming Soon Footer */}
-            <section className="px-6 py-20 bg-deep-black relative overflow-hidden">
+            <section className="px-6 py-20 bg-transparent relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
                 <div className="max-w-2xl mx-auto text-center space-y-12 relative z-10">

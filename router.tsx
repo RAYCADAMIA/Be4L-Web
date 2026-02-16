@@ -2,6 +2,15 @@ import React, { Suspense, lazy } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { PlatformLayout } from './components/layouts/PlatformLayout';
 import { PublicLayout } from './components/layouts/PublicLayout';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { AnimationOrchestrator } from './components/Landing/AnimationOrchestrator';
+import { AuthWrapper } from './components/Auth/AuthWrapper';
+
+import { HeartbeatLoader } from './components/HeartbeatLoader';
+import { useParams } from 'react-router-dom';
+
+import { StrictPublicRoute } from './components/Auth/StrictPublicRoute';
+
 // Lazy Load Components
 const FeedPage = lazy(() => import('./pages/FeedPage').then(module => ({ default: module.FeedPage })));
 const QuestPage = lazy(() => import('./pages/QuestPage').then(module => ({ default: module.QuestPage })));
@@ -14,41 +23,16 @@ const LorePage = lazy(() => import('./pages/LorePage').then(module => ({ default
 const OperatorDashboard = lazy(() => import('./components/Dibs/OperatorDashboard'));
 const AdminDashboard = lazy(() => import('./components/Dibs/AdminDashboard'));
 const CreateQuestPage = lazy(() => import('./components/CreateQuestScreen'));
-const LandingPage = lazy(() => import('./components/LandingPage'));
+const LandingPage = lazy(() => import('./components/LandingPage').then(module => ({ default: module.LandingPage })));
 const BookScreen = lazy(() => import('./components/BookScreen'));
-const VerifyBooking = lazy(() => import('./components/Dibs/VerifyBooking'));
-const CompetitionDetailScreen = lazy(() => import('./components/CompetitionDetailsScreen'));
-
-const OperatorProfileScreenWrapper = () => <OperatorProfileScreen />;
-
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { AnimationOrchestrator } from './components/Landing/AnimationOrchestrator';
-
-// New Static & Partner Pages
-const PartnerPitchPage = lazy(() => import('./pages/Partner/PartnerPitchPage').then(module => ({ default: module.PartnerPitchPage })));
-const PartnerApplyPage = lazy(() => import('./pages/Partner/PartnerApplyPage').then(module => ({ default: module.PartnerApplyPage })));
+const PartnerPage = lazy(() => import('./pages/PartnerPage'));
+const PartnerApplyPage = lazy(() => import('./pages/Partner/PartnerApplyPage').then(module => ({ default: module.PartnerPage })));
 const PartnerPendingPage = lazy(() => import('./pages/Partner/PartnerPendingPage').then(module => ({ default: module.PartnerPendingPage })));
-const AboutPage = lazy(() => import('./pages/AboutPage').then(module => ({ default: module.AboutPage })));
-const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
-const TermsPage = lazy(() => import('./pages/TermsPage').then(module => ({ default: module.TermsPage })));
-const TeamPage = lazy(() => import('./pages/TeamPage').then(module => ({ default: module.TeamPage })));
+const OnboardingPage = lazy(() => import('./pages/OnboardingPage').then(module => ({ default: module.OnboardingPage })));
+const VerifyBooking = lazy(() => import('./components/Dibs/VerifyBooking'));
 const HomePage = lazy(() => import('./components/HomePage').then(module => ({ default: module.HomePage })));
-
-// Auth & Onboarding
-import { AuthWrapper } from './components/Auth/AuthWrapper';
-import { OnboardingPage } from './pages/OnboardingPage';
-import { HeartbeatLoader } from './components/HeartbeatLoader';
-import { useParams } from 'react-router-dom';
-
-const QuestRedirect = () => {
-    const { questId } = useParams();
-    return <Navigate to={`/app/quests?quest=${questId}`} replace />;
-};
-
-const ProfileRedirect = () => {
-    const { userId } = useParams();
-    return <Navigate to={`/app/${userId}`} replace />;
-};
+const GuestHome = lazy(() => import('./components/Guest/GuestHome').then(module => ({ default: module.GuestHome })));
+const AuthPage = lazy(() => import('./pages/AuthPage').then(module => ({ default: module.AuthPage })));
 
 export const router = createBrowserRouter([
     {
@@ -56,54 +40,63 @@ export const router = createBrowserRouter([
         element: <PublicLayout />,
         errorElement: <ErrorBoundary />,
         children: [
+            // Strict Public Routes (Redirect to /app if logged in)
             {
-                index: true,
-                element: <AnimationOrchestrator />
+                element: <StrictPublicRoute><PlatformLayout /></StrictPublicRoute>,
+                children: [
+                    {
+                        index: true,
+                        element: <Suspense fallback={<HeartbeatLoader />}><GuestHome /></Suspense>
+                    },
+                    {
+                        path: 'quests',
+                        element: <Suspense fallback={<HeartbeatLoader />}><QuestPage /></Suspense>
+                    },
+                    {
+                        path: 'dibs',
+                        element: <Suspense fallback={<HeartbeatLoader />}><BookPage /></Suspense>
+                    },
+                    {
+                        path: 'lore',
+                        element: <Suspense fallback={<HeartbeatLoader />}><LorePage /></Suspense>
+                    },
+                    {
+                        path: 'about',
+                        element: <Suspense fallback={<HeartbeatLoader />}><LandingPage bypassSplash /></Suspense>
+                    },
+                    {
+                        path: 'auth',
+                        element: <Suspense fallback={<HeartbeatLoader />}><AuthPage /></Suspense>
+                    }
+                ]
             },
+            // Partner Pages (Public)
             {
-                path: 'login',
-                element: <Suspense fallback={<HeartbeatLoader />}><LandingPage /></Suspense>
+                path: 'partner',
+                children: [
+                    {
+                        index: true,
+                        element: <Suspense fallback={<HeartbeatLoader />}><PartnerPage /></Suspense>
+                    },
+                    {
+                        path: 'apply',
+                        element: <Suspense fallback={<HeartbeatLoader />}><PartnerApplyPage /></Suspense>
+                    },
+                    {
+                        path: 'pending',
+                        element: <Suspense fallback={<HeartbeatLoader />}><PartnerPendingPage /></Suspense>
+                    }
+                ]
+            },
+            // Public Verify Route
+            {
+                path: 'verify/:bookingId',
+                element: <Suspense fallback={<HeartbeatLoader />}><VerifyBooking /></Suspense>
             },
             {
                 path: 'onboarding',
-                element: <AuthWrapper><OnboardingPage /></AuthWrapper>
+                element: <Suspense fallback={<HeartbeatLoader />}><OnboardingPage /></Suspense>
             },
-            {
-                path: 'partner',
-                element: <Suspense fallback={<HeartbeatLoader />}><PartnerPitchPage /></Suspense>
-            },
-            {
-                path: 'partner/apply',
-                element: <Suspense fallback={<HeartbeatLoader />}><PartnerApplyPage /></Suspense>
-            },
-            {
-                path: 'partner/pending',
-                element: <Suspense fallback={<HeartbeatLoader />}><PartnerPendingPage /></Suspense>
-            },
-            {
-                path: 'about',
-                element: <Suspense fallback={<HeartbeatLoader />}><AboutPage /></Suspense>
-            },
-            {
-                path: 'privacy',
-                element: <Suspense fallback={<HeartbeatLoader />}><PrivacyPage /></Suspense>
-            },
-            {
-                path: 'terms',
-                element: <Suspense fallback={<HeartbeatLoader />}><TermsPage /></Suspense>
-            },
-            {
-                path: 'team',
-                element: <Suspense fallback={<HeartbeatLoader />}><TeamPage /></Suspense>
-            },
-            {
-                path: 'dashboard/*',
-                element: <Navigate to="/app/dashboard" replace />
-            },
-            {
-                path: 'profile/:userId',
-                element: <ProfileRedirect />
-            }
         ]
     },
     {
@@ -120,24 +113,16 @@ export const router = createBrowserRouter([
                 element: <Suspense fallback={<HeartbeatLoader />}><HomePage /></Suspense>
             },
             {
-                path: 'feed',
-                element: <Navigate to="/app/home" replace />
-            },
-            {
-                path: 'quests/create',
-                element: <Suspense fallback={<HeartbeatLoader />}><CreateQuestPage /></Suspense>
-            },
-            {
                 path: 'quests',
                 element: <Suspense fallback={<HeartbeatLoader />}><QuestPage /></Suspense>
             },
             {
-                path: 'lore',
-                element: <Suspense fallback={<HeartbeatLoader />}><LorePage /></Suspense>
+                path: 'quest/:questId',
+                element: <Suspense fallback={<HeartbeatLoader />}><QuestDetailScreen /></Suspense>
             },
             {
-                path: 'quest/:questId',
-                element: <QuestRedirect />
+                path: 'lore',
+                element: <Suspense fallback={<HeartbeatLoader />}><LorePage /></Suspense>
             },
             {
                 path: 'chat',
@@ -148,12 +133,8 @@ export const router = createBrowserRouter([
                 element: <Suspense fallback={<HeartbeatLoader />}><BookPage /></Suspense>
             },
             {
-                path: 'book',
-                element: <Navigate to="/app/dibs" replace />
-            },
-            {
                 path: 'shop/:slug',
-                element: <Suspense fallback={<HeartbeatLoader />}><OperatorProfileScreenWrapper /></Suspense>
+                element: <Suspense fallback={<HeartbeatLoader />}><OperatorProfileScreen /></Suspense>
             },
             {
                 path: 'dashboard/*',

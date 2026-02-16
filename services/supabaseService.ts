@@ -222,6 +222,27 @@ export const supabaseService = {
       });
       if (error) throw error;
     },
+    signInAsGuest: async () => {
+      // For mvp, we use a mock guest user if anonymous auth isn't configured
+      // In production, this would call supabase.auth.signInAnonymously()
+      const guestId = `guest_${Math.random().toString(36).slice(2, 9)}`;
+      const guestUser: any = {
+        id: guestId,
+        username: `guest_${guestId.slice(6)}`,
+        name: 'Guest Explorer',
+        avatar_url: `https://ui-avatars.com/api/?name=Guest+Explorer&background=random`,
+        streak_count: 0,
+        aura_points: 500,
+        tour_completed: false,
+        life_exp: 0,
+        level: 1,
+        life_streak: 0,
+        is_guest: true
+      };
+
+      // We don't try to persist guest to DB, just return for context
+      return guestUser;
+    },
     signOut: async () => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
@@ -268,7 +289,6 @@ export const supabaseService = {
       const { data } = await supabase.from('follows').select('*').match({ follower_id: f, following_id: t }).single();
       return !!data;
     },
-    awardQuestRewards: awardQuestRewardsImpl,
     awardQuestRewards: awardQuestRewardsImpl,
     updateUserAura: async (uid: string, d: number) => awardQuestRewardsImpl(uid, d, 0),
     completeTour: async (uid: string) => {
@@ -459,8 +479,38 @@ export const supabaseService = {
         const echoes = MOCK_CHATS.filter(c => c.type === 'personal');
         return echoes.map((e: any) => ({ ...e, lastMsg: 'Tap to view', time: e.time || '10:30 AM' }));
       }
-      const { data } = await supabase.from('echoes').select('*').contains('participant_ids', [id]).order('created_at', { ascending: false });
-      return (data || []).map((e: any) => ({ id: e.id, type: e.type, name: e.name || 'Chat', lastMsg: 'Tap to view', time: new Date(e.created_at).toLocaleTimeString() }));
+      const { data } = await supabase.from('echoes')
+        .select('*')
+        .contains('participant_ids', [id])
+        .order('last_message_at', { ascending: false }) // Sort by new column
+        .order('created_at', { ascending: false });
+
+      return (data || []).map((e: any) => ({
+        id: e.id,
+        type: e.type,
+        name: e.name || 'Chat',
+        lastMsg: 'Tap to view',
+        time: new Date(e.last_message_at || e.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        unread: 0 // TODO: Implement real unread count
+      }));
+    },
+    joinCityChat: async (cityId: string) => {
+      const { data, error } = await supabase.rpc('join_city_chat', { city_chat_id: cityId });
+      if (error) return { success: false, error: error.message };
+      return data; // Returns { success: true } or { success: false, error: '...' }
+    },
+    getGlobalChat: async () => {
+      // Fetch the single global chat, create if missing (auto-healing)
+      let { data } = await supabase.from('echoes').select('*').eq('type', 'GLOBAL').single();
+      if (!data) {
+        // Create it if it doesn't exist (only runs once essentially)
+        const { data: newGlobal } = await supabase.from('echoes')
+          .insert({ type: 'GLOBAL', name: 'Global Lobby', participant_ids: [] })
+          .select()
+          .single();
+        data = newGlobal;
+      }
+      return data ? { id: data.id, name: data.name } : null;
     },
     async getOrCreateQuestLobby(qid: string, name: string, pids: string[]) {
       if (!isValidUUID(qid)) return { id: `lobby-${qid}`, name: `LOBBY: ${name}` };

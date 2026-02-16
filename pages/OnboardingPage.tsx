@@ -1,19 +1,20 @@
-// Last Updated: 2026-02-06
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabaseClient';
 import { useNavigate } from 'react-router-dom';
-import { Camera, ChevronRight, Loader2, Check, AtSign, User as UserIcon, Calendar, AlignLeft } from 'lucide-react';
+import { Camera, Loader2, Check, AtSign, User as UserIcon, AlignLeft } from 'lucide-react';
 import { Starfield } from '../components/Landing/LandingComponents';
 import { useAuth } from '../contexts/AuthContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import Cropper from 'react-easy-crop';
+import getCroppedImg from '../utils/cropImage';
 
 export const OnboardingPage: React.FC = () => {
     const navigate = useNavigate();
     useDocumentTitle('Setup Profile');
     const { updateUser } = useAuth();
 
-    // Step 1: Basics (Name, Username, Birthdate)
+    // Step 1: Basics (Name, Username)
     // Step 2: Profile (PFP, Bio)
     // Step 3: Done
     const [step, setStep] = useState(1);
@@ -21,28 +22,29 @@ export const OnboardingPage: React.FC = () => {
     // Form State
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
-    const [birthdate, setBirthdate] = useState('');
     const [bio, setBio] = useState('');
+
+    // Crop State
+    const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
 
     // Logic State
     const [checkingHandle, setCheckingHandle] = useState(false);
     const [handleAvailable, setHandleAvailable] = useState<boolean | null>(null);
-    const [avatar, setAvatar] = useState<File | null>(null);
+    const [avatarBlob, setAvatarBlob] = useState<Blob | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-
-    const [ageError, setAgeError] = useState('');
 
     React.useEffect(() => {
         const fetchExistingProfile = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                // Pre-fill from user metadata (e.g. Google auth)
                 if (user.user_metadata?.full_name) setName(user.user_metadata.full_name);
                 if (user.user_metadata?.name) setName(user.user_metadata.name);
                 if (user.user_metadata?.avatar_url) setPreviewUrl(user.user_metadata.avatar_url);
 
-                // Check for existing profile record
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('*')
@@ -56,30 +58,12 @@ export const OnboardingPage: React.FC = () => {
                         setHandleAvailable(true);
                     }
                     if (profile.bio) setBio(profile.bio);
-                    if (profile.birthdate) setBirthdate(profile.birthdate);
                     if (profile.avatar_url) setPreviewUrl(profile.avatar_url);
                 }
             }
         };
         fetchExistingProfile();
     }, []);
-
-    const validateAge = (date: string) => {
-        if (!date) return;
-        setBirthdate(date);
-        const birth = new Date(date);
-        const today = new Date();
-        let age = today.getFullYear() - birth.getFullYear();
-        const m = today.getMonth() - birth.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-            age--;
-        }
-        if (age < 18) {
-            setAgeError('Must be 18+ years old');
-        } else {
-            setAgeError('');
-        }
-    };
 
     const checkHandle = async (value: string) => {
         const cleanValue = value.toLowerCase().replace(/\s/g, '');
@@ -107,11 +91,26 @@ export const OnboardingPage: React.FC = () => {
         }
     };
 
+    const onCropComplete = useCallback((_area: any, pixels: any) => {
+        setCroppedAreaPixels(pixels);
+    }, []);
+
     const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
         const file = e.target.files[0];
-        setAvatar(file);
-        setPreviewUrl(URL.createObjectURL(file));
+        const reader = new FileReader();
+        reader.addEventListener('load', () => setImageToCrop(reader.result as string));
+        reader.readAsDataURL(file);
+    };
+
+    const applyCrop = async () => {
+        if (!imageToCrop || !croppedAreaPixels) return;
+        const croppedBlob = await getCroppedImg(imageToCrop, croppedAreaPixels);
+        if (croppedBlob) {
+            setAvatarBlob(croppedBlob);
+            setPreviewUrl(URL.createObjectURL(croppedBlob));
+            setImageToCrop(null);
+        }
     };
 
     const nextStep = () => setStep(prev => prev + 1);
@@ -121,22 +120,16 @@ export const OnboardingPage: React.FC = () => {
         try {
             setLoading(true);
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                // Try establishing session explicitly if missing? For now just error.
-                // Or maybe we are in a state where user is not logged in but should be?
-                // Throwing error to be caught below.
-                throw new Error('No user found');
-            }
+            if (!user) throw new Error('No user found');
 
             let avatarPath = (previewUrl && previewUrl.startsWith('http')) ? previewUrl : null;
-            if (avatar) {
-                const fileExt = avatar.name.split('.').pop();
-                const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+            if (avatarBlob) {
+                const fileName = `${user.id}-${Date.now()}.jpg`;
                 const filePath = `${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
                     .from('avatars')
-                    .upload(filePath, avatar);
+                    .upload(filePath, avatarBlob, { contentType: 'image/jpeg' });
 
                 if (uploadError) throw uploadError;
 
@@ -152,12 +145,9 @@ export const OnboardingPage: React.FC = () => {
                 username: username,
                 handle: `@${username}`,
                 bio,
-                birthdate,
                 avatar_url: avatarPath,
                 onboarding_completed: true
             };
-
-            console.log('Finalizing profile for user:', user.id, updates);
 
             const upsertData = {
                 id: user.id,
@@ -165,54 +155,47 @@ export const OnboardingPage: React.FC = () => {
                 updated_at: new Date().toISOString()
             };
 
-            console.log('Sending upsert data:', upsertData);
-
             const { error: profileError } = await supabase
                 .from('profiles')
                 .upsert(upsertData, { onConflict: 'id' });
 
-            if (profileError) {
-                console.error('Database Upsert Error Detailed:', profileError);
-                throw profileError;
-            }
+            if (profileError) throw profileError;
 
-            console.log('SUCCESS: Profile upserted with data:', upsertData);
-            updateUser(upsertData); // Use complete upsertData to ensure consistency
-            setStep(3); // Go to Completion
+            updateUser(upsertData);
+            setStep(3);
 
         } catch (err: any) {
             console.error('Onboarding Error:', err);
-            const errorMsg = err.message || (typeof err === 'object' ? JSON.stringify(err) : String(err));
-            alert('Setup Failed: ' + errorMsg);
+            alert('Setup Failed: ' + (err.message || String(err)));
         } finally {
             setLoading(false);
         }
     };
 
-    const isStep1Valid = name.trim().length > 0 && username.length >= 3 && handleAvailable && birthdate && !ageError;
-    const isStep2Valid = true; // Bio and PFP are optional by default in UX, but encouraged
+    const isStep1Valid = name.trim().length > 0 && username.length >= 3 && handleAvailable;
+    const isStep2Valid = true;
 
     return (
-        <div className="relative min-h-screen bg-[#09090b] text-white flex items-center justify-center p-6 overflow-hidden">
-            <Starfield />
-            {/* Ambient Background Effects */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-electric-teal/5 blur-[120px] rounded-full animate-pulse" />
-                <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-500/5 blur-[120px] rounded-full animate-pulse delay-1000" />
+        <div className="fixed inset-0 w-full h-full bg-transparent flex items-center justify-center overflow-y-auto p-4 md:p-6 lg:p-8 select-none touch-none overscroll-none scrollbar-hide">
+            {/* Atmosphere - Match AuthPage */}
+            <div className="vibrant-glow opacity-60">
+                <div className="blob blob-1 !opacity-40 scale-125" />
+                <div className="blob blob-2 !opacity-30 scale-125" />
+                <div className="blob blob-3 !opacity-20 scale-125" />
             </div>
+
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-cyan-500/10 pointer-events-none" />
+            <Starfield />
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="max-w-[320px] w-full relative z-10"
+                className="max-w-[360px] w-full relative z-30"
             >
-                <div className="relative bg-white/[0.02] backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden">
-                    {/* Decorative Top */}
-                    <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-electric-teal/5 to-transparent pointer-events-none" />
-
+                <div className="relative bg-[#09090B]/30 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] shadow-[0_48px_120px_-30px_rgba(0,0,0,0.8)] overflow-hidden">
                     {/* Progress Bar */}
                     {step < 3 && (
-                        <div className="absolute top-0 left-0 h-1 bg-electric-teal transition-all duration-500" style={{ width: `${(step / 2) * 100}%` }} />
+                        <div className="absolute top-0 left-0 h-1 bg-gradient-to-r from-indigo-500 to-cyan-500 transition-all duration-700 ease-out z-50" style={{ width: `${(step / 2) * 100}%` }} />
                     )}
 
                     <div className="p-8 relative z-10 text-center">
@@ -227,24 +210,23 @@ export const OnboardingPage: React.FC = () => {
                                     exit={{ opacity: 0, x: -20 }}
                                     className="space-y-6"
                                 >
-                                    <div className="text-center space-y-1">
-                                        <h1 className="text-xl font-black font-fui uppercase tracking-tighter text-white">The Basics</h1>
-                                        <p className="text-cool-grey text-[10px] font-bold uppercase tracking-widest">Let's get you set up</p>
+                                    <div className="text-center pt-8">
+                                        <p className="text-cool-grey text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Let's get you set up</p>
                                     </div>
 
-                                    <div className="space-y-3 text-left">
+                                    <div className="space-y-4 text-left">
                                         {/* Name */}
                                         <div className="space-y-1">
-                                            <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest ml-3">Full Name</label>
+                                            <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] ml-4">Full Name</label>
                                             <div className="relative group">
-                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-electric-teal transition-colors">
-                                                    <UserIcon size={14} />
+                                                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-electric-teal transition-all duration-300">
+                                                    <UserIcon size={16} />
                                                 </div>
                                                 <input
                                                     type="text"
                                                     value={name}
                                                     onChange={(e) => setName(e.target.value)}
-                                                    className="w-full pl-10 pr-4 py-2 bg-black/20 border border-white/10 rounded-xl text-white font-bold text-xs focus:bg-black/40 focus:border-electric-teal/50 transition-all outline-none"
+                                                    className="w-full pl-14 pr-6 py-4 bg-black/40 border border-white/10 rounded-2xl text-white font-black text-[11px] focus:bg-black/60 focus:border-electric-teal/40 transition-all outline-none"
                                                     placeholder="Your Name"
                                                 />
                                             </div>
@@ -252,59 +234,46 @@ export const OnboardingPage: React.FC = () => {
 
                                         {/* Username */}
                                         <div className="space-y-1">
-                                            <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest ml-3">Username</label>
+                                            <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] ml-4">Username</label>
                                             <div className="relative group">
-                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-electric-teal transition-colors">
-                                                    <AtSign size={14} />
+                                                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-electric-teal transition-all duration-300">
+                                                    <AtSign size={16} />
                                                 </div>
                                                 <input
                                                     type="text"
                                                     value={username}
                                                     onChange={(e) => checkHandle(e.target.value)}
-                                                    className="w-full pl-10 pr-10 py-2 bg-black/20 border border-white/10 rounded-xl text-white font-bold text-xs focus:bg-black/40 focus:border-electric-teal/50 transition-all outline-none"
+                                                    className="w-full pl-14 pr-12 py-4 bg-black/40 border border-white/10 rounded-2xl text-white font-black text-[11px] focus:bg-black/60 focus:border-electric-teal/40 transition-all outline-none"
                                                     placeholder="username"
                                                 />
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                <div className="absolute right-5 top-1/2 -translate-y-1/2">
                                                     {checkingHandle ? (
-                                                        <Loader2 className="animate-spin text-white/30" size={14} />
+                                                        <Loader2 className="animate-spin text-white/30" size={16} />
                                                     ) : username.length >= 3 ? (
                                                         handleAvailable ? (
-                                                            <Check className="text-electric-teal" size={14} />
+                                                            <Check className="text-electric-teal" size={16} />
                                                         ) : (
-                                                            <span className="text-red-500 text-[9px] font-bold">TAKEN</span>
+                                                            <span className="text-red-500 text-[9px] font-black">TAKEN</span>
                                                         )
                                                     ) : null}
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/* Birthdate */}
-                                        <div className="space-y-1">
-                                            <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest ml-3">Birthdate</label>
-                                            <div className="relative group">
-                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-electric-teal transition-colors">
-                                                    <Calendar size={14} />
-                                                </div>
-                                                <input
-                                                    type="date"
-                                                    value={birthdate}
-                                                    onChange={(e) => validateAge(e.target.value)}
-                                                    className={`w-full pl-10 pr-4 py-2 bg-black/20 border ${ageError ? 'border-red-500/50' : 'border-white/10'} rounded-xl text-white font-bold text-xs focus:bg-black/40 focus:border-electric-teal/50 transition-all outline-none [color-scheme:dark]`}
-                                                />
-                                                {ageError && (
-                                                    <p className="text-red-500 text-[8px] font-bold mt-1 ml-3 uppercase tracking-wider">{ageError}</p>
-                                                )}
-                                            </div>
-                                        </div>
                                     </div>
 
-                                    <button
-                                        onClick={nextStep}
-                                        disabled={!isStep1Valid}
-                                        className="w-[70%] mx-auto py-3 rounded-xl bg-white text-black font-black font-fui uppercase tracking-[0.15em] text-xs hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-white/10"
-                                    >
-                                        Next
-                                    </button>
+                                    <div className="flex flex-col gap-3">
+                                        <button
+                                            onClick={nextStep}
+                                            disabled={!isStep1Valid}
+                                            className="w-[70%] mx-auto py-3 rounded-xl bg-white text-black font-black font-fui uppercase tracking-[0.15em] text-xs hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-white/10"
+                                        >
+                                            Next
+                                        </button>
+
+                                        <button onClick={() => navigate('/auth')} className="py-2 text-[9px] font-bold uppercase tracking-widest text-white/30 hover:text-white transition-colors">
+                                            Back
+                                        </button>
+                                    </div>
                                 </motion.div>
                             )}
 
@@ -317,20 +286,19 @@ export const OnboardingPage: React.FC = () => {
                                     exit={{ opacity: 0, x: -20 }}
                                     className="space-y-6"
                                 >
-                                    <div className="text-center space-y-1">
-                                        <h1 className="text-xl font-black font-fui uppercase tracking-tighter text-white">Profile Photo</h1>
-                                        <p className="text-cool-grey text-[10px] font-bold uppercase tracking-widest">Show us who you are</p>
+                                    <div className="text-center pt-8">
+                                        <p className="text-cool-grey text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Show us who you are</p>
                                     </div>
 
-                                    <div className="flex justify-center py-2">
+                                    <div className="flex justify-center py-4">
                                         <div className="relative group cursor-pointer">
-                                            <div className="w-24 h-24 rounded-full overflow-hidden bg-black/40 border-2 border-white/10 group-hover:border-electric-teal/50 transition-all shadow-inner">
+                                            <div className="w-28 h-28 rounded-full overflow-hidden bg-black/40 border-2 border-white/5 group-hover:border-electric-teal/30 transition-all shadow-inner relative">
                                                 {previewUrl ? (
                                                     <img src={previewUrl} alt="Avatar Preview" className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-white/5 to-transparent gap-1">
-                                                        <Camera size={20} className="text-white/20 group-hover:text-electric-teal transition-colors" />
-                                                        <span className="text-[8px] text-white/20 font-bold uppercase tracking-widest group-hover:text-white/50 transition-colors">Upload</span>
+                                                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-white/5 to-transparent gap-2">
+                                                        <Camera size={24} className="text-white/10 group-hover:text-electric-teal transition-colors" />
+                                                        <span className="text-[7.5px] text-white/10 font-black uppercase tracking-[0.2em] group-hover:text-white/40 transition-colors">Select Image</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -392,7 +360,6 @@ export const OnboardingPage: React.FC = () => {
                                             <h1 className="text-3xl font-black font-fui uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-white/50">
                                                 All Set
                                             </h1>
-                                            <p className="text-electric-teal font-bold uppercase tracking-widest text-[9px]">Welcome to the inner circle</p>
                                         </div>
 
                                         <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-left space-y-2 backdrop-blur-sm max-w-[240px] mx-auto">
@@ -410,7 +377,7 @@ export const OnboardingPage: React.FC = () => {
 
                                     <button
                                         onClick={() => navigate('/app/home')}
-                                        className="w-[70%] mx-auto py-3 rounded-xl bg-white text-black font-black font-fui uppercase tracking-[0.15em] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)] text-xs"
+                                        className="w-[80%] mx-auto py-4 rounded-2xl bg-white text-black font-black uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_40px_rgba(255,255,255,0.15)] text-[11px]"
                                     >
                                         Enter Be4L
                                     </button>
@@ -420,7 +387,63 @@ export const OnboardingPage: React.FC = () => {
                     </div>
                 </div>
             </motion.div>
-        </div>
 
+            {/* Cropper Overlay */}
+            <AnimatePresence>
+                {imageToCrop && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-6"
+                    >
+                        <div className="relative w-full max-w-sm aspect-square bg-[#09090B] rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
+                            <Cropper
+                                image={imageToCrop}
+                                crop={crop}
+                                zoom={zoom}
+                                aspect={1}
+                                onCropChange={setCrop}
+                                onCropComplete={onCropComplete}
+                                onZoomChange={setZoom}
+                                cropShape="round"
+                                showGrid={false}
+                            />
+                        </div>
+
+                        <div className="w-full max-w-xs mt-12 space-y-8 flex flex-col items-center">
+                            <div className="w-full space-y-4">
+                                <label className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40 block text-center">Zoom Level</label>
+                                <input
+                                    type="range"
+                                    value={zoom}
+                                    min={1}
+                                    max={3}
+                                    step={0.1}
+                                    aria-labelledby="Zoom"
+                                    onChange={(e) => setZoom(Number(e.target.value))}
+                                    className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
+                                />
+                            </div>
+
+                            <div className="flex gap-4 w-full">
+                                <button
+                                    onClick={() => setImageToCrop(null)}
+                                    className="flex-1 py-4 px-6 rounded-2xl bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={applyCrop}
+                                    className="flex-1 py-4 px-6 rounded-2xl bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-zinc-100 transition-all"
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 };

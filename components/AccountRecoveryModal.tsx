@@ -105,9 +105,10 @@ export const AccountRecoveryModal: React.FC<AccountRecoveryModalProps> = ({ isOp
 
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 p-2 text-white/30 hover:text-white transition-colors z-20"
+                        aria-label="Close"
+                        className="absolute top-4 right-4 p-2 text-white/40 hover:text-white transition-colors z-20 focus:ring-2 focus:ring-electric-teal rounded-full outline-none"
                     >
-                        <X size={20} />
+                        <X size={20} aria-hidden="true" />
                     </button>
 
                     <div className="p-8">
@@ -121,7 +122,11 @@ export const AccountRecoveryModal: React.FC<AccountRecoveryModalProps> = ({ isOp
                         </div>
 
                         {error && (
-                            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-bold text-center uppercase tracking-widest">
+                            <div
+                                role="alert"
+                                aria-live="assertive"
+                                className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-bold text-center uppercase tracking-widest"
+                            >
                                 {error}
                             </div>
                         )}
@@ -129,13 +134,15 @@ export const AccountRecoveryModal: React.FC<AccountRecoveryModalProps> = ({ isOp
                         {step === 1 && (
                             <form onSubmit={handleSendOtp} className="space-y-4">
                                 <div className="relative group">
-                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={16} aria-hidden="true" />
+                                    <label htmlFor="recovery-email" className="sr-only">Email Address</label>
                                     <input
+                                        id="recovery-email"
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="EMAIL ADDRESS"
-                                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-transparent rounded-xl text-white text-xs font-bold focus:bg-white/10 focus:border-electric-teal/30 transition-all outline-none placeholder-white/20"
+                                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-transparent rounded-xl text-white text-xs font-bold focus:bg-white/10 focus:border-electric-teal/50 focus:ring-1 focus:ring-electric-teal/30 transition-all outline-none placeholder-white/30"
                                         required
                                         autoFocus
                                     />
@@ -153,17 +160,19 @@ export const AccountRecoveryModal: React.FC<AccountRecoveryModalProps> = ({ isOp
                         {step === 2 && (
                             <form onSubmit={handleVerifyOtp} className="space-y-4">
                                 <div className="relative group">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" aria-hidden="true">
                                         <div className="flex gap-1">
                                             {[...Array(3)].map((_, i) => <div key={i} className="w-1 h-1 rounded-full bg-current" />)}
                                         </div>
                                     </div>
+                                    <label htmlFor="recovery-otp" className="sr-only">Recovery Code</label>
                                     <input
+                                        id="recovery-otp"
                                         type="text"
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value)}
                                         placeholder="ENTER CODE"
-                                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-transparent rounded-xl text-white text-xs font-bold focus:bg-white/10 focus:border-electric-teal/30 transition-all outline-none placeholder-white/20 tracking-[0.5em] text-center"
+                                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-transparent rounded-xl text-white text-xs font-bold focus:bg-white/10 focus:border-electric-teal/50 focus:ring-1 focus:ring-electric-teal/30 transition-all outline-none placeholder-white/30 tracking-[0.5em] text-center"
                                         required
                                         autoFocus
                                     />
@@ -188,13 +197,15 @@ export const AccountRecoveryModal: React.FC<AccountRecoveryModalProps> = ({ isOp
                         {step === 3 && (
                             <form onSubmit={handleUpdatePassword} className="space-y-4">
                                 <div className="relative group">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={16} aria-hidden="true" />
+                                    <label htmlFor="new-password" className="sr-only">New Password</label>
                                     <input
+                                        id="new-password"
                                         type="password"
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
                                         placeholder="NEW PASSWORD"
-                                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-transparent rounded-xl text-white text-xs font-bold focus:bg-white/10 focus:border-electric-teal/30 transition-all outline-none placeholder-white/20"
+                                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-transparent rounded-xl text-white text-xs font-bold focus:bg-white/10 focus:border-electric-teal/50 focus:ring-1 focus:ring-electric-teal/30 transition-all outline-none placeholder-white/30"
                                         required
                                         autoFocus
                                         minLength={6}

@@ -1,4 +1,5 @@
 ﻿import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Minus, Plus, Upload, Check, Copy, AlertCircle, Loader2, Shield, Wallet, Sparkles, Download, Share2, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 // toPng is dynamically imported in handleDownload and handleShare to avoid SSR issues
@@ -58,6 +59,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
     if (!operator || !item) return null;
 
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
     const [isViewingPoster, setIsViewingPoster] = useState(false);
 
@@ -71,6 +73,17 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
     const [selectedSlots, setSelectedSlots] = useState<{ date: string, time: string }[]>([]);
     const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
     const [proofFile, setProofFile] = useState<File | null>(null);
+    const [proofPreviewUrl, setProofPreviewUrl] = useState<string | null>(null);
+
+    React.useEffect(() => {
+        if (!proofFile) {
+            setProofPreviewUrl(null);
+            return;
+        }
+        const url = URL.createObjectURL(proofFile);
+        setProofPreviewUrl(url);
+        return () => URL.revokeObjectURL(url);
+    }, [proofFile]);
 
     const [selectedTierId, setSelectedTierId] = useState<string | null>(null);
     const [userInfo, setUserInfo] = useState({ name: '', contact: '', email: '', referral: '' });
@@ -863,7 +876,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                                     </div>
                                                                                 ) : (
                                                                                     <button
-                                                                                        onClick={() => setStep(1)}
+                                                                                        onClick={() => {
+                                                                                            if (!user) {
+                                                                                                navigate('/auth');
+                                                                                                return;
+                                                                                            }
+                                                                                            setStep(1);
+                                                                                        }}
                                                                                         className="px-6 py-2.5 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                                                                                     >
                                                                                         Next
@@ -957,7 +976,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                     )}
 
                                                     <GradientButton
-                                                        onClick={() => setStep(1)}
+                                                        onClick={() => {
+                                                            if (!user) {
+                                                                navigate('/auth');
+                                                                return;
+                                                            }
+                                                            setStep(1);
+                                                        }}
                                                         fullWidth
                                                         className="shadow-[0_20px_40px_-10px_rgba(20,255,236,0.3)]"
                                                     >
@@ -1335,9 +1360,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                 <div className="z-10 flex flex-col items-center">
                                                                     <div className="relative w-16 h-20 rounded-lg overflow-hidden border border-white/20 mb-3 shadow-2xl rotate-3 group-hover:rotate-0 transition-transform">
                                                                         <img
-                                                                            src={URL.createObjectURL(proofFile)}
+                                                                            src={proofPreviewUrl || ''}
                                                                             className="w-full h-full object-cover"
-                                                                            onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
                                                                             alt="Proof"
                                                                         />
                                                                         <div className="absolute inset-0 bg-black/20" />

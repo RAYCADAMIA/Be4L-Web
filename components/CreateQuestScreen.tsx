@@ -321,7 +321,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                className="relative w-full max-w-sm bg-[#0a0a0a]/90 backdrop-blur-3xl border border-white/10 rounded-[2rem] overflow-hidden flex flex-col shadow-3xl min-h-[380px] max-h-[70vh] h-auto"
+                className="relative w-full max-w-sm bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[2rem] overflow-hidden flex flex-col shadow-3xl min-h-[380px] max-h-[70vh] h-auto"
             >
                 {/* Header */}
                 <div className="px-4 pt-4 pb-2 flex justify-between items-center bg-gradient-to-b from-white/[0.02] to-transparent shrink-0">

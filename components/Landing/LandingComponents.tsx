@@ -38,7 +38,7 @@ export const UserCTA: React.FC<UserCTAProps> = ({ onJoinClick }) => {
                         onClick={onJoinClick}
                         className="px-16 py-6 bg-white text-deep-void font-black rounded-3xl hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_50px_rgba(45,212,191,0.5)] transition-all uppercase tracking-widest text-lg font-display group overflow-hidden"
                     >
-                        <span className="animate-liquid-text">Join the chat</span>
+                        <span className="animate-liquid-text">Sign In</span>
                     </button>
                 </div>
             </motion.div>
@@ -157,20 +157,7 @@ export const HUDMenu: React.FC<HUDMenuProps> = ({ onJoinClick, isScrolled = true
                 layoutId="main-logo"
                 className="flex items-center gap-2 cursor-pointer group"
                 onClick={() => {
-                    if (isPartnerPage) {
-                        navigate('/');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    } else {
-                        if (window.scrollY < 10) {
-                            if (onReset) {
-                                onReset();
-                            } else {
-                                window.location.reload();
-                            }
-                        } else {
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }
-                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
             >
                 <div className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center transition-transform group-hover:scale-110">
@@ -187,9 +174,10 @@ export const HUDMenu: React.FC<HUDMenuProps> = ({ onJoinClick, isScrolled = true
                     </svg>
                 </div>
                 <div className="flex flex-col leading-none">
-                    <span className="text-sm md:text-base font-black tracking-tighter font-display text-gradient-static">Be4L</span>
-                    <span className="text-[6px] md:text-[8px] font-black uppercase tracking-widest text-gradient-static opacity-50">{isPartnerPage ? 'Operator' : 'Beta'}</span>
+                    <span className="text-sm md:text-base font-black tracking-tighter font-display text-gradient-static not-italic">Be4L</span>
+                    <span className="text-[6px] md:text-[8px] font-black uppercase tracking-widest text-gradient-static opacity-50 not-italic">{isPartnerPage ? 'Operator' : 'Beta'}</span>
                 </div>
+
             </motion.div>
 
             <div className="hidden md:flex items-center gap-6">
@@ -221,7 +209,7 @@ export const HUDMenu: React.FC<HUDMenuProps> = ({ onJoinClick, isScrolled = true
                 className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-full hover:scale-105 transition-all whitespace-nowrap font-display shadow-lg group ${isPartnerPage ? 'bg-electric-teal text-black' : 'bg-white text-deep-void'}`}
             >
                 <span className={isPartnerPage ? "" : "animate-text-gradient"}>
-                    {isPartnerPage ? 'APPLY FOR PILOT' : 'Join the chat'}
+                    {isPartnerPage ? 'APPLY FOR PILOT' : 'Sign In'}
                 </span>
             </button>
         </motion.nav>
@@ -251,7 +239,7 @@ export const Starfield: React.FC = () => {
                 className="absolute top-0 left-[-50%] w-[200%] h-px bg-gradient-to-r from-transparent via-electric-teal/10 to-transparent filter blur-[1px] pointer-events-none"
                 animate={{
                     y: ["-10vh", "110vh"],
-                    opacity: [0, 0.4, 0]
+                    opacity: [0, 0.15, 0]
                 }}
                 transition={{
                     duration: 10,
@@ -264,7 +252,7 @@ export const Starfield: React.FC = () => {
                 className="absolute top-0 right-[-50%] w-[150%] h-[1px] bg-gradient-to-l from-transparent via-electric-teal/10 to-transparent filter blur-[1px] transform rotate-[-15deg] pointer-events-none"
                 animate={{
                     y: ["-20vh", "120vh"],
-                    opacity: [0, 0.3, 0]
+                    opacity: [0, 0.1, 0]
                 }}
                 transition={{
                     duration: 15,
@@ -308,24 +296,7 @@ export const Starfield: React.FC = () => {
                 }}
             />
 
-            {/* Layer 3 - Bright Accents - Static Position */}
-            <motion.div
-                className="absolute inset-0"
-                style={{
-                    backgroundImage: 'radial-gradient(2px 2px at 25% 15%, #2DD4BF, transparent), radial-gradient(2px 2px at 45% 45%, #2DD4BF, transparent), radial-gradient(2px 2px at 65% 75%, #2DD4BF, transparent), radial-gradient(2px 2px at 85% 25%, #2DD4BF, transparent), radial-gradient(3px 3px at 50% 50%, white, transparent)',
-                    backgroundSize: '400px 400px',
-                }}
-                animate={{
-                    opacity: [0.3, 0.8, 0.3],
-                    x: mousePosition.x * 30,
-                    y: mousePosition.y * 30
-                }}
-                transition={{
-                    opacity: { duration: 3, repeat: Infinity, ease: "easeInOut", repeatType: "mirror" },
-                    x: { type: "spring", stiffness: 10 },
-                    y: { type: "spring", stiffness: 10 }
-                }}
-            />
+
         </div>
     );
 };

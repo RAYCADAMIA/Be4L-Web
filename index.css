@@ -45,7 +45,7 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #05050A;
+  background-color: transparent !important;
   color: #FFFFFF;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -71,9 +71,9 @@ body::before {
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(circle at 80% 0%, rgba(6, 182, 212, 0.30) 0%, transparent 60%),
-    radial-gradient(circle at 20% 100%, rgba(139, 92, 246, 0.20) 0%, transparent 60%),
-    #05080a;
+    radial-gradient(circle at 50% 0%, rgba(45, 212, 191, 0.15) 0%, transparent 70%),
+    radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 60%),
+    #0a0d14;
 }
 
 /* Dynamic Vibrant Blobs - Increased Opacity and Scale */
@@ -83,9 +83,8 @@ body::before {
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
-  opacity: 0.6;
-  filter: blur(80px);
-  /* Slightly sharper blur for more "shape" */
+  opacity: 0.3;
+  filter: blur(100px);
 }
 
 .blob {
@@ -98,22 +97,22 @@ body::before {
 }
 
 .blob-1 {
-  background: radial-gradient(circle, rgba(45, 212, 191, 0.6) 0%, transparent 70%);
-  top: -20%;
-  left: -20%;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.4) 0%, transparent 70%);
+  top: -10%;
+  left: 10%;
   animation-duration: 20s;
 }
 
 .blob-2 {
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.5) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%);
   bottom: -20%;
-  right: -20%;
+  right: -10%;
   animation-duration: 25s;
   animation-delay: -5s;
 }
 
 .blob-3 {
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%);
   top: 30%;
   left: 20%;
   width: 50vw;

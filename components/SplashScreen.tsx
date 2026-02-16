@@ -20,7 +20,7 @@ const floatingPool = [
     Sparkles, Ghost, ShoppingBag, Globe, Compass, Command, Flame
 ];
 
-const FloatingIcon = ({ index }: { index: number }) => {
+const FloatingIcon = React.memo(({ index }: { index: number }) => {
     const Icon = floatingPool[index % floatingPool.length];
 
     // Better randomization for positions
@@ -53,14 +53,15 @@ const FloatingIcon = ({ index }: { index: number }) => {
                 left: x,
                 top: y,
                 filter: blur,
-                zIndex: index % 5
+                zIndex: index % 5,
+                willChange: "transform, opacity"
             }}
-            className="p-3 bg-white/[0.015] backdrop-blur-3xl rounded-[1.5rem] border border-white/5 shadow-2xl pointer-events-none"
+            className="p-3 bg-white/[0.015] backdrop-blur-md rounded-[1.5rem] border border-white/5 shadow-lg pointer-events-none"
         >
             <Icon size={size} className="text-electric-teal/30" strokeWidth={1.5} />
         </motion.div>
     );
-};
+});
 
 export const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = ({ onComplete }) => {
     const [step, setStep] = useState<'SPLASH' | 'FEATURES' | 'PHONE' | 'OTP' | 'SETUP'>('SPLASH');
@@ -212,13 +213,13 @@ export const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = 
             <div className={`absolute inset-0 flex flex-col items-center justify-center p-6 bg-transparent z-[100] transition-opacity duration-[2000ms] ease-in-out ${splashFadingOut ? 'opacity-0' : 'opacity-100'} animate-in fade-in duration-[1500ms]`}>
                 {/* Floating Holographic Icons - Ultra High Density */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    {Array.from({ length: 48 }).map((_, i) => (
+                    {Array.from({ length: 24 }).map((_, i) => (
                         <FloatingIcon key={i} index={i} />
                     ))}
                 </div>
                 <div className={`flex flex-col items-center justify-center w-full max-w-xs ${!isFlatline ? 'animate-heartbeat' : ''}`}>
                     <div className={`absolute w-48 h-48 bg-primary/10 blur-[80px] rounded-full pointer-events-none transition-opacity duration-1000 ${isFlatline ? 'opacity-0' : 'opacity-100'}`} />
-                    <div className={`relative flex items-center justify-center px-8 py-4 bg-black/40 backdrop-blur-3xl rounded-3xl transition-all duration-1000 border ${isFlatline ? 'border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.1)]' : 'border-white/5 shadow-2xl'} mb-12`}>
+                    <div className={`relative flex items-center justify-center px-8 py-4 bg-white/5 backdrop-blur-3xl rounded-3xl transition-all duration-1000 border ${isFlatline ? 'border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.1)]' : 'border-white/5 shadow-2xl'} mb-12`}>
                         <h1 className={`text-5xl font-black tracking-tighter transition-all duration-1000 ${isFlatline ? 'text-gray-600 opacity-50' : 'animate-liquid-text'}`} style={{ textShadow: isFlatline ? 'none' : '0 0 20px rgba(45, 212, 191, 0.3)' }}>
                         </h1>
                     </div>
@@ -298,7 +299,7 @@ export const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = 
                         <p className="text-gray-400 text-sm font-medium">Drop the celly so we know it’s you.</p>
                     </div>
                     <div className="flex-1">
-                        <GlassCard className="p-5 flex items-center gap-4 bg-black/60 border-primary/20">
+                        <GlassCard className="p-5 flex items-center gap-4 bg-white/5 border-primary/20">
                             <div className="flex items-center gap-2 border-r border-white/10 pr-5">
                                 <Phone size={20} className="text-primary" />
                                 <span className="text-white font-black">+63</span>

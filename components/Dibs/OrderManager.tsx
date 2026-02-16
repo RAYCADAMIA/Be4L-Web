@@ -53,7 +53,7 @@ const OrderCard = ({ booking, onUpdateStatus }: { booking: DibsBooking, onUpdate
             {/* Customer Info */}
             <div className="flex items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5 group-hover:bg-white/10 transition-colors">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-800 to-black p-[1px]">
-                    <div className="w-full h-full bg-[#0A0A0A] rounded-full flex items-center justify-center overflow-hidden">
+                    <div className="w-full h-full bg-white/[0.03] rounded-full flex items-center justify-center overflow-hidden">
                         {booking.user?.avatar_url ? (
                             <img src={booking.user.avatar_url} className="w-full h-full object-cover" />
                         ) : (
@@ -89,7 +89,7 @@ const OrderCard = ({ booking, onUpdateStatus }: { booking: DibsBooking, onUpdate
                     </div>
                     <div className="relative rounded-2xl overflow-hidden border border-white/5 h-48 group/img">
                         <img src={booking.payment_proof_url} alt="Payment Proof" className="w-full h-full object-cover grayscale opacity-60 group-hover/img:grayscale-0 group-hover/img:opacity-100 transition-all duration-500" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent flex items-end p-4">
+                        <div className="absolute inset-0 bg-gradient-to-t from-white/[0.02] via-transparent to-transparent flex items-end p-4">
                             <div className="w-full flex items-center justify-between">
                                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md border ${(booking.confidence_score || 1) < 0.5 ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-electric-teal/10 border-electric-teal/20 text-electric-teal'}`}>
                                     {(booking.confidence_score || 1) < 0.5 ? <AlertCircle size={10} /> : <Check size={10} />}
@@ -421,7 +421,7 @@ const OrderManager: React.FC = () => {
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="bg-[#0A0A0A] border border-white/10 rounded-[2.5rem] p-8 w-full max-w-md relative z-10 shadow-2xl overflow-hidden"
+                            className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-8 w-full max-w-md relative z-10 shadow-2xl overflow-hidden"
                         >
                             <div className="absolute -top-20 -right-20 w-40 h-40 bg-electric-teal/5 blur-3xl rounded-full" />
 

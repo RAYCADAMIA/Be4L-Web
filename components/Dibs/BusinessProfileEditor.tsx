@@ -49,7 +49,7 @@ const BusinessProfileEditor: React.FC<BusinessProfileEditorProps> = ({ operator,
                 <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase text-gray-500 tracking-widest">Profile Picture</label>
                     <div className="bg-white/5 border border-white/10 rounded-2xl h-48 flex flex-col items-center justify-center gap-3 hover:bg-white/10 transition-colors cursor-pointer group">
-                        <div className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                             <Camera className="text-white" size={24} />
                         </div>
                         <span className="text-xs font-bold text-gray-400">Upload Logo</span>
@@ -59,7 +59,7 @@ const BusinessProfileEditor: React.FC<BusinessProfileEditorProps> = ({ operator,
                     <label className="text-[10px] font-bold uppercase text-gray-500 tracking-widest">Cover Photo</label>
                     <div className="bg-white/5 border border-white/10 rounded-2xl h-48 flex flex-col items-center justify-center gap-3 hover:bg-white/10 transition-colors cursor-pointer group relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-blue-900/20" />
-                        <div className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center relative z-10 group-hover:scale-110 transition-transform">
+                        <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center relative z-10 group-hover:scale-110 transition-transform">
                             <Camera className="text-white" size={24} />
                         </div>
                         <span className="text-xs font-bold text-gray-400 relative z-10">Upload Cover</span>
@@ -68,7 +68,7 @@ const BusinessProfileEditor: React.FC<BusinessProfileEditorProps> = ({ operator,
             </div>
 
             {/* Basic Info */}
-            <div className="space-y-4 bg-zinc-900/50 p-6 rounded-2xl border border-white/5">
+            <div className="space-y-4 bg-white/[0.03] backdrop-blur-xl p-6 rounded-2xl border border-white/5">
                 <h4 className="text-sm font-bold text-white flex items-center gap-2">
                     <Globe size={16} className="text-electric-teal" /> Basic Details
                 </h4>
@@ -76,17 +76,17 @@ const BusinessProfileEditor: React.FC<BusinessProfileEditorProps> = ({ operator,
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold uppercase text-gray-500">Business Name</label>
-                        <input name="business_name" value={formData.business_name} onChange={handleChange} className="w-full bg-black/20 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-electric-teal outline-none" />
+                        <input name="business_name" value={formData.business_name} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-electric-teal outline-none" />
                     </div>
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold uppercase text-gray-500">Tagline / Bio</label>
-                        <input name="bio" value={formData.bio} onChange={handleChange} className="w-full bg-black/20 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-electric-teal outline-none" />
+                        <input name="bio" value={formData.bio} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-electric-teal outline-none" />
                     </div>
                 </div>
             </div>
 
             {/* Location & Maps */}
-            <div className="space-y-4 bg-zinc-900/50 p-6 rounded-2xl border border-white/5">
+            <div className="space-y-4 bg-white/[0.03] backdrop-blur-xl p-6 rounded-2xl border border-white/5">
                 <h4 className="text-sm font-bold text-white flex items-center gap-2">
                     <MapPin size={16} className="text-pink-500" /> Location Setup
                 </h4>
@@ -99,7 +99,7 @@ const BusinessProfileEditor: React.FC<BusinessProfileEditorProps> = ({ operator,
                                 name="location"
                                 value={formData.location}
                                 onChange={handleChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-xl p-3.5 pr-14 text-sm text-white focus:border-electric-teal outline-none transition-all"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3.5 pr-14 text-sm text-white focus:border-electric-teal outline-none transition-all"
                                 placeholder="Business Address..."
                             />
                             <button
@@ -151,7 +151,7 @@ const BusinessProfileEditor: React.FC<BusinessProfileEditorProps> = ({ operator,
             </div>
 
             {/* Contact & Hours */}
-            <div className="space-y-4 bg-zinc-900/50 p-6 rounded-2xl border border-white/5">
+            <div className="space-y-4 bg-white/[0.03] backdrop-blur-xl p-6 rounded-2xl border border-white/5">
                 <h4 className="text-sm font-bold text-white flex items-center gap-2">
                     <Clock size={16} className="text-yellow-500" /> Operaions
                 </h4>
@@ -159,11 +159,11 @@ const BusinessProfileEditor: React.FC<BusinessProfileEditorProps> = ({ operator,
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold uppercase text-gray-500">Operating Hours</label>
-                        <input name="operating_hours" value={formData.operating_hours} onChange={handleChange} className="w-full bg-black/20 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-electric-teal outline-none" />
+                        <input name="operating_hours" value={formData.operating_hours} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-electric-teal outline-none" />
                     </div>
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold uppercase text-gray-500">Contact Number</label>
-                        <input name="contact_number" value={formData.contact_number} onChange={handleChange} className="w-full bg-black/20 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-electric-teal outline-none" />
+                        <input name="contact_number" value={formData.contact_number} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-electric-teal outline-none" />
                     </div>
                 </div>
             </div>

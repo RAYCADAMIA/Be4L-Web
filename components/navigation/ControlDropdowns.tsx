@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Plus, Trash2, Bell, Star, Heart, MessageCircle, Calendar, CheckSquare } from 'lucide-react';
+import { Check, Plus, Trash2, Bell, Star, Heart, MessageCircle, Calendar, CheckSquare, LogOut, Settings, User } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { dailyService } from '../../services/dailyService';
 import { DailyTask } from '../../types';
 
@@ -157,6 +159,77 @@ export const NotificationWindow: React.FC = () => {
             <div className="p-2 border-t border-white/5">
                 <button className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] transition-all text-white/30 hover:text-white">
                     View All Activity
+                </button>
+            </div>
+        </motion.div>
+    );
+};
+// --- PROFILE WINDOW ---
+export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    if (!user) return null;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="absolute top-full right-0 mt-2 p-1.5 w-[220px] bg-white/[0.05] backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[200] overflow-hidden flex flex-col"
+        >
+            <div className="p-4 border-b border-white/5 flex flex-col items-center gap-3">
+                <div className="w-16 h-16 rounded-full border-2 border-primary/20 overflow-hidden shadow-xl">
+                    {user.avatar_url ? (
+                        <img src={user.avatar_url} className="w-full h-full object-cover" alt="Profile" />
+                    ) : (
+                        <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
+                            <User size={24} className="text-gray-500" />
+                        </div>
+                    )}
+                </div>
+                <div className="text-center">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-white leading-tight">
+                        {user.name || user.username || 'Aura Seeker'}
+                    </h3>
+                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-electric-teal mt-1">
+                        {user.aura_points || 0} Aura Points
+                    </p>
+                </div>
+            </div>
+
+            <div className="p-1.5 space-y-1">
+                <button
+                    onClick={() => {
+                        navigate('/app/myprofile');
+                        onClose();
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all text-white group"
+                >
+                    <User size={14} className="text-gray-500 group-hover:text-primary transition-colors" />
+                    <span className="text-[10px] font-black uppercase tracking-wider">My Profile</span>
+                </button>
+                <button
+                    onClick={() => {
+                        // navigate('/app/settings'); // To be implemented
+                        onClose();
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all text-white group"
+                >
+                    <Settings size={14} className="text-gray-500 group-hover:text-primary transition-colors" />
+                    <span className="text-[10px] font-black uppercase tracking-wider">Settings</span>
+                </button>
+                <div className="h-px bg-white/5 my-1 mx-2" />
+                <button
+                    onClick={() => {
+                        logout();
+                        onClose();
+                        navigate('/');
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-all text-red-400 group"
+                >
+                    <LogOut size={14} className="text-red-400/50 group-hover:text-red-400 transition-colors" />
+                    <span className="text-[10px] font-black uppercase tracking-wider">Logout</span>
                 </button>
             </div>
         </motion.div>

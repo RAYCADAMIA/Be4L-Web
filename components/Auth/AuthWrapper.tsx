@@ -28,11 +28,22 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children 
                 // 2. If no context user, check Supabase session directly (Fallback)
                 const { data: { session } } = await supabase.auth.getSession();
 
-                // If session exists, fetch profile if not already in context
+                // If NO SESSION (Guest)
                 if (!session) {
-                    if (location.pathname.startsWith('/app/home') || location.pathname.startsWith('/app/profile') || location.pathname.startsWith('/app/myprofile') || location.pathname.startsWith('/app/quests') || location.pathname === '/onboarding') {
-                        navigate('/login');
+                    // Strict Protect: Chat, Profile, Admin, Book (if needed), Onboarding
+                    const protectedPaths = ['/app/myprofile', '/app/admin', '/onboarding', '/app/dashboard'];
+                    const isProtected = protectedPaths.some(path => location.pathname.startsWith(path));
+
+                    if (isProtected) {
+                        navigate('/'); // Or trigger auth modal? Better to redirect to Guest Home or Login
+                        // User asked for "Open Auth Modal" on interaction, but if they direct link to /chat,
+                        // maybe safe to just go to guest home.
+                    } else if (location.pathname === '/app/home') {
+                        // Redirect Guest attempting to reach Auth Home -> Guest Home
+                        navigate('/');
                     }
+
+                    // Otherwise allow (Quests, Dibs, Lore, GuestHome /)
                     setIsVerifying(false);
                     return;
                 }
@@ -42,7 +53,7 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children 
                     .from('profiles')
                     .select('*')
                     .eq('id', session.user.id)
-                    .single();
+                    .maybeSingle();
 
                 if (profile) {
                     processUserLogic(profile);
@@ -75,7 +86,7 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children 
                     .from('operators')
                     .select('status')
                     .eq('user_id', profile.id)
-                    .single();
+                    .maybeSingle();
 
                 if (operator?.status === 'pending') {
                     if (location.pathname !== '/partner/pending') navigate('/partner/pending');
@@ -103,7 +114,7 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children 
             } else {
                 // Active User -> Home
                 // Prevent them from going back to onboarding or login if they are already set up
-                if (location.pathname === '/login' || location.pathname === '/' || location.pathname === '/onboarding') {
+                if (location.pathname === '/auth' || location.pathname === '/' || location.pathname === '/onboarding') {
                     navigate('/app/home');
                 }
             }

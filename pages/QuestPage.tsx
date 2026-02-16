@@ -7,7 +7,7 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export const QuestPage: React.FC = () => {
     useDocumentTitle('Quests');
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -20,7 +20,7 @@ export const QuestPage: React.FC = () => {
         setSearchParams({ quest: q.id });
     };
 
-    if (!user) return <div>Loading Quests...</div>;
+    if (loading) return <div>Loading...</div>;
 
     return (
         <QuestsScreen
@@ -28,13 +28,13 @@ export const QuestPage: React.FC = () => {
             onOpenCompetition={(c) => console.log("Open Comp", c)}
             onOpenMyQuests={() => navigate('/app/myprofile')}
             onOpenProfile={() => navigate('/app/myprofile')}
-            currentUser={user}
+            currentUser={user} // Can be null
             onNavigate={handleLegacyNavigate}
             onReset={() => console.log("Reset")}
             onOpenQuestList={() => console.log("List")}
             onLaunchQuest={() => console.log("Launch")}
             refreshTrigger={0}
-            hasUserPostedToday={false} // TODO
+            hasUserPostedToday={false}
             onTimerZero={() => { }}
         />
     );

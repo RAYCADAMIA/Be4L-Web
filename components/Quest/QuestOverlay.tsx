@@ -18,12 +18,14 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { showToast } = useToast();
+
     const [quest, setQuest] = useState<Quest | null>(null);
     const [loading, setLoading] = useState(true);
     const [joinState, setJoinState] = useState<'idle' | 'requested' | 'joined'>('idle');
     const [activeTab, setActiveTab] = useState<'details' | 'itinerary' | 'checklist'>('details');
     const [participants, setParticipants] = useState<any[]>([]);
     const [managingSquad, setManagingSquad] = useState(false);
+    const [showGuestPrompt, setShowGuestPrompt] = useState(false);
 
     useEffect(() => {
         if (!questId) {
@@ -75,6 +77,12 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
     const isLive = quest?.status === QuestStatus.ACTIVE;
 
     const handleJoinAction = () => {
+        // Guest Check
+        if (!user) {
+            setShowGuestPrompt(true);
+            return;
+        }
+
         if (joinState === 'joined') {
             onClose();
             navigate('/app/chat', {
@@ -138,6 +146,11 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                 showToast("User removed", "info");
             }
         }
+    };
+
+    const handleGuestAuth = () => {
+        setShowGuestPrompt(false);
+        navigate('/auth');
     };
 
     return (
@@ -407,7 +420,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                     ${joinState === 'joined' ? 'bg-primary text-black shadow-primary/20' : ''}
                                                 `}
                                             >
-                                                {joinState === 'idle' && <>Deploy <ArrowRight size={14} /></>}
+                                                {joinState === 'idle' && <>Hunt <ArrowRight size={14} /></>}
                                                 {joinState === 'requested' && <>Pending...</>}
                                                 {joinState === 'joined' && <><MessageCircle size={14} /> Open Comms</>}
                                             </button>
@@ -436,6 +449,42 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                 <button onClick={onClose} className="text-xs text-white underline">Close Overlay</button>
                             </div>
                         )}
+
+                        {/* Guest Prompt Modal */}
+                        <AnimatePresence>
+                            {showGuestPrompt && (
+                                <div className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.9 }}
+                                        className="bg-[#111] border border-white/10 p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center space-y-4"
+                                    >
+                                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                                            <Zap className="text-primary" size={24} />
+                                        </div>
+                                        <h3 className="text-lg font-black uppercase text-white tracking-wide">Login to Hunt</h3>
+                                        <p className="text-xs text-gray-400 font-medium leading-relaxed">
+                                            You need to be logged in to join this quest and chase the lore.
+                                        </p>
+                                        <div className="grid grid-cols-2 gap-3 pt-2">
+                                            <button
+                                                onClick={() => setShowGuestPrompt(false)}
+                                                className="py-3 rounded-xl bg-white/5 text-gray-400 font-bold text-[10px] uppercase tracking-wider hover:bg-white/10 transition-all"
+                                            >
+                                                No
+                                            </button>
+                                            <button
+                                                onClick={handleGuestAuth}
+                                                className="py-3 rounded-xl bg-primary text-black font-bold text-[10px] uppercase tracking-wider hover:bg-white transition-all"
+                                            >
+                                                Continue
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            )}
+                        </AnimatePresence>
                     </motion.div>
                 </div>
             )}

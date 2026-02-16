@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign, MapPin, ListFilter, ChevronDown } from 'lucide-react';
 
@@ -166,6 +166,64 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const MAX_VAL = 10000;
 
+    // Rail Logic for Web
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [showLeft, setShowLeft] = useState(false);
+    const [showRight, setShowRight] = useState(true);
+    const [isDragging, setIsDragging] = useState(false);
+    const startX = useRef(0);
+    const scrollLeftPos = useRef(0);
+
+    const updateArrows = useCallback(() => {
+        if (!scrollRef.current) return;
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        setShowLeft(scrollLeft > 10);
+        setShowRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }, []);
+
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (el) {
+            el.addEventListener('scroll', updateArrows);
+            updateArrows();
+            window.addEventListener('resize', updateArrows);
+        }
+        return () => {
+            el?.removeEventListener('scroll', updateArrows);
+            window.removeEventListener('resize', updateArrows);
+        };
+    }, [updateArrows]);
+
+    const onMouseDown = (e: React.MouseEvent) => {
+        if (!scrollRef.current) return;
+        setIsDragging(true);
+        startX.current = e.pageX - scrollRef.current.offsetLeft;
+        scrollLeftPos.current = scrollRef.current.scrollLeft;
+        scrollRef.current.style.cursor = 'grabbing';
+    };
+
+    const onMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging || !scrollRef.current) return;
+        e.preventDefault();
+        const x = e.pageX - scrollRef.current.offsetLeft;
+        const walk = (x - startX.current) * 2;
+        scrollRef.current.scrollLeft = scrollLeftPos.current - walk;
+    };
+
+    const stopDragging = () => {
+        setIsDragging(false);
+        if (scrollRef.current) scrollRef.current.style.cursor = 'pointer';
+    };
+
+    const scroll = (direction: 'left' | 'right') => {
+        if (!scrollRef.current) return;
+        const amount = 200;
+        scrollRef.current.scrollBy({
+            left: direction === 'left' ? -amount : amount,
+            behavior: 'smooth'
+        });
+    };
+
     return (
         <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-700">
             {/* Categories & Filter Toggle */}
@@ -258,23 +316,32 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
 
                 <div className="h-4 w-px bg-white/10 shrink-0 mx-1" />
 
-                {/* Categories - Now in a dedicated scrolling container to avoid clipping the absolute window above */}
-                <div className="flex-1 overflow-x-auto no-scrollbar flex items-center gap-2 pb-1">
-                    {DIB_CATEGORIES.map(cat => {
-                        const isActive = activeCat === cat.id;
-                        return (
-                            <button
-                                key={cat.id}
-                                onClick={() => setActiveCat(cat.id)}
-                                className={`
-                                    h-8 px-4 rounded-full shrink-0 text-[10px] font-black uppercase tracking-widest transition-all relative border
-                                    ${isActive ? 'bg-white border-white text-black' : 'bg-white/[0.08] backdrop-blur-3xl border-white/5 text-gray-400 hover:bg-white/10'}
-                                `}
-                            >
-                                {cat.label}
-                            </button>
-                        );
-                    })}
+                {/* Categories - Enhanced with Web Swiping */}
+                <div className="relative flex-1 overflow-hidden group/catlink">
+                    <div
+                        ref={scrollRef}
+                        onMouseDown={onMouseDown}
+                        onMouseMove={onMouseMove}
+                        onMouseUp={stopDragging}
+                        onMouseLeave={stopDragging}
+                        className={`flex-1 overflow-x-auto no-scrollbar flex items-center gap-2 pb-1 ${isDragging ? 'select-none' : ''} cursor-pointer`}
+                    >
+                        {DIB_CATEGORIES.map(cat => {
+                            const isActive = activeCat === cat.id;
+                            return (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => !isDragging && setActiveCat(cat.id)}
+                                    className={`
+                                        h-8 px-4 rounded-full shrink-0 text-[10px] font-black uppercase tracking-widest transition-all relative border
+                                        ${isActive ? 'bg-white border-white text-black' : 'bg-white/[0.08] backdrop-blur-3xl border-white/5 text-gray-400 hover:bg-white/10'}
+                                    `}
+                                >
+                                    {cat.label}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </div>

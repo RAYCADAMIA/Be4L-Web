@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Rocket, AlertCircle, Instagram, ChevronRight } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
 export const PreLaunchWelcome = () => {
     const [isVisible, setIsVisible] = useState(false);
@@ -16,10 +17,10 @@ export const PreLaunchWelcome = () => {
         window.dispatchEvent(new Event('disclaimerDismissed'));
     };
 
-    return (
+    return createPortal(
         <AnimatePresence>
             {isVisible && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-6 bg-deep-black/60 backdrop-blur-xl">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6 bg-deep-black/60 backdrop-blur-xl pointer-events-auto">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 30 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -27,16 +28,16 @@ export const PreLaunchWelcome = () => {
                         className="relative w-full max-w-md rounded-[2.5rem] bg-[#0A0A0A] border border-white/10 shadow-[0_0_80px_rgba(45,212,191,0.1)] overflow-hidden"
                     >
                         {/* Status Bar */}
-                        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-electric-teal via-cyan-500 to-electric-teal animate-liquid-text" />
+
 
                         <div className="relative p-6 md:p-8 flex flex-col items-center">
                             {/* Close Button */}
                             <button
                                 onClick={handleDismiss}
                                 aria-label="Dismiss disclaimer"
-                                className="absolute top-6 right-6 p-2 text-white/20 hover:text-white transition-colors"
+                                className="absolute top-6 right-6 p-2 text-white/30 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-electric-teal rounded-full outline-none"
                             >
-                                <X size={20} />
+                                <X size={20} aria-hidden="true" />
                             </button>
 
                             {/* Badge */}
@@ -66,11 +67,11 @@ export const PreLaunchWelcome = () => {
                                     <div className="flex items-center gap-3 text-cyan-400">
                                         <Rocket size={18} />
                                         <h3 className="text-[11px] font-black uppercase tracking-widest leading-none">
-                                            <span className="animate-liquid-text">MVP Launch: Feb 14, 2026</span>
+                                            <span className="animate-liquid-text">MVP Launch: Feb 20, 2026</span>
                                         </h3>
                                     </div>
                                     <p className="text-[11px] text-gray-400 font-medium leading-relaxed">
-                                        The full ecosystem with real-time functionality drops this Saturday, Feb 14, 2026. <span className="text-white">Accounts created before launch will receive Aura Points.</span>
+                                        The full ecosystem with real-time functionality drops this Saturday, Feb 20, 2026. <span className="text-white">Accounts created before launch will receive Aura Points.</span>
                                     </p>
                                 </div>
 
@@ -87,7 +88,7 @@ export const PreLaunchWelcome = () => {
                                             <Instagram size={16} className="text-white" />
                                         </div>
                                         <span className="text-[10px] font-black uppercase tracking-widest text-white/50 group-hover:text-white transition-colors">
-                                            Follow Be4L on IG
+                                            Follow <span className="normal-case">Be4L</span> on IG
                                         </span>
                                     </div>
                                     <ChevronRight size={16} className="text-white/20" />
@@ -95,7 +96,7 @@ export const PreLaunchWelcome = () => {
 
                                 {/* Partnership Section */}
                                 <div className="pt-4 border-t border-white/5 flex items-center justify-center gap-4">
-                                    <h3 className="text-[9px] font-black uppercase tracking-[0.3em] font-display animate-liquid-text bg-clip-text text-transparent bg-gradient-to-r from-electric-teal via-cyan-400 to-indigo-400 shrink-0">
+                                    <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/60 shrink-0">
                                         In Partnership With
                                     </h3>
                                     <img
@@ -111,14 +112,15 @@ export const PreLaunchWelcome = () => {
 
                             <button
                                 onClick={handleDismiss}
-                                className="w-full py-4 mt-6 bg-white text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] hover:bg-electric-teal transition-all active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.1)]"
+                                className="w-full py-4 mt-6 bg-white text-black rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] hover:bg-electric-teal hover:text-black hover:shadow-[0_0_30px_rgba(45,212,191,0.4)] transition-all active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.1)] focus-visible:ring-2 focus-visible:ring-electric-teal outline-none cursor-pointer relative z-[100]"
                             >
-                                <span className="animate-liquid-text text-black">Enter <span className="normal-case">Be4L</span></span>
+                                <span className="font-black">Enter <span className="normal-case">Be4L</span></span>
                             </button>
                         </div>
                     </motion.div>
                 </div >
             )}
-        </AnimatePresence >
+        </AnimatePresence >,
+        document.body
     );
 };

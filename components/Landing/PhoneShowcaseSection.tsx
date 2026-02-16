@@ -15,11 +15,11 @@ export const PhoneShowcaseSection: React.FC = () => {
     }, []);
 
     return (
-        <section className="relative w-full py-12 md:py-20 bg-gradient-to-b from-deep-black via-deep-black/95 to-deep-black overflow-hidden flex items-center justify-center">
+        <section className="relative w-full py-12 md:py-20 bg-transparent overflow-hidden flex items-center justify-center">
             {/* Ambient Background Glow */}
             <div className="absolute inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent opacity-30 pointer-events-none" />
 
-            <div className="max-w-7xl mx-auto w-full flex flex-col items-center gap-12 relative z-10">
+            <div className="max-w-4xl mx-auto w-full flex flex-col items-center gap-12 relative z-10">
 
                 {/* Hero Phone Showcase (Centered) */}
                 <div className="w-full flex justify-center">
@@ -49,7 +49,7 @@ export const PhoneShowcaseSection: React.FC = () => {
                             >
                                 <span className="flex items-center gap-3">
                                     {showFullText ? "Be for Life" : "Be4L"}
-                                    <span className="text-xs md:text-lg font-black bg-white/5 px-2 py-0.5 rounded-md border border-white/10 animate-liquid-text opacity-70">BETA</span>
+                                    <span className="text-[10px] md:text-sm font-black bg-white/5 px-2 py-0.5 rounded-md border border-white/10 animate-liquid-text opacity-70">BETA</span>
                                 </span>
                             </motion.h2>
                         </AnimatePresence>
@@ -61,7 +61,7 @@ export const PhoneShowcaseSection: React.FC = () => {
                         transition={{ delay: 0.2, duration: 0.8 }}
                         className="space-y-2 mb-8"
                     >
-                        <p className="text-cool-grey text-base md:text-xl font-medium leading-relaxed">
+                        <p className="text-cool-grey text-sm md:text-lg font-medium leading-relaxed">
                             An OBX-inspired platform for the lore you’ve yet to live.
                         </p>
                     </motion.div>

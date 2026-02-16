@@ -73,7 +73,7 @@ const VerifyBooking = () => {
                             value={code}
                             onChange={(e) => setCode(e.target.value.toUpperCase())}
                             placeholder="CODE-XXXX"
-                            className="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-5 text-white font-mono text-2xl tracking-[0.4em] text-center focus:outline-none focus:border-electric-teal shadow-inner transition-all uppercase placeholder:text-gray-800"
+                            className="w-full bg-white/10 border border-white/10 rounded-2xl px-6 py-5 text-white font-mono text-2xl tracking-[0.4em] text-center focus:outline-none focus:border-electric-teal shadow-inner transition-all uppercase placeholder:text-gray-800"
                             maxLength={8}
                         />
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-700" size={20} />

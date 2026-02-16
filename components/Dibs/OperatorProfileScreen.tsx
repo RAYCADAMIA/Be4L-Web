@@ -95,7 +95,7 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-screen bg-deep-black">
+            <div className="flex items-center justify-center h-screen bg-transparent">
                 <EKGLoader />
             </div>
         );
@@ -103,7 +103,7 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
 
     if (!operator) {
         return (
-            <div className="flex flex-col items-center justify-center h-screen bg-deep-black text-white">
+            <div className="flex flex-col items-center justify-center h-screen bg-transparent text-white">
                 <h2 className="text-2xl font-black uppercase">Operator Not Found</h2>
                 <button onClick={() => navigate(-1)} className="mt-4 text-primary underline">Go Back</button>
             </div>
@@ -308,7 +308,7 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                                     </h3>
                                     <p className="text-gray-400 text-xs mt-1">{operator.location_text || 'Davao City, Philippines'}</p>
                                 </div>
-                                <div className="h-48 w-full bg-zinc-800 relative group overflow-hidden">
+                                <div className="h-48 w-full bg-white/5 relative group overflow-hidden">
                                     <SmartMap
                                         mode="view"
                                         initialLocation={operator.lat ? {
@@ -384,7 +384,7 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-0 z-[100] bg-deep-void overflow-y-auto"
+                            className="fixed inset-0 z-[100] bg-transparent overflow-y-auto"
                         >
                             <OperatorDashboard
                                 onBack={() => setShowDashboard(false)}

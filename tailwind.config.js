@@ -11,6 +11,7 @@ export default {
                 surface: 'var(--bg-surface)',
                 card: 'var(--bg-card)',
                 'deep-void': 'var(--bg-deep)',
+                'deep-black': 'var(--bg-deep)',
                 'electric-teal': 'var(--electric-teal)',
                 'primary-text': 'var(--text-primary)',
                 'secondary-text': 'var(--text-secondary)',

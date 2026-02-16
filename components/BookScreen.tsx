@@ -9,11 +9,12 @@ import { DibsSidebar, DibsHeader } from './Dibs/DibsFilters';
 import { User as UserType, DibsItem } from '../types';
 import DibsItemCard from './DibsItemCard';
 import BookingModal from './Dibs/BookingModal';
+import HorizontalRail from './Shared/HorizontalRail';
 import { useScrollBehavior } from '../hooks/useScrollBehavior';
 
 const BookScreen: React.FC<{
     onOpenProfile: () => void,
-    currentUser: UserType,
+    currentUser: UserType | null, // Allow null
     onNavigate: (tab: 'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS') => void
 }> = ({ onOpenProfile, currentUser, onNavigate }) => {
     const navigate = useNavigate();
@@ -146,11 +147,11 @@ const BookScreen: React.FC<{
     });
 
     return (
-        <div className="flex-1 flex flex-col h-full relative bg-transparent">
-            <div className="flex-1 h-full flex flex-col md:flex-row max-w-[1600px] mx-auto w-full">
+        <div className="flex-1 flex flex-col min-h-dvh relative bg-transparent">
+            <div className="flex-1 min-h-dvh flex flex-col md:flex-row max-w-[1600px] mx-auto w-full">
 
                 {/* Desktop Sidebar (Left) */}
-                <div className="hidden md:flex flex-col w-40 shrink-0 pt-28 border-r border-white/[0.02] sticky top-0 h-full overflow-y-auto no-scrollbar">
+                <div className="hidden md:flex flex-col w-40 shrink-0 border-r border-white/[0.02] sticky top-[88px] h-fit no-scrollbar">
                     <DibsSidebar
                         activeCat={activeCat}
                         setActiveCat={setActiveCat}
@@ -164,7 +165,7 @@ const BookScreen: React.FC<{
                 {/* Main Content */}
                 <div
                     onScroll={handleScroll}
-                    className="flex-1 h-full overflow-y-auto no-scrollbar relative flex flex-col"
+                    className="flex-1 min-h-dvh relative flex flex-col min-w-0 overflow-x-hidden"
                 >
                     {/* Header Spacer for Floating Nav - Increased for breathing room */}
                     <div className="h-[88px] w-full shrink-0" />
@@ -190,7 +191,7 @@ const BookScreen: React.FC<{
                     </div>
 
                     {/* Feed Grid - Removed internal overflow to fix sticky block look */}
-                    <div className="flex-1 pt-4 md:pt-8 pb-0 space-y-16 px-4 relative z-0">
+                    <div className="flex-1 pt-4 md:pt-8 pb-0 space-y-16 px-4 relative">
 
                         {/* Discovery Row (Items) */}
                         {!loading && filteredItems.length > 0 && (
@@ -200,9 +201,9 @@ const BookScreen: React.FC<{
                                         <Sparkles size={14} className="text-electric-teal" /> DISCOVER
                                     </h3>
                                 </div>
-                                <div className="flex gap-4 overflow-x-auto no-scrollbar pb-6 -mx-1 px-1">
+                                <HorizontalRail className="gap-6 px-6 snap-x pb-4">
                                     {filteredItems.filter(i => i.is_active !== false).map(item => (
-                                        <div key={item.id} className="w-[300px] shrink-0">
+                                        <div key={item.id} className="w-[300px] shrink-0 snap-center">
                                             <DibsItemCard
                                                 item={item}
                                                 operator={brands.find(b => b.user_id === item.operator_id)}
@@ -210,7 +211,7 @@ const BookScreen: React.FC<{
                                             />
                                         </div>
                                     ))}
-                                </div>
+                                </HorizontalRail>
                             </div>
                         )}
 
@@ -229,17 +230,17 @@ const BookScreen: React.FC<{
                                     return (
                                         <div className="space-y-4">
                                             <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40 px-1">COURTS</h3>
-                                            <div className="flex gap-6 overflow-x-auto no-scrollbar pb-6 -mx-1 px-1">
+                                            <HorizontalRail className="gap-6 px-6 snap-x pb-4">
                                                 {sectionBrands.map(brand => (
-                                                    <div key={brand.user_id} className="w-[300px] shrink-0">
+                                                    <div key={brand.user_id} className="w-[300px] shrink-0 snap-center">
                                                         <DibsCard
                                                             operator={brand}
                                                             onClick={(slug) => navigate(`/app/shop/${slug}`)}
-                                                            isMe={brand.user_id === currentUser.id}
+                                                            isMe={brand.user_id === currentUser?.id}
                                                         />
                                                     </div>
                                                 ))}
-                                            </div>
+                                            </HorizontalRail>
                                         </div>
                                     );
                                 })()}
@@ -251,17 +252,17 @@ const BookScreen: React.FC<{
                                     return (
                                         <div className="space-y-4">
                                             <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40 px-1">EVENTS</h3>
-                                            <div className="flex gap-6 overflow-x-auto no-scrollbar pb-6 -mx-1 px-1">
+                                            <HorizontalRail className="gap-6 px-6 snap-x pb-4">
                                                 {sectionBrands.map(brand => (
-                                                    <div key={brand.user_id} className="w-[300px] shrink-0">
+                                                    <div key={brand.user_id} className="w-[300px] shrink-0 snap-center">
                                                         <DibsCard
                                                             operator={brand}
                                                             onClick={(slug) => navigate(`/app/shop/${slug}`)}
-                                                            isMe={brand.user_id === currentUser.id}
+                                                            isMe={brand.user_id === currentUser?.id}
                                                         />
                                                     </div>
                                                 ))}
-                                            </div>
+                                            </HorizontalRail>
                                         </div>
                                     );
                                 })()}
@@ -295,7 +296,7 @@ const BookScreen: React.FC<{
                                                 key={brand.user_id}
                                                 operator={brand}
                                                 onClick={(slug) => navigate(`/app/shop/${slug}`)}
-                                                isMe={brand.user_id === currentUser.id}
+                                                isMe={brand.user_id === currentUser?.id}
                                             />
                                         ))
                                     )}

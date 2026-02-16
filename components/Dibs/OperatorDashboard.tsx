@@ -95,7 +95,7 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ onBack, initialTa
     if (loading) return <div className="flex h-screen items-center justify-center bg-transparent"><EKGLoader /></div>;
 
     return (
-        <div className="min-h-full bg-[#0A0A0A] text-white relative pt-24 md:pt-32">
+        <div className="min-h-full bg-transparent text-white relative pt-24 md:pt-32">
             {/* Dashboard Header */}
             <header className="bg-transparent border-b border-white/5 px-6 py-4">
                 <div className="max-w-7xl mx-auto flex flex-col gap-4">
@@ -123,7 +123,7 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ onBack, initialTa
                                 {stats.pending > 0 && <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-ping" />}
                             </button>
                             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-electric-teal to-blue-500 p-[1px]">
-                                <div className="w-full h-full bg-[#0A0A0A] rounded-[calc(1rem-1px)] flex items-center justify-center overflow-hidden">
+                                <div className="w-full h-full bg-white/[0.03] rounded-[calc(1rem-1px)] flex items-center justify-center overflow-hidden">
                                     <Store size={20} className="text-electric-teal" />
                                 </div>
                             </div>

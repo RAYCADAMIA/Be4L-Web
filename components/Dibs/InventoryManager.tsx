@@ -227,7 +227,7 @@ const InventoryManager = () => {
                                     <input
                                         type="text"
                                         placeholder="ENTER 6-DIGIT BOOKING CODE (E.G. XJ29K0)"
-                                        className="w-full bg-white/5 border border-white/10 rounded-3xl py-6 pl-16 pr-6 text-lg font-black tracking-[0.2em] text-white placeholder-white/20 outline-none focus:border-electric-teal/50 transition-all uppercase"
+                                        className="w-full bg-white/10 border border-white/10 rounded-3xl py-6 pl-16 pr-6 text-lg font-black tracking-[0.2em] text-white placeholder-white/20 outline-none focus:border-electric-teal/50 transition-all uppercase"
                                         value={searchCode}
                                         onChange={(e) => setSearchCode(e.target.value)}
                                     />
@@ -249,7 +249,7 @@ const InventoryManager = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-electric-teal/5 border border-electric-teal/10 rounded-[2.5rem] p-8 flex flex-col justify-between">
+                            <div className="bg-electric-teal/[0.03] backdrop-blur-xl border border-electric-teal/10 rounded-[2.5rem] p-8 flex flex-col justify-between">
                                 <div>
                                     <div className="flex items-center gap-2 mb-2">
                                         <div className="w-2 h-2 rounded-full bg-electric-teal animate-pulse" />
@@ -274,11 +274,11 @@ const InventoryManager = () => {
                         {/* Booking Feed */}
                         <div className="space-y-4">
                             {[1, 2, 3].map((_, i) => (
-                                <div key={i} className="group relative bg-white/[0.02] border border-white/5 rounded-[2rem] p-6 hover:bg-white/[0.04] transition-all">
+                                <div key={i} className="group relative bg-white/[0.03] backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 hover:bg-white/[0.04] transition-all">
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                         <div className="flex items-center gap-6">
                                             {/* Avatar/Icon */}
-                                            <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center text-zinc-500 overflow-hidden shrink-0">
+                                            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-zinc-500 overflow-hidden shrink-0">
                                                 <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i * 77}`} alt="user" className="w-full h-full object-cover" />
                                             </div>
 
@@ -398,7 +398,7 @@ const InventoryManager = () => {
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="relative w-full max-w-4xl bg-[#08080A]/60 backdrop-blur-2xl border border-white/10 rounded-[3.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col max-h-[90vh]"
+                            className="relative w-full max-w-xl bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[3rem] overflow-hidden flex flex-col shadow-3xl max-h-[90vh]"
                         >
                             {/* Modal Header */}
                             <div className="px-8 pt-8 flex items-center justify-between z-10">
@@ -806,7 +806,7 @@ const InventoryManager = () => {
                                                 </div>
 
                                                 {/* Map Area */}
-                                                <div className="h-full min-h-[300px] rounded-[3rem] overflow-hidden border border-white/10 relative bg-black/40">
+                                                <div className="h-full min-h-[300px] rounded-[3rem] overflow-hidden border border-white/10 relative bg-white/5 backdrop-blur-3xl">
                                                     <AnimatePresence mode="wait">
                                                         {showMap ? (
                                                             <motion.div
@@ -843,7 +843,7 @@ const InventoryManager = () => {
                             </div>
 
                             {/* Modal Footer */}
-                            <div className="p-8 bg-black/40 backdrop-blur-xl border-t border-white/5 flex items-center justify-between z-10">
+                            <div className="p-8 bg-white/5 backdrop-blur-xl border-t border-white/5 flex items-center justify-between z-10">
                                 <button
                                     onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : closeModal()}
                                     className="px-8 py-3 rounded-full text-[11px] font-black uppercase text-gray-500 hover:text-white transition-all tracking-widest"

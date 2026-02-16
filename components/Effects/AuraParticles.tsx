@@ -20,8 +20,15 @@ interface AuraParticlesProps {
 export const AuraParticles: React.FC<AuraParticlesProps> = ({ trigger, x = window.innerWidth / 2, y = window.innerHeight / 2, amount = 20 }) => {
     const [particles, setParticles] = useState<Particle[]>([]);
 
+    const lastTrigger = React.useRef(trigger);
+
     useEffect(() => {
-        if (trigger === 0) return;
+        if (trigger <= lastTrigger.current || trigger === 0) {
+            lastTrigger.current = trigger;
+            return;
+        }
+
+        lastTrigger.current = trigger;
 
         const timestamp = Date.now();
         const newParticles: Particle[] = Array.from({ length: amount }).map((_, i) => ({

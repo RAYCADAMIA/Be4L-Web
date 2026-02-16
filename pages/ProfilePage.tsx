@@ -58,7 +58,7 @@ export const ProfilePage: React.FC = () => {
     };
 
     if (loading || !targetUser) return (
-        <div className="flex-1 flex items-center justify-center bg-deep-black min-h-screen">
+        <div className="flex-1 flex items-center justify-center bg-transparent min-h-screen">
             <div className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-4 border-electric-teal/20 border-t-electric-teal rounded-full animate-spin" />
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Decrypting Profile...</p>

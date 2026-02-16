@@ -22,6 +22,9 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
+    const [chatType, setChatType] = useState<string>('personal');
+    const [cooldown, setCooldown] = useState(0);
+    const cooldownRef = useRef<NodeJS.Timeout | null>(null);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -56,10 +59,25 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
 
     const loadMessages = async (isFirst: boolean) => {
         if (isFirst) setLoading(true);
+        // Fetch chat details to get type
+        const chats = await supabaseService.chat.getChats();
+        const currentChat = chats.find(c => c.id === chatId);
+        if (currentChat) setChatType(currentChat.type);
+
         const data = await supabaseService.chat.getMessages(chatId);
         setMessages(data);
         if (isFirst) setLoading(false);
     };
+
+    // Cooldown Timer
+    useEffect(() => {
+        if (cooldown > 0) {
+            cooldownRef.current = setTimeout(() => setCooldown(c => c - 1), 1000);
+        }
+        return () => {
+            if (cooldownRef.current) clearTimeout(cooldownRef.current);
+        };
+    }, [cooldown]);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -68,9 +86,16 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
     }, [messages, loading]);
 
     const handleSend = async () => {
-        if (!newMessage.trim()) return;
+        if (!newMessage.trim() || cooldown > 0) return;
+
         const tempMsg = newMessage;
         setNewMessage('');
+
+        // Trigger Cooldown for Global/City
+        if (['GLOBAL', 'CITY'].includes(chatType)) {
+            setCooldown(10);
+        }
+
         const sentMsg = await supabaseService.chat.sendMessage(chatId, tempMsg);
         if (sentMsg) {
             setMessages(prev => [...prev, sentMsg]);
@@ -79,8 +104,8 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
 
     return (
         <div className="flex flex-col h-full bg-transparent relative">
-            {/* Header Spacer - Minimal since Global Logo is now hidden in Detail mode */}
-            <div className="h-[80px] w-full shrink-0" />
+            {/* Header Spacer - Reduced on mobile since Global Header is hidden */}
+            <div className="h-4 md:h-[80px] w-full shrink-0" />
 
             {/* Minimalist Immersive Header */}
             <header className={`
@@ -100,7 +125,14 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
                                 {chatName}
                             </span>
                             {isLobby && <Zap size={14} className="text-primary fill-primary" />}
+                            {chatType === 'GLOBAL' && <Globe size={14} className="text-blue-400" />}
+                            {chatType === 'CITY' && <MapPin size={14} className="text-emerald-400" />}
                         </h2>
+                        {['GLOBAL', 'CITY'].includes(chatType) && (
+                            <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest pl-1">
+                                {chatType === 'GLOBAL' ? 'Global Broadcast' : 'Live Frequency'}
+                            </span>
+                        )}
                     </button>
                 </div>
 
@@ -175,15 +207,27 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder="What's up, chat?"
-                        className="flex-1 bg-transparent border-none outline-none text-[13px] font-bold text-white placeholder:text-white/10 px-2 uppercase tracking-wide"
+                        placeholder={cooldown > 0 ? `Transmitting in ${cooldown}s...` : "What's up, chat?"}
+                        disabled={cooldown > 0}
+                        className={`
+                            flex-1 bg-transparent border-none outline-none text-[13px] font-bold px-2 uppercase tracking-wide transition-colors
+                            ${cooldown > 0 ? 'text-white/30 placeholder:text-white/30 italic' : 'text-white placeholder:text-white/10'}
+                        `}
                     />
+                    {cooldown > 0 && (
+                        <div className="absolute right-16 top-1/2 -translate-y-1/2 w-5 h-5">
+                            <svg className="animate-spin w-full h-full text-white/20" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                        </div>
+                    )}
                     <button
                         onClick={handleSend}
-                        disabled={!newMessage.trim()}
+                        disabled={!newMessage.trim() || cooldown > 0}
                         className={`
                             w-11 h-11 rounded-full flex items-center justify-center transition-all duration-500
-                            ${newMessage.trim() ? 'bg-primary text-black scale-100 rotate-0 shadow-[0_0_20px_rgba(45,212,191,0.4)]' : 'bg-white/5 text-white/10 scale-90 rotate-12'}
+                            ${newMessage.trim() && cooldown === 0 ? 'bg-primary text-black scale-100 rotate-0 shadow-[0_0_20px_rgba(45,212,191,0.4)]' : 'bg-white/5 text-white/10 scale-90 rotate-12'}
                         `}
                     >
                         <Send size={18} className={newMessage.trim() ? 'translate-x-0.5' : ''} />

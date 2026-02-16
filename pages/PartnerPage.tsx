@@ -7,7 +7,7 @@ export const PartnerPage: React.FC = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen bg-black text-white selection:bg-electric-teal/30">
+        <div className="min-h-screen bg-transparent text-white selection:bg-electric-teal/30">
             {/* Header / Intro */}
             <section className="relative py-32 px-6 overflow-hidden">
                 <div className="max-w-4xl mx-auto text-center relative z-10">
@@ -33,7 +33,7 @@ export const PartnerPage: React.FC = () => {
             </section>
 
             {/* Why Partner? */}
-            <section className="py-24 px-6 bg-neutral-900/50">
+            <section className="py-24 px-6 bg-transparent">
                 <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -81,7 +81,7 @@ export const PartnerPage: React.FC = () => {
                         <p className="text-gray-400">Tell us about your organization and let's build something epic together.</p>
                     </div>
 
-                    <div className="p-8 md:p-12 rounded-[3.5rem] bg-neutral-900 border border-white/10 shadow-2xl">
+                    <div className="p-8 md:p-12 rounded-[3.5rem] bg-white/[0.02] backdrop-blur-3xl border border-white/10 shadow-2xl">
                         <PartnerApplyForm />
                     </div>
                 </div>

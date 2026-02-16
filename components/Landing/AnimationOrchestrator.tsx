@@ -10,10 +10,13 @@ interface AnimationOrchestratorProps {
     children?: React.ReactNode;
 }
 
-export const AnimationOrchestrator: React.FC<AnimationOrchestratorProps> = () => {
-    const [viewState, setViewState] = useState<'splash' | 'hero'>('splash');
-    const [expanded, setExpanded] = useState(true); // Start fully expanded ("Be For Life")
-    const [showContent, setShowContent] = useState(false);
+export const AnimationOrchestrator: React.FC<AnimationOrchestratorProps> = ({ children }) => {
+    // Check if splash has already been shown in this window session
+    const hasSplashShown = (window as any).__hasSplashShown;
+
+    const [viewState, setViewState] = useState<'splash' | 'hero'>(hasSplashShown ? 'hero' : 'splash');
+    const [expanded, setExpanded] = useState(hasSplashShown ? false : true); // Start fully expanded ("Be For Life") unless already shown
+    const [showContent, setShowContent] = useState(hasSplashShown);
     const { scrollY } = useScroll();
 
     // Fade out logo as we scroll past hero (0 to 600px)
@@ -30,10 +33,13 @@ export const AnimationOrchestrator: React.FC<AnimationOrchestratorProps> = () =>
         setViewState('splash');
         setExpanded(true);
         setShowContent(false);
+        window.dispatchEvent(new Event('splash-started'));
 
         moveTimerRef.current = setTimeout(() => {
             setViewState('hero');
             setShowContent(true);
+            window.dispatchEvent(new Event('splash-finished'));
+            (window as any).__hasSplashShown = true;
         }, 2500);
 
         shrinkTimerRef.current = setTimeout(() => {
@@ -42,11 +48,19 @@ export const AnimationOrchestrator: React.FC<AnimationOrchestratorProps> = () =>
     };
 
     useEffect(() => {
+        if ((window as any).__hasSplashShown) {
+            window.scrollTo(0, 0);
+            return;
+        }
+
         window.scrollTo(0, 0);
+        window.dispatchEvent(new Event('splash-started'));
 
         moveTimerRef.current = setTimeout(() => {
             setViewState('hero');
             setShowContent(true);
+            window.dispatchEvent(new Event('splash-finished'));
+            (window as any).__hasSplashShown = true;
         }, 2500);
 
         shrinkTimerRef.current = setTimeout(() => {
@@ -111,9 +125,11 @@ export const AnimationOrchestrator: React.FC<AnimationOrchestratorProps> = () =>
                 transition={{ duration: 1.5, ease: "easeOut" }}
                 className="relative"
             >
-                <React.Suspense fallback={null}>
-                    <LandingPageContent bypassSplash={true} onReset={reset} />
-                </React.Suspense>
+                {children ? children : (
+                    <React.Suspense fallback={null}>
+                        <LandingPageContent bypassSplash={true} onReset={reset} />
+                    </React.Suspense>
+                )}
             </motion.div>
         </div>
     );

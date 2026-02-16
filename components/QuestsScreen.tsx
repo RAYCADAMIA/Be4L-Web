@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Zap, ChevronLeft, MapPin, Search, X, Compass, Plus, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
 
@@ -21,7 +22,7 @@ interface QuestsScreenProps {
     onOpenCompetition: (c: Competition) => void;
     onOpenMyQuests: () => void;
     onOpenProfile: () => void;
-    currentUser: User;
+    currentUser: User | null; // Allow null for Guests
     onNavigate: (tab: 'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS') => void;
     onReset?: () => void;
     onOpenQuestList: () => void;
@@ -90,7 +91,15 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
 
     const { showToast } = useToast();
 
+    const navigate = useNavigate();
+
     const handleJoin = async (id: string) => {
+        // GUEST CHECK: Navigate to /auth
+        if (!currentUser) {
+            navigate('/auth');
+            return;
+        }
+
         if (id.startsWith('mock-') || id.startsWith('gen-')) {
             showToast("Hunt Joined! (Simulated)", 'success');
             onNavigate('CHATS');
@@ -189,7 +198,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
     }, [quests, activeTab, activeCat, viewingLocation, selectedDate]);
 
     return (
-        <div className="flex-1 flex flex-col h-full relative overflow-hidden">
+        <div className="flex-1 flex flex-col relative">
 
 
 
@@ -197,10 +206,10 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
             <div
                 // ref={containerRef}
                 // onScroll={handleScroll}
-                className="flex-1 h-full overflow-hidden flex flex-col md:flex-row max-w-[1600px] mx-auto w-full"
+                className="flex-1 flex flex-col md:flex-row max-w-[1600px] mx-auto w-full"
             >
                 {/* Desktop Sidebar (Left) */}
-                <div className="hidden md:flex flex-col w-40 shrink-0 pt-28 sticky top-0 h-full overflow-y-auto no-scrollbar border-r border-white/[0.02]">
+                <div className="hidden md:flex flex-col w-40 shrink-0 border-r border-white/[0.02] sticky top-[88px] h-fit no-scrollbar">
                     <QuestSidebar
                         selectedDate={selectedDate}
                         onDateChange={(d) => {
@@ -221,10 +230,10 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                 {/* Main Feed Content (Right / Center) */}
                 <div
                     onScroll={handleScroll}
-                    className="flex-1 h-full overflow-y-auto pb-0 no-scrollbar relative"
+                    className="flex-1 pb-0 no-scrollbar relative"
                 >
                     {/* Header Spacer for Floating Nav */}
-                    <div className="h-[60px] w-full shrink-0" />
+                    <div className="h-[88px] w-full shrink-0" />
 
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
@@ -325,18 +334,26 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                 </div>
             </div>
 
-            {/* Persistent Create FAB (Bottom Right) */}
+            {/* Persistent Create FAB (Bottom Right) - Only for Logged In Users */}
+            {/* Persistent Create FAB (Bottom Right) - Now visible to Guests too */}
             <div className="fixed bottom-32 md:bottom-10 right-6 md:right-10 z-[60]">
                 <motion.button
                     whileHover={{ scale: 1.1, rotate: 90 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setShowCreate(true)}
+                    onClick={() => {
+                        if (currentUser) {
+                            setShowCreate(true);
+                        } else {
+                            window.dispatchEvent(new CustomEvent('trigger-auth-modal'));
+                        }
+                    }}
                     id="create-quest-btn"
                     className="w-14 h-14 bg-white text-black rounded-full flex items-center justify-center shadow-[0_20px_40px_rgba(0,0,0,0.4)] hover:shadow-primary/20 transition-all border border-white/20"
                 >
                     <Plus size={28} strokeWidth={3} />
                 </motion.button>
             </div>
+
 
             <AnimatePresence>
                 {showCreate && (

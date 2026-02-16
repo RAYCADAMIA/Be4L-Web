@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Search, Bell, User, CheckSquare, Plus, X, Menu, Zap } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigation } from '../../contexts/NavigationContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TaskWindow, NotificationWindow } from './ControlDropdowns';
+import { TaskWindow, NotificationWindow, ProfileWindow } from './ControlDropdowns';
+import { StarIcon } from '../Shared/StarIcon';
 
 export const GlobalHeader: React.FC = () => {
     const { user } = useAuth();
@@ -13,10 +14,103 @@ export const GlobalHeader: React.FC = () => {
     const location = useLocation();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [activeControl, setActiveControl] = useState<'tasks' | 'notifications' | null>(null);
+    const [activeControl, setActiveControl] = useState<'tasks' | 'notifications' | 'profile' | null>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
-    if (!user) return null;
+    // Simplified Guest Header
+    const [isSplashActive, setIsSplashActive] = useState(false);
+
+    useEffect(() => {
+        const handleStart = () => setIsSplashActive(true);
+        const handleEnd = () => setIsSplashActive(false);
+        window.addEventListener('splash-started', handleStart);
+        window.addEventListener('splash-finished', handleEnd);
+        return () => {
+            window.removeEventListener('splash-started', handleStart);
+            window.removeEventListener('splash-finished', handleEnd);
+        };
+    }, []);
+
+    if (!user) {
+        return (
+            <div className="relative">
+                <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 pointer-events-none">
+                    {/* 1. Logo */}
+                    <div className={`pointer-events-auto flex items-center gap-3 transition-all duration-700 ${isSplashActive ? 'opacity-0 -translate-y-4' : 'opacity-100 translate-y-0'}`}>
+                        <button
+                            onClick={() => {
+                                if (location.pathname === '/') {
+                                    const scroller = document.querySelector('.overflow-y-auto');
+                                    if (scroller) scroller.scrollTo({ top: 0, behavior: 'smooth' });
+                                    else window.scrollTo({ top: 0, behavior: 'smooth' });
+                                } else {
+                                    navigate('/');
+                                }
+                            }}
+                            className="focus:outline-none shrink-0"
+                        >
+                            <div className="flex items-center gap-2">
+                                <StarIcon className="w-8 h-8 text-electric-teal drop-shadow-[0_0_10px_rgba(45,212,191,0.5)]" />
+                                <h1 className="text-3xl font-black tracking-tighter animate-liquid-text">
+                                    Be4L
+                                </h1>
+                            </div>
+                        </button>
+                    </div>
+
+                    {/* 2. Center Tabs (Public) */}
+                    <div className="hidden md:flex pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                        <div className="flex items-center justify-center h-[52px] p-1.5 bg-white/[0.08] backdrop-blur-3xl rounded-full border border-white/10 shadow-2xl">
+                            {[
+                                { label: 'Home', path: '/' },
+                                { label: 'Lore', path: '/lore' },
+                                { label: 'Quests', path: '/quests' },
+                                { label: 'Chat', path: '/app/chat' }, // Restricted
+                                { label: 'Dibs', path: '/dibs' }
+                            ].map(item => {
+                                const isActive = item.path === '/'
+                                    ? location.pathname === '/'
+                                    : location.pathname.startsWith(item.path);
+
+                                return (
+                                    <button
+                                        key={item.path}
+                                        onClick={() => {
+                                            if (item.path.startsWith('/app/') && item.path !== '/app/chat') {
+                                                navigate('/auth');
+                                            } else {
+                                                navigate(item.path);
+                                            }
+                                        }}
+                                        className={`relative h-10 px-6 flex items-center justify-center rounded-full text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 z-10 ${isActive ? 'text-white' : 'text-white/40 hover:text-white'}`}
+                                    >
+                                        <span className="relative z-10">{item.label}</span>
+                                        {isActive && (
+                                            <motion.div
+                                                layoutId="activeTabGlobalGuest"
+                                                className="absolute inset-0 bg-white/10 rounded-full border border-white/10 -z-10"
+                                                transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                                            />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* 3. Sign In Button */}
+                    <div className="pointer-events-auto">
+                        <button
+                            onClick={() => navigate('/auth')}
+                            className="h-[42px] px-6 bg-white text-black rounded-full font-bold text-xs uppercase tracking-wider hover:bg-gray-200 transition-colors shadow-lg shadow-white/10"
+                        >
+                            Sign In
+                        </button>
+                    </div>
+                </header>
+            </div>
+        );
+    }
 
     const isChatDetail = location.pathname.startsWith('/app/chat') && new URLSearchParams(location.search).has('id');
     const isMobile = window.innerWidth < 768; // Simple mobile check
@@ -29,17 +123,19 @@ export const GlobalHeader: React.FC = () => {
                 <div className="pointer-events-auto flex items-center gap-3 transition-all duration-500 opacity-100">
                     <button
                         onClick={() => {
-                            if (location.pathname === '/app/home' || location.pathname === '/app/quests') {
-                                // Find any scrollable containers and reset them
-                                const scrollers = document.querySelectorAll('.overflow-y-auto');
-                                scrollers.forEach(s => s.scrollTo({ top: 0, behavior: 'smooth' }));
+                            if (location.pathname === '/app/home') {
+                                const scroller = document.querySelector('.overflow-y-auto');
+                                if (scroller) scroller.scrollTo({ top: 0, behavior: 'smooth' });
+                                else window.scrollTo({ top: 0, behavior: 'smooth' });
+                            } else {
+                                navigate('/app/home');
                             }
-                            navigate('/app/home');
                         }}
                         className="focus:outline-none shrink-0"
                     >
                         <div className="flex items-center gap-2">
-                            <h1 className="text-3xl font-black tracking-tighter animate-liquid-text italic">
+                            <StarIcon className="w-8 h-8 text-electric-teal drop-shadow-[0_0_10px_rgba(45,212,191,0.5)]" />
+                            <h1 className="text-3xl font-black tracking-tighter animate-liquid-text">
                                 Be4L
                             </h1>
                         </div>
@@ -198,11 +294,11 @@ export const GlobalHeader: React.FC = () => {
                         </div>
 
                         {/* User Profile */}
-                        <div className="flex items-center pl-1 pr-1">
+                        <div className="flex items-center pl-1 pr-1 relative z-20">
                             <button
                                 id="nav-profile"
-                                onClick={() => navigate('/app/myprofile')}
-                                className="w-9 h-9 rounded-full overflow-hidden border border-white/10 hover:border-primary transition-all relative group flex items-center justify-center"
+                                onClick={() => setActiveControl(activeControl === 'profile' ? null : 'profile')}
+                                className={`w-9 h-9 rounded-full overflow-hidden border transition-all relative group flex items-center justify-center ${activeControl === 'profile' ? 'border-primary shadow-[0_0_15px_rgba(204,255,0,0.2)]' : 'border-white/10 hover:border-primary/50'}`}
                             >
                                 <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
                                 {user.avatar_url ? (
@@ -213,6 +309,12 @@ export const GlobalHeader: React.FC = () => {
                                     </div>
                                 )}
                             </button>
+
+                            <AnimatePresence>
+                                {activeControl === 'profile' && (
+                                    <ProfileWindow onClose={() => setActiveControl(null)} />
+                                )}
+                            </AnimatePresence>
                         </div>
                     </nav>
                 </div>
@@ -222,3 +324,4 @@ export const GlobalHeader: React.FC = () => {
         </div >
     );
 };
+
