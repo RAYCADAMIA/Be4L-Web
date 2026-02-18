@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Settings, Mail, Camera, Activity, LayoutDashboard, MoreVertical, ChevronLeft, MapPin, BadgeCheck, Star, LogOut, Trash2, Shield, HelpCircle, Info, Sparkles, Share2, Copy, X } from 'lucide-react';
+import { User, Settings, Mail, Camera, Activity, LayoutDashboard, MoreVertical, ChevronLeft, MapPin, BadgeCheck, Star, LogOut, Trash2, Shield, HelpCircle, Info, Sparkles, Share2, Copy, X, ArrowRight } from 'lucide-react';
 import { User as UserType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 // import { BrandAccessModal } from './Dibs/BrandAccessModal';
@@ -78,8 +78,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     {/* Floating Navigation Controls (Sitting below global header) */}
                     <div className="absolute top-4 md:top-6 left-0 right-0 flex items-center justify-between z-30 px-4">
                         {/* Return Button */}
-                        <button onClick={onBack} className="p-3 bg-white/5 backdrop-blur-xl rounded-full text-white border border-white/10 hover:bg-white/10 transition-all active:scale-95 shadow-xl">
-                            <ChevronLeft size={24} />
+                        <button onClick={onBack} className="p-2.5 bg-white/5 backdrop-blur-xl rounded-full text-white border border-white/10 hover:bg-white/10 transition-all active:scale-95 shadow-xl">
+                            <ChevronLeft size={20} />
                         </button>
 
                         {/* Settings/Share Buttons */}
@@ -89,113 +89,111 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                                     {/* Share Button */}
                                     <button
                                         onClick={() => setShowShareModal(true)}
-                                        className="p-3 bg-white/5 backdrop-blur-xl rounded-full text-white border border-white/10 hover:bg-white/10 transition-all active:scale-95 shadow-xl"
+                                        className="p-2.5 bg-white/5 backdrop-blur-xl rounded-full text-white border border-white/10 hover:bg-white/10 transition-all active:scale-95 shadow-xl"
                                     >
-                                        <Share2 size={24} />
+                                        <Share2 size={20} />
                                     </button>
 
                                     <div className="relative">
                                         <button
                                             onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-                                            className={`p-3 backdrop-blur-xl rounded-full text-white border border-white/10 transition-all active:scale-95 ${showSettingsMenu ? 'bg-electric-teal text-black border-electric-teal' : 'bg-white/5 hover:bg-white/10'}`}
+                                            className={`p-2.5 backdrop-blur-xl rounded-full text-white border border-white/10 transition-all active:scale-95 ${showSettingsMenu ? 'bg-electric-teal text-black border-electric-teal' : 'bg-white/5 hover:bg-white/10'}`}
                                         >
-                                            <Settings size={24} />
+                                            <Settings size={20} />
                                         </button>
 
                                         {/* Settings Dropdown */}
                                         <AnimatePresence>
                                             {showSettingsMenu && (
-                                                <>
-                                                    <motion.div
-                                                        initial={{ opacity: 0, scale: 0.95, y: 10, x: 20 }}
-                                                        animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
-                                                        exit={{ opacity: 0, scale: 0.95, y: 10, x: 20 }}
-                                                        className="absolute top-full right-0 mt-3 w-64 bg-deep-black/95 backdrop-blur-3xl border border-white/10 rounded-[2rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-50 p-3"
+                                                <motion.div
+                                                    key="settings-dropdown"
+                                                    initial={{ opacity: 0, scale: 0.95, y: 10, x: 20 }}
+                                                    animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
+                                                    exit={{ opacity: 0, scale: 0.95, y: 10, x: 20 }}
+                                                    className="absolute top-full right-0 mt-4 w-44 bg-white/[0.1] backdrop-blur-3xl backdrop-saturate-[180%] border border-white/20 rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] p-1"
+                                                >
+
+                                                    <button
+                                                        onClick={() => {
+                                                            onEditProfile?.();
+                                                            setShowSettingsMenu(false);
+                                                        }}
+                                                        className="w-full px-2.5 py-1.5 text-left text-white/90 hover:bg-white/10 transition-colors flex items-center gap-2 group rounded-lg"
                                                     >
-                                                        <div className="px-4 py-2 mb-2">
-                                                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Settings</p>
+                                                        <div className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center group-hover:bg-electric-teal/20 group-hover:text-electric-teal transition-colors">
+                                                            <User size={11} />
                                                         </div>
+                                                        <div>
+                                                            <span className="text-[9px] font-bold block">Account</span>
+                                                            <span className="text-[6px] text-gray-500 font-medium">Edit details via Profile</span>
+                                                        </div>
+                                                    </button>
 
-                                                        <button
-                                                            onClick={() => {
-                                                                onEditProfile?.();
-                                                                setShowSettingsMenu(false);
-                                                            }}
-                                                            className="w-full px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors flex items-center gap-4 group rounded-2xl"
-                                                        >
-                                                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-electric-teal/20 group-hover:text-electric-teal transition-colors">
-                                                                <User size={16} />
-                                                            </div>
-                                                            <div>
-                                                                <span className="text-xs font-bold block">Account</span>
-                                                                <span className="text-[9px] text-gray-500 font-medium">Edit details via Profile</span>
-                                                            </div>
-                                                        </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (user.is_operator) {
+                                                                onManagePage?.();
+                                                            } else {
+                                                                setShowBrandModal(true);
+                                                            }
+                                                            setShowSettingsMenu(false);
+                                                        }}
+                                                        className="w-full px-2.5 py-1.5 text-left text-white/90 hover:bg-white/10 transition-colors flex items-center gap-2 group rounded-lg"
+                                                    >
+                                                        <div className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center group-hover:bg-electric-teal/20 group-hover:text-electric-teal transition-colors">
+                                                            {user.is_operator ? <LayoutDashboard size={11} /> : <Sparkles size={11} />}
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[9px] font-bold block">{user.is_operator ? 'Manage Brand' : 'Switch to Brand'}</span>
+                                                            <span className="text-[6px] text-gray-500 font-medium">{user.is_operator ? 'Access Dashboard' : 'Enter Access Code'}</span>
+                                                        </div>
+                                                    </button>
 
-                                                        <button
-                                                            onClick={() => {
-                                                                if (user.is_operator) {
-                                                                    onManagePage?.();
-                                                                } else {
-                                                                    setShowBrandModal(true);
-                                                                }
-                                                                setShowSettingsMenu(false);
-                                                            }}
-                                                            className="w-full px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors flex items-center gap-4 group rounded-2xl"
-                                                        >
-                                                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-electric-teal/20 group-hover:text-electric-teal transition-colors">
-                                                                {user.is_operator ? <LayoutDashboard size={16} /> : <Sparkles size={16} />}
-                                                            </div>
-                                                            <div>
-                                                                <span className="text-xs font-bold block">{user.is_operator ? 'Manage Brand' : 'Switch to Brand'}</span>
-                                                                <span className="text-[9px] text-gray-500 font-medium">{user.is_operator ? 'Access Dashboard' : 'Enter Access Code'}</span>
-                                                            </div>
-                                                        </button>
+                                                    <div className="h-px bg-white/5 mx-2 my-0.5" />
 
-                                                        <div className="h-px bg-white/5 mx-4 my-2" />
+                                                    <button className="w-full px-2.5 py-1.5 text-left text-white/90 hover:bg-white/10 transition-colors flex items-center gap-2 group rounded-lg">
+                                                        <div className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center group-hover:text-white transition-colors">
+                                                            <HelpCircle size={11} />
+                                                        </div>
+                                                        <span className="text-[9px] font-bold">Help & Support</span>
+                                                    </button>
 
-                                                        <button className="w-full px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors flex items-center gap-4 group rounded-2xl">
-                                                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:text-white transition-colors">
-                                                                <HelpCircle size={16} />
-                                                            </div>
-                                                            <span className="text-xs font-bold">Help & Support</span>
-                                                        </button>
+                                                    <button className="w-full px-2.5 py-1.5 text-left text-white/90 hover:bg-white/10 transition-colors flex items-center gap-2 group rounded-lg">
+                                                        <div className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center group-hover:text-white transition-colors">
+                                                            <Shield size={11} />
+                                                        </div>
+                                                        <span className="text-[9px] font-bold">Privacy Center</span>
+                                                    </button>
 
-                                                        <button className="w-full px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors flex items-center gap-4 group rounded-2xl">
-                                                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:text-white transition-colors">
-                                                                <Shield size={16} />
-                                                            </div>
-                                                            <span className="text-xs font-bold">Privacy Center</span>
-                                                        </button>
+                                                    <div className="h-px bg-white/5 mx-2 my-0.5" />
 
-                                                        <button className="w-full px-4 py-3 text-left text-white/90 hover:bg-white/5 transition-colors flex items-center gap-4 group rounded-2xl">
-                                                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:text-white transition-colors">
-                                                                <Info size={16} />
-                                                            </div>
-                                                            <span className="text-xs font-bold">About Be4L</span>
-                                                        </button>
-
-                                                        <div className="h-px bg-white/5 mx-4 my-2" />
-
+                                                    <div className="flex items-center justify-between px-1 py-1">
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 onLogout?.();
                                                                 setShowSettingsMenu(false);
                                                             }}
-                                                            className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-500/20 transition-all flex items-center gap-4 group rounded-2xl active:scale-95 mt-1"
+                                                            className="flex items-center gap-1.5 px-1.5 py-1 rounded-lg hover:bg-red-500/10 transition-all text-red-500 group active:scale-95"
                                                         >
-                                                            <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-all shadow-sm">
-                                                                <LogOut size={16} />
+                                                            <div className="w-5 h-5 rounded-md bg-red-500/10 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-all shadow-sm">
+                                                                <LogOut size={11} />
                                                             </div>
-                                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] group-hover:text-red-400 transition-colors">Log Out</span>
+                                                            <span className="text-[7px] font-black uppercase tracking-[0.15em] group-hover:text-red-400 transition-colors whitespace-nowrap">Log Out</span>
                                                         </button>
 
-                                                        <div className="text-[9px] text-center text-gray-700 py-2 font-mono uppercase tracking-widest opacity-50">
-                                                            v3.0.0 (Operator)
-                                                        </div>
-                                                    </motion.div>
-                                                </>
+                                                        <button
+                                                            onClick={() => {
+                                                                window.location.href = '/app/dibs';
+                                                                setShowSettingsMenu(false);
+                                                            }}
+                                                            className="flex items-center gap-1 px-1 py-1 text-gray-500 hover:text-white transition-colors group"
+                                                        >
+                                                            <span className="text-[6px] font-black uppercase tracking-widest whitespace-nowrap">Explore Brands</span>
+                                                            <ArrowRight size={8} className="group-hover:translate-x-0.5 transition-transform" />
+                                                        </button>
+                                                    </div>
+                                                </motion.div>
                                             )}
                                         </AnimatePresence>
                                     </div>
@@ -500,7 +498,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

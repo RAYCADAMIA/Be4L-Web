@@ -11,7 +11,7 @@ import { PreLaunchWelcome } from './components/ui/PreLaunchWelcome';
 
 const App = () => {
     return (
-        <ToastProvider>
+        <>
             <div className="vibrant-glow">
                 <div className="blob blob-1" />
                 <div className="blob blob-2" />
@@ -19,12 +19,8 @@ const App = () => {
             </div>
             <Starfield />
             <PreLaunchWelcome />
-            <AuthProvider>
-                <NavigationProvider>
-                    <RouterProvider router={router} />
-                </NavigationProvider>
-            </AuthProvider>
-        </ToastProvider>
+            <RouterProvider router={router} />
+        </>
     );
 };
 

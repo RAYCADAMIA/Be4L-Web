@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Plus, Trash2, Bell, Star, Heart, MessageCircle, Calendar, CheckSquare, LogOut, Settings, User } from 'lucide-react';
+import { Check, Plus, Trash2, Bell, Star, Heart, MessageCircle, Calendar, CheckSquare, LogOut, Settings, User, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { dailyService } from '../../services/dailyService';
@@ -37,7 +37,7 @@ export const TaskWindow: React.FC = () => {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-full right-0 mt-2 p-1.5 w-[240px] bg-white/[0.05] backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[200] overflow-hidden flex flex-col max-h-[480px]"
+            className="mt-2 p-1.5 w-[240px] bg-white/[0.14] backdrop-blur-[80px] backdrop-contrast-[0.85] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[480px]"
         >
             <div className="px-2 py-2 mb-1 border-b border-white/5 flex items-center justify-between">
                 <span className="text-[9px] font-black text-white/50 uppercase tracking-widest px-1">Side Quests</span>
@@ -71,7 +71,7 @@ export const TaskWindow: React.FC = () => {
                     tasks.map(task => (
                         <div
                             key={task.id}
-                            className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-300 ${task.completed ? 'opacity-40' : 'hover:bg-white/5'}`}
+                            className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-300 ${task.completed ? 'opacity-40' : 'hover:bg-white/10'}`}
                         >
                             <button
                                 onClick={() => toggleTask(task.id)}
@@ -113,7 +113,7 @@ export const NotificationWindow: React.FC = () => {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-full right-0 mt-2 p-1.5 w-[240px] bg-white/[0.05] backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[200] overflow-hidden flex flex-col max-h-[480px]"
+            className="mt-2 p-1.5 w-[240px] bg-white/[0.14] backdrop-blur-[80px] backdrop-contrast-[0.85] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[480px]"
         >
             <div className="px-3 py-2 mb-1 border-b border-white/5 flex items-center justify-between">
                 <span className="text-[9px] font-black text-white/50 uppercase tracking-widest">Notifs</span>
@@ -124,7 +124,7 @@ export const NotificationWindow: React.FC = () => {
                 {MOCK_NOTIFICATIONS.map(n => (
                     <div
                         key={n.id}
-                        className={`p-3 flex gap-3 items-start transition-all rounded-xl cursor-pointer hover:bg-white/5 ${n.read ? 'opacity-40' : ''}`}
+                        className={`p-3 flex gap-3 items-start transition-all rounded-xl cursor-pointer hover:bg-white/10 ${n.read ? 'opacity-40' : ''}`}
                     >
                         <div className="shrink-0 relative">
                             {n.user ? (
@@ -176,62 +176,78 @@ export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =>
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-full right-0 mt-2 p-1.5 w-[220px] bg-white/[0.05] backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[200] overflow-hidden flex flex-col"
+            className="mt-2 p-1 w-44 bg-white/[0.14] backdrop-blur-[80px] backdrop-contrast-[0.85] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
         >
-            <div className="p-4 border-b border-white/5 flex flex-col items-center gap-3">
-                <div className="w-16 h-16 rounded-full border-2 border-primary/20 overflow-hidden shadow-xl">
+            <div className="p-2.5 border-b border-white/5 flex flex-col items-center gap-1.5">
+                <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden shadow-xl">
                     {user.avatar_url ? (
                         <img src={user.avatar_url} className="w-full h-full object-cover" alt="Profile" />
                     ) : (
                         <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
-                            <User size={24} className="text-gray-500" />
+                            <User size={14} className="text-gray-500" />
                         </div>
                     )}
                 </div>
                 <div className="text-center">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-white leading-tight">
+                    <h3 className="text-[9px] font-black uppercase tracking-widest text-white leading-tight">
                         {user.name || user.username || 'Aura Seeker'}
                     </h3>
-                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-electric-teal mt-1">
+                    <p className="text-[6px] font-black uppercase tracking-[0.2em] text-electric-teal mt-0.5">
                         {user.aura_points || 0} Aura Points
                     </p>
                 </div>
             </div>
 
-            <div className="p-1.5 space-y-1">
+            <div className="p-0.5 space-y-0.5">
                 <button
                     onClick={() => {
                         navigate('/app/myprofile');
                         onClose();
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all text-white group"
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/10 transition-all text-white group"
                 >
-                    <User size={14} className="text-gray-500 group-hover:text-primary transition-colors" />
-                    <span className="text-[10px] font-black uppercase tracking-wider">My Profile</span>
+                    <User size={11} className="text-gray-500 group-hover:text-electric-teal transition-colors" />
+                    <span className="text-[8px] font-black uppercase tracking-wider">My Profile</span>
                 </button>
                 <button
                     onClick={() => {
-                        // navigate('/app/settings'); // To be implemented
                         onClose();
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all text-white group"
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/10 transition-all text-white group"
                 >
-                    <Settings size={14} className="text-gray-500 group-hover:text-primary transition-colors" />
-                    <span className="text-[10px] font-black uppercase tracking-wider">Settings</span>
+                    <Settings size={11} className="text-gray-500 group-hover:text-electric-teal transition-colors" />
+                    <span className="text-[8px] font-black uppercase tracking-wider">Settings</span>
                 </button>
-                <div className="h-px bg-white/5 my-1 mx-2" />
-                <button
-                    onClick={() => {
-                        logout();
-                        onClose();
-                        navigate('/');
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-all text-red-400 group"
-                >
-                    <LogOut size={14} className="text-red-400/50 group-hover:text-red-400 transition-colors" />
-                    <span className="text-[10px] font-black uppercase tracking-wider">Logout</span>
-                </button>
+
+                <div className="h-px bg-white/5 my-0.5 mx-2" />
+
+                <div className="flex items-center justify-between px-1">
+                    <button
+                        onClick={() => {
+                            logout();
+                            onClose();
+                            navigate('/');
+                        }}
+                        className="flex items-center gap-1.5 px-1.5 py-1.5 rounded-lg hover:bg-red-500/10 transition-all text-red-500 group"
+                    >
+                        <LogOut size={11} className="text-red-500/50 group-hover:text-red-500 transition-colors" />
+                        <span className="text-[7px] font-black uppercase tracking-[0.2em]">Logout</span>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            navigate('/app/dibs');
+                            onClose();
+                        }}
+                        className="flex items-center gap-1 px-1.5 py-1.5 text-gray-500 hover:text-white transition-colors group"
+                    >
+                        <span className="text-[6px] font-black uppercase tracking-widest">Explore Brands</span>
+                        <ArrowRight size={8} className="group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                </div>
             </div>
         </motion.div>
     );
 };
+
+export default ProfileWindow;

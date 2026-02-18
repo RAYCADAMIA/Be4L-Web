@@ -30,18 +30,30 @@ const QuestDetailScreen: React.FC = () => {
             const { data } = await supabaseService.quests.getQuestById(questId || '');
             if (data) {
                 setQuest(data);
-                if (user && data.participant_ids?.includes(user.id)) {
-                    setJoinState('joined');
-                }
                 const parts = await supabaseService.quests.getQuestParticipants(questId || '');
                 setParticipants(parts);
+
+                // Determine join state
+                if (user) {
+                    const myPart = parts.find((p: any) => p.id === user.id);
+                    if (myPart) {
+                        if (myPart.participant_status === QuestParticipantStatus.ACCEPTED) setJoinState('joined');
+                        else if (myPart.participant_status === QuestParticipantStatus.REQUESTED) setJoinState('requested');
+                        else setJoinState('idle');
+                    } else {
+                        // Double check just in case parts hasn't updated yet or if host
+                        if (data.host_id === user.id) setJoinState('joined');
+                        else setJoinState('idle');
+                    }
+                }
             } else {
+                // ... demo quest fallback (keep existing)
                 setQuest({
                     id: questId || 'demo-quest',
                     title: 'Davao Night Market Hunt',
                     description: 'Join the squad to find the best street food spots. Earn Aura points for every verified capture.',
                     image_url: 'https://images.unsplash.com/photo-1555126634-323283e090fa?q=80&w=1000&auto=format&fit=crop',
-                    location: { place_id: '1', place_name: 'Roxas Ave, Davao City' },
+                    location: { place_id: '1', place_name: 'Roxas Ave, Davao City', lat: 7.0736, lng: 125.6110, address_full: 'Roxas Ave, Davao City' }, // Enhanced mock
                     category: 'Social',
                     host: { id: 'host-1', username: 'NightHunter', avatar_url: 'https://i.pravatar.cc/150?u=a' },
                     current_participants: 12,
@@ -70,26 +82,42 @@ const QuestDetailScreen: React.FC = () => {
         loadQuest();
     }, [questId, user]);
 
-    const handleJoinAction = () => {
+    const handleJoinAction = async () => {
+        if (!quest || !questId) return;
+
         if (joinState === 'joined') {
+            // Already joined, go to lobby
             navigate('/app/chat', {
                 state: {
                     openChatId: `lobby-${questId}`,
-                    openChatName: quest?.title || 'Group Chat'
+                    openChatName: quest.title || 'Group Chat'
                 }
             });
         } else if (joinState === 'idle') {
-            if (quest?.approval_required) {
-                setJoinState('requested');
-                showToast("Join request sent! Waiting for host approval.", "info");
-                setTimeout(() => {
-                    setJoinState('joined');
-                    showToast("You've been approved! You can now join the chat.", "success");
-                }, 3000);
-            } else {
-                setJoinState('joined');
-                showToast("Joined! Welcome to the squad.", "success");
+            // Attempt to join
+            if (!user) {
+                showToast("Please sign in to join.", "error");
+                navigate('/auth');
+                return;
             }
+
+            const success = await supabaseService.quests.requestToJoin(questId, user.id, quest.approval_required);
+            if (success) {
+                if (quest.approval_required) {
+                    setJoinState('requested');
+                    showToast("Request sent! Waiting for host approval.", "info");
+                } else {
+                    setJoinState('joined');
+                    setParticipants(prev => [...prev, { ...user, participant_status: 'ACCEPTED' }]);
+                    showToast("Joined! Welcome to the squad.", "success");
+                    // Pre-fetch lobby to ensure it's ready
+                    await supabaseService.chat.getOrCreateQuestLobby(questId, quest.title, [user.id]);
+                }
+            } else {
+                showToast("Failed to join quest. Try again.", "error");
+            }
+        } else if (joinState === 'requested') {
+            showToast("Your request is still pending approval.", "info");
         }
     };
 

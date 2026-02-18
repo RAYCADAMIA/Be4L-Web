@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShieldCheck, Sparkles } from 'lucide-react';
 import { GlassCard, GradientButton, GlowText } from '../ui/AestheticComponents';
 import { supabaseService } from '../../services/supabaseService';
+import { Link } from 'react-router-dom';
 
 interface BrandAccessModalProps {
     isOpen: boolean;
@@ -116,7 +117,7 @@ export const BrandAccessModal: React.FC<BrandAccessModalProps> = ({ isOpen, onCl
                             </div>
 
                             <p className="text-[10px] text-gray-600 mt-4">
-                                Don't have a code? Contact the administrator.
+                                Don't have a code? <Link to="/partner" onClick={onClose} className="text-electric-teal hover:underline font-bold">Partner with Be4L</Link>
                             </p>
                         </>
                     )}

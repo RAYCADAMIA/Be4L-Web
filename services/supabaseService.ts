@@ -106,6 +106,10 @@ let localCaptures: Capture[] = loadFromStorage('be4l_local_captures', []);
 let localBookings: any[] = loadFromStorage('be4l_local_bookings', []);
 let localItems: any[] = loadFromStorage('be4l_local_items', []);
 
+// Cache for social proof logic
+const friendsCache: Record<string, string[]> = {};
+const friendsRequestCache: Record<string, Promise<string[]>> = {};
+
 export const supabaseService = {
   auth: {
     sendOtp: async (phone: string): Promise<{ success: boolean; error?: string }> => {
@@ -289,6 +293,43 @@ export const supabaseService = {
       const { data } = await supabase.from('follows').select('*').match({ follower_id: f, following_id: t }).single();
       return !!data;
     },
+    getMutualFollows: async (uid: string): Promise<string[]> => {
+      if (friendsCache[uid]) return friendsCache[uid];
+      if (friendsRequestCache[uid]) return friendsRequestCache[uid]; // Return in-flight promise
+
+      if (!isValidUUID(uid)) return ['u2', 'u3', 'u4'];
+
+      const fetchFriends = async () => {
+        try {
+          // Get who I follow
+          const { data: following } = await supabase.from('follows').select('following_id').eq('follower_id', uid);
+          const followingIds = (following || []).map(f => f.following_id);
+
+          if (followingIds.length === 0) {
+            friendsCache[uid] = [];
+            return [];
+          }
+
+          // Get who follows me back from that list
+          const { data: friends } = await supabase.from('follows')
+            .select('follower_id')
+            .eq('following_id', uid)
+            .in('follower_id', followingIds);
+
+          const result = (friends || []).map(f => f.follower_id);
+          friendsCache[uid] = result;
+          return result;
+        } catch (e) {
+          console.error("Failed to fetch friends", e);
+          return [];
+        } finally {
+          delete friendsRequestCache[uid];
+        }
+      };
+
+      friendsRequestCache[uid] = fetchFriends();
+      return friendsRequestCache[uid];
+    },
     awardQuestRewards: awardQuestRewardsImpl,
     updateUserAura: async (uid: string, d: number) => awardQuestRewardsImpl(uid, d, 0),
     completeTour: async (uid: string) => {
@@ -336,7 +377,7 @@ export const supabaseService = {
       return (data || []) as Capture[];
     },
     getRecallCaptures: async (uid: string) => supabaseService.captures.getVault(uid),
-    getFriendIds: async (uid: string) => ['u2', 'u3', 'u4'],
+    getFriendIds: async (uid: string) => supabaseService.profiles.getMutualFollows(uid),
     updateCapture: async (cid: string, data: any) => {
       const { error } = await supabase.from('captures').update(data).eq('id', cid);
       return !error;
@@ -380,29 +421,61 @@ export const supabaseService = {
       const { error } = await supabase.from('user_quests').delete().match({ quest_id: qid, user_id: uid });
       return !error;
     },
-    getQuestById: async (id: string) => {
-      if (!isValidUUID(id)) return { data: null };
-      const { data, error } = await supabase.from('quests').select(`*, host:profiles!host_id(*)`).eq('id', id).single();
-      if (data) {
-        return { data: { ...data, mode: data.type, capacity: data.max_participants } };
-      }
-      return { data: null, error };
+    getMyQuests: async (uid: string) => {
+      const { data } = await supabase.from('quests').select(`*, host:profiles(*), user_quests(user_id, status)`).eq('host_id', uid);
+      return (data || []).map((i: any) => ({
+        ...i,
+        mode: i.type,
+        capacity: i.max_participants,
+        participant_ids: i.user_quests?.map((uq: any) => uq.user_id) || []
+      }));
     },
     getQuests: async (cat: string = 'All') => {
-      let q = supabase.from('quests').select(`*, host:profiles!host_id(*)`).eq('status', QuestStatus.DISCOVERABLE);
+      let q = supabase.from('quests').select(`*, host:profiles!host_id(*), user_quests(user_id, status)`)
+        .eq('status', QuestStatus.DISCOVERABLE);
       if (cat !== 'All') q = q.eq('category', cat);
       const { data } = await q.order('start_time', { ascending: true });
-      return (data || []).map((i: any) => ({ ...i, mode: i.type, capacity: i.max_participants }));
+      return (data || []).map((i: any) => ({
+        ...i,
+        mode: i.type,
+        capacity: i.max_participants,
+        participant_ids: i.user_quests?.map((uq: any) => uq.user_id) || [],
+        current_participants: i.user_quests?.filter((uq: any) => uq.status === QuestParticipantStatus.ACCEPTED).length || 0
+      }));
     },
-    getMyQuests: async (uid: string) => {
-      const { data } = await supabase.from('quests').select(`*, host:profiles(*)`).eq('host_id', uid);
-      return (data || []).map((i: any) => ({ ...i, mode: i.type, capacity: i.max_participants }));
+    getQuestById: async (id: string) => {
+      if (!isValidUUID(id)) return { data: null };
+      const { data, error } = await supabase.from('quests').select(`*, host:profiles!host_id(*), user_quests(user_id, status)`).eq('id', id).single();
+      if (data) {
+        return {
+          data: {
+            ...data,
+            mode: data.type,
+            capacity: data.max_participants,
+            participant_ids: data.user_quests?.map((uq: any) => uq.user_id) || [],
+            current_participants: data.user_quests?.filter((uq: any) => uq.status === QuestParticipantStatus.ACCEPTED).length || 0
+          }
+        };
+      }
+      return { data: null, error };
     },
     requestToJoin: async (qid: string, uid?: string, approval: boolean = true) => {
       const { data: { user: au } } = await supabase.auth.getUser();
       const id = uid || au?.id;
       if (!id || !isValidUUID(qid) || !isValidUUID(id)) return true;
-      const { error } = await supabase.from('user_quests').insert({ user_id: id, quest_id: qid, status: approval ? QuestParticipantStatus.REQUESTED : QuestParticipantStatus.ACCEPTED });
+
+      const status = approval ? QuestParticipantStatus.REQUESTED : QuestParticipantStatus.ACCEPTED;
+      const { error } = await supabase.from('user_quests').insert({ user_id: id, quest_id: qid, status });
+
+      if (!error && !approval) {
+        // Auto-join: Add to chat lobby immediately
+        const { data: lobby } = await supabase.from('echoes').select('id, participant_ids').match({ type: 'lobby', context_id: qid }).single();
+        if (lobby) {
+          const pids = new Set(lobby.participant_ids || []);
+          pids.add(id);
+          await supabase.from('echoes').update({ participant_ids: Array.from(pids) }).eq('id', lobby.id);
+        }
+      }
       return !error;
     },
     async getOrCreateSquadChat(qid: string, name: string, pids: string[]) {
@@ -437,7 +510,23 @@ export const supabaseService = {
         .select()
         .single();
 
-      if (nq) await supabase.from('echoes').insert({ type: 'lobby', context_type: 'QUEST', context_id: nq.id, name: nq.title, participant_ids: [hid] });
+      if (nq) {
+        // Add host to user_quests automatically
+        await supabase.from('user_quests').insert({
+          user_id: hid,
+          quest_id: nq.id,
+          status: QuestParticipantStatus.ACCEPTED
+        });
+
+        // Add to chat lobby
+        await supabase.from('echoes').insert({
+          type: 'lobby',
+          context_type: 'QUEST',
+          context_id: nq.id,
+          name: nq.title,
+          participant_ids: [hid]
+        });
+      }
       return error ? { success: false, error: error.message } : { success: true, questId: nq.id };
     },
     finishQuest: async (qid: string) => {

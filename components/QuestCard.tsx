@@ -2,14 +2,26 @@ import React from 'react';
 import { MapPin, Users, Clock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Quest, QuestStatus, User } from '../types';
+import { supabaseService } from '../services/supabaseService';
 
 interface Props {
     quest: Quest;
-    currentUser: User;
+    currentUser: User | null;
     onOpenDetail?: (q: Quest) => void;
 }
 
-const QuestCard: React.FC<Props> = ({ quest, onOpenDetail }) => {
+const QuestCard: React.FC<Props> = ({ quest, currentUser, onOpenDetail }) => {
+    // Social Proof Logic
+    const [friendsGoingCount, setFriendsGoingCount] = React.useState(0);
+
+    React.useEffect(() => {
+        if (!currentUser) return;
+        supabaseService.profiles.getMutualFollows(currentUser.id).then(friendIds => {
+            const count = friendIds.filter(id => quest.participant_ids?.includes(id)).length;
+            setFriendsGoingCount(count);
+        });
+    }, [currentUser, quest.participant_ids]);
+
     // Time Logic
     const isLive = quest.status === QuestStatus.ACTIVE;
 
@@ -112,6 +124,22 @@ const QuestCard: React.FC<Props> = ({ quest, onOpenDetail }) => {
                     )}
                 </div>
             </div>
+
+            {/* Social Proof */}
+            {friendsGoingCount > 0 && (
+                <div className="flex items-center gap-1.5 mb-4 px-1 group-hover:translate-x-1 transition-transform">
+                    <div className="flex -space-x-2">
+                        {[...Array(Math.min(friendsGoingCount, 3))].map((_, i) => (
+                            <div key={i} className="w-4 h-4 rounded-full border border-deep-black bg-zinc-800 flex items-center justify-center overflow-hidden ring-1 ring-white/10">
+                                <img src={`https://i.pravatar.cc/50?u=${quest.id}-${i}`} className="w-full h-full object-cover" />
+                            </div>
+                        ))}
+                    </div>
+                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-electric-teal shadow-teal-500/20">
+                        {friendsGoingCount} {friendsGoingCount === 1 ? 'FRIEND' : 'FRIENDS'} JOINED
+                    </span>
+                </div>
+            )}
 
             {/* Footer: Squad & Host */}
             <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">

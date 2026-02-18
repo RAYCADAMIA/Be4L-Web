@@ -89,10 +89,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (context === undefined) {
-        // Fallback or warning instead of hard crash if possible, but throwing is standard.
-        // Let's keep it but add a console error to help debugging
-        console.error('useAuth called outside of AuthProvider');
-        throw new Error('useAuth must be used within an AuthProvider');
+        // Log error but don't crash the whole app during HMR glitches
+        console.warn('useAuth called outside of AuthProvider - returning fallback');
+        return {
+            user: null,
+            isAuthenticated: false,
+            loading: true,
+            login: () => { },
+            logout: () => { },
+            updateUser: () => { },
+            refreshProfile: async () => { }
+        } as AuthContextType;
     }
     return context;
 };

@@ -119,102 +119,116 @@ export const QuestSidebar: React.FC<QuestFiltersProps> = ({
     }, []);
 
     return (
-        <div className="flex flex-col w-full h-full relative select-none px-4 pb-4">
-            {/* City Filter Toggle & List */}
-            <div className="mb-4 pt-2 w-full">
-                <button
-                    onClick={() => setIsLocExpanded(!isLocExpanded)}
-                    className={`
-                        w-full h-10 mb-2 flex items-center justify-center rounded-xl border transition-all group relative
-                        ${isLocExpanded ? 'bg-primary border-primary text-black' : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10'}
-                    `}
-                >
-                    <MapPin size={18} />
-                    {!isLocExpanded && viewingLocation !== 'Global' && (
-                        <div className="absolute top-2 right-3 w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_8px_rgba(204,255,0,0.5)]" />
-                    )}
-                </button>
+        <div className="flex flex-col w-full h-full relative select-none overflow-hidden">
+            {/* 1. STICKY TOP CONTROLS (City & Tabs) */}
+            <div className="px-4 pt-4 pb-2 z-20">
+                {/* City Filter Toggle & List */}
+                <div className="mb-4 w-full">
+                    <button
+                        onClick={() => setIsLocExpanded(!isLocExpanded)}
+                        className={`
+                            w-full h-10 mb-2 flex items-center justify-center rounded-xl border transition-all active:scale-95 group relative
+                            ${isLocExpanded ? 'bg-primary border-primary text-black' : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10'}
+                        `}
+                    >
+                        <MapPin size={18} strokeWidth={2.5} />
+                        {!isLocExpanded && viewingLocation !== 'Global' && (
+                            <div className="absolute top-2 right-3 w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_8px_rgba(204,255,0,0.5)]" />
+                        )}
+                    </button>
 
-                <AnimatePresence>
-                    {isLocExpanded && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                        >
-                            <div className="flex flex-col gap-1.5 pb-4 px-2">
-                                <label className="text-[8px] font-black text-white/20 uppercase tracking-widest text-center mb-1">Active Cities</label>
-                                {['Global', 'Davao', 'Manila', 'Cebu'].map((city) => {
-                                    const isActive = viewingLocation === city;
-                                    return (
-                                        <button
-                                            key={city}
-                                            onClick={() => {
-                                                setViewingLocation(city);
-                                                setIsLocExpanded(false);
-                                            }}
-                                            className={`
-                                                w-full py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all
-                                                ${isActive ? 'bg-primary text-black shadow-[0_4px_12px_rgba(204,255,0,0.2)]' : 'text-white/30 hover:text-white hover:bg-white/5'}
-                                            `}
-                                        >
-                                            {city === 'Global' ? 'Global Feed' : city}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                    <AnimatePresence>
+                        {isLocExpanded && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden mb-2"
+                            >
+                                <div className="flex flex-col gap-1 px-1">
+                                    {['Global', 'Davao', 'Manila', 'Cebu'].map((city) => {
+                                        const isActive = viewingLocation === city;
+                                        return (
+                                            <button
+                                                key={city}
+                                                onClick={() => {
+                                                    setViewingLocation(city);
+                                                    setIsLocExpanded(false);
+                                                }}
+                                                className={`
+                                                    w-full py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all
+                                                    ${isActive ? 'bg-primary text-black' : 'text-white/30 hover:text-white hover:bg-white/5'}
+                                                `}
+                                            >
+                                                {city}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Minimal Tab Switcher */}
+                <div className="flex flex-col gap-2 w-full">
+                    {/* Canon */}
+                    <button
+                        onClick={() => setActiveTab('CANON')}
+                        className={`
+                            flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 relative group h-14 w-full active:scale-95
+                            ${activeTab === 'CANON' ? 'text-primary font-black' : 'text-white/40 hover:bg-white/5 hover:text-white'}
+                        `}
+                    >
+                        <Compass size={20} strokeWidth={activeTab === 'CANON' ? 2.5 : 2} className="relative z-10" />
+                        <span className="text-[9px] uppercase tracking-[0.2em] relative z-10">Canon</span>
+                        {activeTab === 'CANON' && (
+                            <motion.div
+                                layoutId="questTabActive"
+                                className="absolute inset-0 bg-primary/10 rounded-xl border border-primary/20"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                        )}
+                    </button>
+
+                    {/* Sponty */}
+                    <button
+                        onClick={() => setActiveTab('SPONTY')}
+                        className={`
+                            flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 relative group h-14 w-full active:scale-95
+                            ${activeTab === 'SPONTY' ? 'text-electric-teal font-black' : 'text-white/40 hover:bg-white/5 hover:text-white'}
+                        `}
+                    >
+                        <Zap size={20} className="relative z-10" />
+                        <span className="text-[9px] uppercase tracking-[0.2em] relative z-10">Sponty</span>
+                        {activeTab === 'SPONTY' && (
+                            <motion.div
+                                layoutId="questTabActive"
+                                className="absolute inset-0 bg-electric-teal/10 rounded-xl border border-electric-teal/20"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                        )}
+                    </button>
+                </div>
             </div>
 
-            {/* Minimal Tab Switcher */}
-            <div className="flex flex-col gap-2 mb-6 w-full">
-                {/* Canon */}
-                <button
-                    onClick={() => setActiveTab('CANON')}
-                    className={`
-                        flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 relative group h-14 w-full
-                        ${activeTab === 'CANON' ? 'text-primary' : 'text-white/40 hover:bg-white/5 hover:text-white'}
-                    `}
-                >
-                    <Compass size={22} strokeWidth={activeTab === 'CANON' ? 2.5 : 2} className="relative z-10" />
-                    <span className="text-[9px] font-black uppercase tracking-widest relative z-10">Canon</span>
-                    {activeTab === 'CANON' && <motion.div layoutId="questTabActive" className="absolute inset-0 bg-primary/10 rounded-xl border border-primary/20 shadow-[0_0_15px_rgba(45,212,191,0.15)]" />}
-                </button>
-
-                {/* Sponty */}
-                <button
-                    onClick={() => setActiveTab('SPONTY')}
-                    className={`
-                        flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 relative group h-14 w-full
-                        ${activeTab === 'SPONTY' ? 'text-electric-teal' : 'text-white/40 hover:bg-white/5 hover:text-white'}
-                    `}
-                >
-                    <Zap size={22} className="relative z-10" />
-                    <span className="text-[9px] font-black uppercase tracking-widest relative z-10">Sponty</span>
-                    {activeTab === 'SPONTY' && <motion.div layoutId="questTabActive" className="absolute inset-0 bg-electric-teal/10 rounded-xl border border-electric-teal/20 shadow-[0_0_15px_rgba(45,212,191,0.15)]" />}
-                </button>
-            </div>
-
-            {/* Scrollable Filter Area */}
-            <div className="flex-1 overflow-y-auto no-scrollbar space-y-6 px-1">
-
-                {/* 2. Timeline (Canon Only) */}
-                <AnimatePresence>
+            {/* 2. SCROLLABLE FILTERS (Timeline & Categories) */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar-minimal px-4 pb-12 space-y-8">
+                {/* Timeline (Canon Only) */}
+                <AnimatePresence mode="wait">
                     {activeTab === 'CANON' && (
                         <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="space-y-4"
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-4 py-4"
                         >
-                            <h3 className="text-[8px] font-bold text-white/20 uppercase tracking-widest text-center">Timeline</h3>
+                            <h3 className="text-[8px] font-black text-white/10 uppercase tracking-[0.3em] text-center">Timeline</h3>
 
-                            <div className="relative pl-4 space-y-4 border-l border-white/5 ml-4">
-                                {/* Current Date Highlight */}
-                                <div className="absolute left-[-3px] top-0 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(45,212,191,0.6)]" />
+                            <div className="relative pl-4 space-y-5 border-l border-white/5 ml-4 my-2">
+                                {/* Current Date Selector Indicator (Dot) */}
+                                <div className="absolute left-[-2.5px] top-0 w-1 h-1 rounded-full bg-primary/40" />
 
                                 {dates.map((d, i) => {
                                     const isSelected = d.toDateString() === selectedDate.toDateString();
@@ -225,21 +239,27 @@ export const QuestSidebar: React.FC<QuestFiltersProps> = ({
                                             key={i}
                                             onClick={() => onDateChange(d)}
                                             className={`
-                                                group relative flex flex-col items-start transition-all duration-300 w-full text-left pl-2
-                                                ${isSelected ? 'opacity-100 translate-x-1' : 'opacity-40 hover:opacity-80 hover:translate-x-1'}
+                                                group relative flex flex-col items-start transition-all duration-300 w-full text-left pl-3
+                                                ${isSelected ? 'opacity-100 scale-105' : 'opacity-40 hover:opacity-80 hover:translate-x-1'}
                                             `}
                                         >
-                                            {/* Dot Connector */}
+                                            {/* Selection Marker */}
                                             {isSelected && (
                                                 <motion.div
-                                                    layoutId="timelineDot"
-                                                    className="absolute left-[-21px] w-2.5 h-2.5 rounded-full border-2 border-primary bg-deep-black z-10"
+                                                    layoutId="timelineIndicator"
+                                                    className="absolute left-[-22px] w-3 h-3 rounded-full border-2 border-primary bg-[#0A0A0A] z-10 shadow-[0_0_10px_rgba(45,212,191,0.5)]"
+                                                    transition={{ type: "spring", bounce: 0.3, duration: 0.6 }}
                                                 />
                                             )}
-                                            {!isSelected && <div className="absolute left-[-19px] w-1.5 h-1.5 rounded-full bg-white/20 group-hover:bg-white/50 transition-colors" />}
+                                            {!isSelected && (
+                                                <div className="absolute left-[-19px] w-1.5 h-1.5 rounded-full bg-white/10 group-hover:bg-white/30 transition-colors" />
+                                            )}
 
-                                            <span className={`text-[8px] font-black uppercase tracking-widest mb-0.5 ${isSelected ? 'text-primary' : ''}`}>
-                                                {isToday ? 'Today' : d.toLocaleDateString('en-US', { weekday: 'short' })}
+                                            <span className={`text-[8px] font-bold uppercase tracking-[0.2em] mb-0.5 ${isSelected ? 'text-primary' : ''}`}>
+                                                {isToday ? 'TODAY' : d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}
+                                            </span>
+                                            <span className="text-[10px] text-white/30 font-medium">
+                                                {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                             </span>
                                         </button>
                                     );
@@ -247,20 +267,22 @@ export const QuestSidebar: React.FC<QuestFiltersProps> = ({
 
                                 <button
                                     onClick={onOpenCalendar}
-                                    className="flex items-center gap-2 opacity-30 hover:opacity-100 transition-all pt-2 group pl-2"
+                                    className="flex items-center gap-2 opacity-30 hover:opacity-100 transition-all pt-2 group pl-3"
                                 >
-                                    <div className="absolute left-[-19px] w-1.5 h-1.5 rounded-full bg-white/10 group-hover:bg-primary transition-colors" />
-                                    <CalendarIcon size={14} className="text-white/40 group-hover:text-primary transition-colors" />
+                                    <div className="absolute left-[-19px] w-1.5 h-1.5 rounded-full bg-white/5 group-hover:bg-primary/50 transition-colors" />
+                                    <div className="p-2 rounded-lg bg-white/5 border border-white/5 group-hover:border-primary/20 group-hover:bg-primary/5 transition-all">
+                                        <CalendarIcon size={12} className="text-white/40 group-hover:text-primary transition-colors" />
+                                    </div>
                                 </button>
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                {/* 3. Categories */}
-                <div className="space-y-2">
-                    <h3 className="text-[8px] font-bold text-white/20 uppercase tracking-widest text-center pt-2 border-t border-white/5">Categories</h3>
-                    <div className="flex flex-col gap-1">
+                {/* Categories */}
+                <div className="space-y-4">
+                    <h3 className="text-[8px] font-black text-white/10 uppercase tracking-[0.3em] text-center pb-2 border-b border-white/5">Categories</h3>
+                    <div className="flex flex-col gap-1.5 pb-8">
                         {UNIVERSAL_CATEGORIES.map((cat) => {
                             const isActive = activeCat === cat;
                             return (
@@ -268,11 +290,18 @@ export const QuestSidebar: React.FC<QuestFiltersProps> = ({
                                     key={cat}
                                     onClick={() => setActiveCat(cat)}
                                     className={`
-                                        w-full py-2.5 rounded-lg text-center transition-all duration-200 text-[8px] font-black uppercase tracking-wider
-                                        ${isActive ? 'bg-white/10 text-white shadow-sm border border-white/5' : 'text-white/30 hover:text-white hover:bg-white/5'}
+                                        w-full py-3 rounded-xl text-center transition-all duration-300 text-[8px] font-black uppercase tracking-[0.15em] relative
+                                        ${isActive ? 'bg-white/10 text-white border border-white/10 shadow-lg scale-[1.02]' : 'text-white/30 hover:text-white hover:bg-white/5'}
                                     `}
                                 >
                                     {cat}
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="catUnderline"
+                                            className="absolute left-2 top-1/2 -translate-y-1/2 w-1 h-3 bg-primary rounded-full"
+                                            transition={{ type: "spring", bounce: 0.5, duration: 0.6 }}
+                                        />
+                                    )}
                                 </button>
                             );
                         })}
@@ -423,7 +452,7 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
                                                                 ${isSelected ? 'bg-white/10 text-white border border-white/10 shadow-[0_4px_12px_rgba(255,255,255,0.05)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}
                                                             `}
                                                             >
-                                                                {loc === 'Global' ? 'Global Feed' : loc}
+                                                                {loc}
                                                             </button>
                                                         );
                                                     })}

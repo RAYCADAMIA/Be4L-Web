@@ -247,7 +247,7 @@ export const GlobalHeader: React.FC = () => {
                 </div>
 
                 {/* 3. Floating Control Pill (Right) */}
-                <div className="pointer-events-auto transition-all duration-500 opacity-100">
+                <div className="relative pointer-events-auto transition-all duration-500 opacity-100">
                     <nav className="flex items-center gap-1 h-[52px] p-1.5 bg-white/[0.08] backdrop-blur-3xl border border-white/10 rounded-full shadow-lg transition-all hover:border-white/20 relative">
                         {/* Control Icons - Now visible on both Mobile & Desktop */}
                         <div className="flex items-center gap-0.5 relative">
@@ -269,10 +269,6 @@ export const GlobalHeader: React.FC = () => {
                                 >
                                     <CheckSquare size={18} strokeWidth={2.5} />
                                 </button>
-
-                                <AnimatePresence>
-                                    {activeControl === 'tasks' && <TaskWindow />}
-                                </AnimatePresence>
                             </div>
 
                             {/* Notifications Toggle */}
@@ -286,10 +282,6 @@ export const GlobalHeader: React.FC = () => {
                                     <Bell size={18} strokeWidth={2.5} />
                                     <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-primary rounded-full border border-black" />
                                 </button>
-
-                                <AnimatePresence>
-                                    {activeControl === 'notifications' && <NotificationWindow />}
-                                </AnimatePresence>
                             </div>
                         </div>
 
@@ -309,14 +301,27 @@ export const GlobalHeader: React.FC = () => {
                                     </div>
                                 )}
                             </button>
-
-                            <AnimatePresence>
-                                {activeControl === 'profile' && (
-                                    <ProfileWindow onClose={() => setActiveControl(null)} />
-                                )}
-                            </AnimatePresence>
                         </div>
                     </nav>
+
+                    {/* Unified Window Layer (Sibling to Nav to avoid nested blur glitches) */}
+                    <AnimatePresence>
+                        {activeControl === 'tasks' && (
+                            <div className="absolute top-full right-0 mt-1 z-[200]">
+                                <TaskWindow />
+                            </div>
+                        )}
+                        {activeControl === 'notifications' && (
+                            <div className="absolute top-full right-0 mt-1 z-[200]">
+                                <NotificationWindow />
+                            </div>
+                        )}
+                        {activeControl === 'profile' && (
+                            <div className="absolute top-full right-0 mt-1 z-[200]">
+                                <ProfileWindow onClose={() => setActiveControl(null)} />
+                            </div>
+                        )}
+                    </AnimatePresence>
                 </div>
 
 

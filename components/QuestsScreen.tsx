@@ -60,6 +60,8 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
     const [isHeaderVisible, setIsHeaderVisible] = useState(true);
     const [localRefresh, setLocalRefresh] = useState(0);
     const lastScrollY = useRef(0);
+    const lastTab = useRef(activeTab);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
         const currentScrollY = e.currentTarget.scrollTop;
@@ -131,9 +133,13 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
         setActiveCat('All');
     }, [activeTab]);
 
-    // Added 'localRefresh' to dependencies
+    // Optimized effect dependencies to prevent full-screen loader on subtle filter changes
     useEffect(() => {
-        setLoading(true);
+        // Only trigger full loading state for major context switches (Tab change or initial load)
+        const isTabSwitch = quests.length === 0 || lastTab.current !== activeTab;
+        if (isTabSwitch) setLoading(true);
+        lastTab.current = activeTab;
+
         const type = activeTab === 'CANON' ? QuestType.CANON : QuestType.SPONTY;
         const randomQuests = generateRandomQuests(activeCat, selectedDate, 25, type);
 
@@ -170,6 +176,13 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
             setLoading(false);
         });
     }, [activeTab, activeCat, selectedDate, refreshTrigger, localRefresh]);
+
+    // Reset scroll to top when major filters change to prevent "falling" to footer
+    useEffect(() => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [activeTab, activeCat]);
 
     const filteredQuests = useMemo(() => {
         return quests.filter(q => {
@@ -209,13 +222,12 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                 className="flex-1 flex flex-col md:flex-row max-w-[1600px] mx-auto w-full"
             >
                 {/* Desktop Sidebar (Left) */}
-                <div className="hidden md:flex flex-col w-40 shrink-0 border-r border-white/[0.02] sticky top-[88px] h-fit no-scrollbar">
+                <div className="hidden md:flex flex-col w-40 shrink-0 border-r border-white/[0.04] sticky top-[88px] h-[calc(100vh-88px)]">
                     <QuestSidebar
                         selectedDate={selectedDate}
                         onDateChange={(d) => {
                             setSelectedDate(d);
-                            setLoading(true);
-                            setTimeout(() => setLoading(false), 400);
+                            // Avoid full screen loader for date/category changes to prevent "Seizure" effect
                         }}
                         onOpenCalendar={() => setShowCalendar(true)}
                         activeTab={activeTab}
@@ -229,6 +241,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
 
                 {/* Main Feed Content (Right / Center) */}
                 <div
+                    ref={scrollContainerRef}
                     onScroll={handleScroll}
                     className="flex-1 pb-0 no-scrollbar relative"
                 >
@@ -245,8 +258,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                                 selectedDate={selectedDate}
                                 onDateChange={(d) => {
                                     setSelectedDate(d);
-                                    setLoading(true);
-                                    setTimeout(() => setLoading(false), 400);
+                                    // No full-screen flicker for mobile date changes
                                 }}
                                 onOpenCalendar={() => setShowCalendar(true)}
                                 activeCat={activeCat}
