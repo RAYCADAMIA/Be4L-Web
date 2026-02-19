@@ -27,7 +27,7 @@ export const PartnerPendingPage: React.FC = () => {
                         <span className="animate-liquid-text">APPLICATION UNDER REVIEW.</span>
                     </h1>
                     <p className="text-lg text-cool-grey font-medium font-sans max-w-sm mx-auto">
-                        Your profile is securely stored. You will be notified via email once an Admin verifies your credentials.
+                        Thanks for applying! Our team is reviewing your info and will be in touch soon via your preferred contact channel
                     </p>
                 </div>
 

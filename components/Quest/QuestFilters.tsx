@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, Compass, Zap, MapPin } from 'lucide-react';
 import { UNIVERSAL_CATEGORIES } from '../../constants';
+import { useOnClickOutside } from '../../hooks/useOnClickOutside';
 
 interface QuestFiltersProps {
     selectedDate: Date;
@@ -329,6 +330,9 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
     onOpenCalendar
 }) => {
     const [showFilter, setShowFilter] = React.useState(false);
+    const filterRef = React.useRef<HTMLDivElement>(null);
+
+    useOnClickOutside(filterRef, () => setShowFilter(false));
 
     // Re-implement simplified MissionTimeline for Mobile Header
     return (
@@ -412,7 +416,7 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
                         >
                             <div className="flex items-center gap-2 relative z-50">
                                 {/* Location Filter Icon - Clickable City Picker */}
-                                <div className="relative block">
+                                <div className="relative block" ref={filterRef}>
                                     <button
                                         onClick={() => setShowFilter(!showFilter)}
                                         className={`p-3 rounded-2xl border transition-all active:scale-95 ${showFilter || viewingLocation !== 'Global' ? 'bg-white/10 text-white border-white/20 shadow-[0_8px_32px_rgba(255,255,255,0.1)] backdrop-blur-2xl' : 'bg-white/[0.03] border-white/5 text-gray-400 hover:text-white'}`}
@@ -423,41 +427,34 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
                                     {/* Minimalistic Glassy City Picker Window */}
                                     <AnimatePresence>
                                         {showFilter && (
-                                            <>
-                                                {/* Invisible Backdrop for click-outside behavior */}
-                                                <div
-                                                    className="fixed inset-0 z-40 cursor-default"
-                                                    onClick={() => setShowFilter(false)}
-                                                />
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                    className="absolute top-full left-0 mt-2 p-1.5 min-w-[140px] bg-white/[0.05] backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 flex flex-col gap-1"
-                                                >
-                                                    <div className="px-2 py-1 mb-1 border-b border-white/5">
-                                                        <span className="text-[9px] font-black text-white/50 uppercase tracking-widest">Active Cities</span>
-                                                    </div>
-                                                    {['Global', 'Davao', 'Manila', 'Cebu'].map((loc) => {
-                                                        const isSelected = viewingLocation === loc;
-                                                        return (
-                                                            <button
-                                                                key={loc}
-                                                                onClick={() => {
-                                                                    setViewingLocation(loc);
-                                                                    setShowFilter(false);
-                                                                }}
-                                                                className={`
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                className="absolute top-full left-0 mt-2 p-1.5 min-w-[140px] bg-white/[0.05] backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 flex flex-col gap-1"
+                                            >
+                                                <div className="px-2 py-1 mb-1 border-b border-white/5">
+                                                    <span className="text-[9px] font-black text-white/50 uppercase tracking-widest">Active Cities</span>
+                                                </div>
+                                                {['Global', 'Davao', 'Manila', 'Cebu'].map((loc) => {
+                                                    const isSelected = viewingLocation === loc;
+                                                    return (
+                                                        <button
+                                                            key={loc}
+                                                            onClick={() => {
+                                                                setViewingLocation(loc);
+                                                                setShowFilter(false);
+                                                            }}
+                                                            className={`
                                                                 w-full text-left px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all
                                                                 ${isSelected ? 'bg-white/10 text-white border border-white/10 shadow-[0_4px_12px_rgba(255,255,255,0.05)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}
                                                             `}
-                                                            >
-                                                                {loc}
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </motion.div>
-                                            </>
+                                                        >
+                                                            {loc}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </motion.div>
                                         )}
                                     </AnimatePresence>
                                 </div>
@@ -505,9 +502,8 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
                                 </button>
                             </div>
                         </motion.div>
-                    )
-                }
-            </AnimatePresence >
-        </div >
+                    )}
+            </AnimatePresence>
+        </div>
     );
-}
+};

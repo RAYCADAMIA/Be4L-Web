@@ -44,7 +44,7 @@ export const PartnerPostCard: React.FC<{ post: PartnerPost; onOpenProfile: (id: 
     };
 
     return (
-        <div className="min-w-[300px] w-[300px] md:min-w-[350px] bg-zinc-900/50 border border-white/5 rounded-3xl overflow-hidden snap-center flex flex-col shrink-0">
+        <div className="min-w-[280px] w-[280px] md:min-w-[320px] md:w-[320px] bg-zinc-900/50 border border-white/5 rounded-3xl overflow-hidden snap-center flex flex-col shrink-0">
             {/* Header */}
             <div className="p-3 flex items-center justify-between bg-black/20 backdrop-blur-sm">
                 <div

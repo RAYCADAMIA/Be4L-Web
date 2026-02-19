@@ -87,7 +87,7 @@ export const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = 
         if (user.is_operator) {
             navigate('/app/home');
         } else if (user.is_admin) {
-            navigate('/app/admin');
+            navigate('/app/home');
         } else {
             navigate('/app/home');
         }

@@ -26,7 +26,7 @@ const DibsCard: React.FC<Props> = ({ operator, onClick, isMe }) => {
     return (
         <div
             onClick={() => onClick(operator.slug)}
-            className="group flex flex-col w-full bg-white/5 rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer hover:border-primary/30 transition-all duration-500 shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] bg-gradient-to-br from-white/[0.05] to-transparent h-full relative"
+            className="group flex flex-col w-full bg-white/5 rounded-3xl md:rounded-[2rem] overflow-hidden border border-white/5 cursor-pointer hover:border-primary/30 transition-all duration-500 shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] bg-gradient-to-br from-white/[0.05] to-transparent h-full relative"
         >
             {/* Cover Image Container */}
             <div className="relative aspect-[4/3] w-full overflow-hidden shrink-0">

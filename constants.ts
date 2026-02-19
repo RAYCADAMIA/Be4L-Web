@@ -73,12 +73,12 @@ export const MOCK_USER: User = {
 export const MOCK_OPERATOR: User = {
   ...MOCK_USER,
   id: 'op1',
-  handle: 'Skyline_Venue',
-  username: 'Skyline Events',
-  name: 'Skyline Events',
+  handle: 'and_friends',
+  username: '&Friends',
+  name: '&Friends',
   is_operator: true,
-  bio: 'The premier event space in Davao.',
-  avatar_url: 'https://ui-avatars.com/api/?name=Skyline+Events&background=2DD4BF&color=000'
+  bio: 'Bringing together the best music and even better company.',
+  avatar_url: '/brands/and_friends.png'
 };
 
 export const MOCK_ADMIN: User = {
@@ -980,22 +980,62 @@ export const MOCK_PARTNER_POSTS: import('./types').PartnerPost[] = [
       id: 'i1',
       operator_id: 'op1',
       title: 'Summer EDC Manila',
-      price: 2500,
+      price: 3750,
       image_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3',
       category: 'event',
       description: 'The ultimate summer electronic dance festival.',
-      available_slots: 50,
-      total_slots: 100,
+      available_slots: 4000,
+      total_slots: 4000,
       is_active: true,
       tiers: [
-        { id: 't1', name: 'General Admission', price: 2500, perks: ['Entry Only'], capacity: 100, available: 50 },
-        { id: 't2', name: 'VIP Pass', price: 5000, perks: ['Express Entry', 'VIP Lounge', '1 Drink'], capacity: 50, available: 20 },
-        { id: 't3', name: 'VVIP Table', price: 50000, perks: ['Private Table', 'Bottle Service', 'Meet & Greet'], capacity: 5, available: 2 }
+        { id: 't1', name: 'LAST CHANCE - GEN AD', price: 3750, perks: ['1x GA Ticket', '2 Welcome Drinks'], capacity: 1000, available: 1000 },
+        { id: 't2', name: 'BARKADA BUNDLE - GEN AD', price: 15000, perks: ['5x GA Ticket', '10 Welcome Drinks'], capacity: 1000, available: 1000 },
+        { id: 't3', name: 'LAST CHANCE - VIP', price: 6500, perks: ['1x VIP Ticket', '4 Welcome Drinks', 'Bossed Ups'], capacity: 1000, available: 1000 },
+        { id: 't4', name: 'BARKADA BUNDLE - VIP', price: 26000, perks: ['5x VIP Ticket', '20 Welcome Drinks', 'Special Gifts'], capacity: 1000, available: 1000 }
       ]
     },
     likes_count: 412,
     comments_count: 89,
     created_at: new Date(Date.now() - 86400000).toISOString(),
+  },
+  {
+    id: 'pp3',
+    operator_id: 'op1',
+    operator: {
+      business_name: '&Friends',
+      logo_url: '/brands/and_friends.png',
+    } as any,
+    caption: 'Soundcheck complete! 🔊 The production for Summer EDC is on another level this year. Can\'t wait to see you all on the dancefloor. #Production #FestivalVibes',
+    media_urls: ['https://images.unsplash.com/photo-1470225620780-dba8ba36b745'],
+    likes_count: 520,
+    comments_count: 42,
+    created_at: new Date(Date.now() - 43200000).toISOString(),
+  },
+  {
+    id: 'pp4',
+    operator_id: 'op1',
+    operator: {
+      business_name: '&Friends',
+      logo_url: '/brands/and_friends.png',
+    } as any,
+    caption: 'Throwback to last year\'s vibe. Davao City, we are bringing that same energy to Manila next month! 🌊✨ #Throwback #FriendsFamily',
+    media_urls: ['https://images.unsplash.com/photo-1514525253361-bee1a1bb441f'],
+    likes_count: 890,
+    comments_count: 124,
+    created_at: new Date(Date.now() - 172800000).toISOString(),
+  },
+  {
+    id: 'pp5',
+    operator_id: 'op1',
+    operator: {
+      business_name: '&Friends',
+      logo_url: '/brands/and_friends.png',
+    } as any,
+    caption: 'Preparation in full swing. The team is working around the clock to ensure this Summer EDC is unforgettable. 🛠️🔥',
+    media_urls: ['https://images.unsplash.com/photo-1516450360452-9312f5e86fc7'],
+    likes_count: 312,
+    comments_count: 28,
+    created_at: new Date(Date.now() - 259200000).toISOString(),
   }
 ];
 
@@ -1005,8 +1045,25 @@ export const MOCK_PLACES: any[] = [
     ...MOCK_OPERATOR,
     id: 'op1',
     items: [
-      { id: 'i1', operator_id: 'op1', title: 'Private Court Rental', price: 1500, category: 'Venue', image_url: 'https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a', unit_label: 'hour', type: 'PLACE', available_slots: 5 },
-      { id: 'i2', operator_id: 'op1', title: 'Pickleball Pro Coaching', price: 2500, category: 'Service', image_url: 'https://images.unsplash.com/photo-1626245550578-8ae7f6368d49', unit_label: 'session', type: 'PLACE', available_slots: 2 }
+      {
+        id: 'i1',
+        operator_id: 'op1',
+        title: 'Summer EDC Manila',
+        description: 'The ultimate summer electronic dance festival.',
+        price: 3750,
+        category: 'Event',
+        image_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3',
+        unit_label: 'ticket',
+        type: 'EVENT',
+        event_date: new Date(Date.now() + 86400000 * 30).toISOString(),
+        available_slots: 4000,
+        tiers: [
+          { id: 't1', name: 'LAST CHANCE - GEN AD', price: 3750, perks: ['1x GA Ticket', '2 Welcome Drinks'], capacity: 1000, available: 1000 },
+          { id: 't2', name: 'BARKADA BUNDLE - GEN AD', price: 15000, perks: ['5x GA Ticket', '10 Welcome Drinks'], capacity: 1000, available: 1000 },
+          { id: 't3', name: 'LAST CHANCE - VIP', price: 6500, perks: ['1x VIP Ticket', '4 Welcome Drinks', 'Bossed Ups'], capacity: 1000, available: 1000 },
+          { id: 't4', name: 'BARKADA BUNDLE - VIP', price: 26000, perks: ['5x VIP Ticket', '20 Welcome Drinks', 'Special Gifts'], capacity: 1000, available: 1000 }
+        ]
+      }
     ]
   },
   {

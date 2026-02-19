@@ -6,6 +6,7 @@ import { useNavigation } from '../../contexts/NavigationContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TaskWindow, NotificationWindow, ProfileWindow } from './ControlDropdowns';
 import { StarIcon } from '../Shared/StarIcon';
+import { useOnClickOutside } from '../../hooks/useOnClickOutside';
 
 export const GlobalHeader: React.FC = () => {
     const { user } = useAuth();
@@ -16,6 +17,11 @@ export const GlobalHeader: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [activeControl, setActiveControl] = useState<'tasks' | 'notifications' | 'profile' | null>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const searchContainerRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useOnClickOutside(dropdownRef, () => setActiveControl(null));
+    useOnClickOutside(searchContainerRef, () => setIsSearchOpen(false));
 
     // Simplified Guest Header
     const [isSplashActive, setIsSplashActive] = useState(false);
@@ -155,15 +161,7 @@ export const GlobalHeader: React.FC = () => {
                         </div>
                     )}
 
-                    {isSearchOpen && (
-                        /* Invisible Backdrop for click-outside/blur behavior on mobile */
-                        <div
-                            className="fixed inset-0 z-40 bg-transparent"
-                            onClick={() => setIsSearchOpen(false)}
-                        />
-                    )}
-
-                    <div className={`${isSearchOpen ? 'flex absolute left-[70px] top-1/2 -translate-y-1/2 z-50' : 'hidden sm:flex'} items-center h-[40px] sm:h-[52px]`}>
+                    <div className={`${isSearchOpen ? 'flex absolute left-[70px] top-1/2 -translate-y-1/2 z-50' : 'hidden sm:flex'} items-center h-[40px] sm:h-[52px]`} ref={searchContainerRef}>
                         <motion.div
                             initial={false}
                             animate={{
@@ -247,18 +245,10 @@ export const GlobalHeader: React.FC = () => {
                 </div>
 
                 {/* 3. Floating Control Pill (Right) */}
-                <div className="relative pointer-events-auto transition-all duration-500 opacity-100">
+                <div className="relative pointer-events-auto transition-all duration-500 opacity-100" ref={dropdownRef}>
                     <nav className="flex items-center gap-1 h-[52px] p-1.5 bg-white/[0.08] backdrop-blur-3xl border border-white/10 rounded-full shadow-lg transition-all hover:border-white/20 relative">
                         {/* Control Icons - Now visible on both Mobile & Desktop */}
                         <div className="flex items-center gap-0.5 relative">
-                            {/* Invisible Backdrop for click-outside behavior */}
-                            {activeControl && (
-                                <div
-                                    className="fixed inset-0 z-10 cursor-default"
-                                    onClick={() => setActiveControl(null)}
-                                />
-                            )}
-
                             {/* Task List Toggle */}
                             <div className="relative z-20">
                                 <button
@@ -325,8 +315,8 @@ export const GlobalHeader: React.FC = () => {
                 </div>
 
 
-            </header >
-        </div >
+            </header>
+        </div>
     );
 };
 

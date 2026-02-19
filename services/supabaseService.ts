@@ -648,7 +648,7 @@ export const supabaseService = {
         if (data && data.length > 0) return data;
       } catch (e) { }
       const ALL_STATIC = [
-        { user_id: 'op1', business_name: '&Friends', slug: 'and-friends', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=1000', logo_url: '/brands/and_friends.png', bio: 'Lifestyle & Events. Spreading vibes across Manila & Davao.', location_text: 'Manila / Davao', gcash_name: 'And Friends Inc', gcash_number: '0917-111-2222', followers_count: 5400, is_verified: true, rating: 5.0 },
+        { user_id: 'op1', business_name: '&Friends', slug: 'and-friends', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=1000', logo_url: '/brands/and_friends.png', bio: 'Bringing together the best music and even better company.', location_text: 'Manila / Davao', gcash_name: 'And Friends Inc', gcash_number: '0917-111-2222', followers_count: 5400, is_verified: true, rating: 5.0 },
         { user_id: 'op2', business_name: 'SuperSmasher', slug: 'supersmasher', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1626245550578-8ae7f6368d49?q=80&w=1000', logo_url: '/brands/supersmasher.png', bio: 'Premier Pickleball destination in Davao. Smash your limits.', location_text: 'Lanang, Davao City', gcash_name: 'SuperSmasher Ph', gcash_number: '0917-222-3333', followers_count: 2100, is_verified: true, rating: 4.8 },
         { user_id: 'op3', business_name: 'Psyched', slug: 'psyched', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1514525253361-bee1a1bb441f?q=80&w=1000', logo_url: '/brands/psyched.png', bio: 'Davao\'s wildest house parties and underground sessions.', location_text: 'Davao City', gcash_name: 'Psyched Events', gcash_number: '0917-333-4444', followers_count: 3200, is_verified: true, rating: 4.9 },
         { user_id: 'op4', business_name: 'Secret Society', slug: 'secretsoc', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1566737236500-c8ac43014a67?q=80&w=1000', logo_url: '/brands/secretsoc.png', bio: 'Exclusive events for the elite. Silence is golden.', location_text: 'Davao City', gcash_name: 'Secret Soc', gcash_number: '0917-444-5555', followers_count: 1560, is_verified: true, rating: 4.7 },
@@ -700,7 +700,26 @@ export const supabaseService = {
       } catch (e) { }
 
       const STATIC_ITEMS = [
-        { id: 'i1', operator_id: 'op1', title: 'Summer EDC Manila', description: 'The ultimate summer electronic dance festival by &Friends.', price: 2500, category: 'Event', image_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3', unit_label: 'ticket', type: 'EVENT', event_date: '2025-03-20', event_location: 'Manila', is_active: true },
+        {
+          id: 'i1',
+          operator_id: 'op1',
+          title: 'Summer EDC Manila',
+          description: 'The ultimate summer electronic dance festival by &Friends.',
+          price: 3750,
+          category: 'Event',
+          image_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3',
+          unit_label: 'ticket',
+          type: 'EVENT',
+          event_date: '2025-03-20',
+          event_location: 'Manila',
+          is_active: true,
+          tiers: [
+            { id: 't1', name: 'LAST CHANCE - GEN AD', price: 3750, perks: ['1x GA Ticket', '2 Welcome Drinks'], capacity: 1000, available: 1000 },
+            { id: 't2', name: 'BARKADA BUNDLE - GEN AD', price: 15000, perks: ['5x GA Ticket', '10 Welcome Drinks'], capacity: 1000, available: 1000 },
+            { id: 't3', name: 'LAST CHANCE - VIP', price: 6500, perks: ['1x VIP Ticket', '4 Welcome Drinks', 'Bossed Ups'], capacity: 1000, available: 1000 },
+            { id: 't4', name: 'BARKADA BUNDLE - VIP', price: 26000, perks: ['5x VIP Ticket', '20 Welcome Drinks', 'Special Gifts'], capacity: 1000, available: 1000 }
+          ]
+        },
         { id: 'i2', operator_id: 'op2', title: 'Pickleball Courts', description: 'Reserve a professional pickleball court.', price: 300, category: 'Court', image_url: 'https://images.unsplash.com/photo-1626245550578-8ae7f6368d49', unit_label: 'hour', type: 'PLACE', available_slots: 4, is_active: true },
         { id: 'i3', operator_id: 'op3', title: 'Hearts On Fire HP', description: 'Psyched House Party: Hearts On Fire Edition.', price: 500, category: 'Event', image_url: 'https://images.unsplash.com/photo-1514525253361-bee1a1bb441f', unit_label: 'entry', type: 'EVENT', event_date: '2025-02-14', is_active: true },
         { id: 'i4', operator_id: 'op4', title: '2nd Chance to Cupid', description: 'Secret Society: 2nd Chance to Cupid event.', price: 1000, category: 'Event', image_url: 'https://images.unsplash.com/photo-1566737236500-c8ac43014a67', unit_label: 'entry', type: 'EVENT', event_date: '2025-02-21', is_active: true },
@@ -775,22 +794,22 @@ export const supabaseService = {
         {
           id: 'i1',
           operator_id: 'op1',
-          title: 'Court Rental',
-          description: 'Full access to standard court. Select your preferred court below.',
-          price: 200,
-          category: 'Court',
-          image_url: 'https://images.unsplash.com/photo-1626245550578-8ae7f6368d49',
-          unit_label: 'hour',
-          type: 'PLACE',
-          available_slots: 2,
-          opening_time: '06:00',
-          closing_time: '23:00',
-          slot_duration: 60,
-          resources: [
-            { id: 'c1', name: 'Court 1' },
-            { id: 'c2', name: 'Court 2' }
-          ],
-          is_active: true
+          title: 'Summer EDC Manila',
+          description: 'The ultimate summer electronic dance festival by &Friends.',
+          price: 3750,
+          category: 'Event',
+          image_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3',
+          unit_label: 'ticket',
+          type: 'EVENT',
+          event_date: '2025-03-20',
+          event_location: 'Manila',
+          is_active: true,
+          tiers: [
+            { id: 't1', name: 'LAST CHANCE - GEN AD', price: 3750, perks: ['1x GA Ticket', '2 Welcome Drinks'], capacity: 1000, available: 1000 },
+            { id: 't2', name: 'BARKADA BUNDLE - GEN AD', price: 15000, perks: ['5x GA Ticket', '10 Welcome Drinks'], capacity: 1000, available: 1000 },
+            { id: 't3', name: 'LAST CHANCE - VIP', price: 6500, perks: ['1x VIP Ticket', '4 Welcome Drinks', 'Bossed Ups'], capacity: 1000, available: 1000 },
+            { id: 't4', name: 'BARKADA BUNDLE - VIP', price: 26000, perks: ['5x VIP Ticket', '20 Welcome Drinks', 'Special Gifts'], capacity: 1000, available: 1000 }
+          ]
         },
         {
           id: 'i3',

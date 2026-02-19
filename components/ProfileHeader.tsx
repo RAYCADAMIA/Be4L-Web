@@ -1,7 +1,10 @@
-import React from 'react';
-import { User, Settings, Mail, Camera, Activity, LayoutDashboard, MoreVertical, ChevronLeft, MapPin, BadgeCheck, Star, LogOut, Trash2, Shield, HelpCircle, Info, Sparkles, Share2, Copy, X, ArrowRight } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { User, Settings, Mail, Camera, Activity, LayoutDashboard, MoreVertical, ChevronLeft, MapPin, BadgeCheck, Star, LogOut, Trash2, Shield, HelpCircle, Info, Sparkles, Share2, Copy, X, ArrowRight, Zap } from 'lucide-react';
 import { User as UserType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
+import { useOnClickOutside } from '../hooks/useOnClickOutside';
 // import { BrandAccessModal } from './Dibs/BrandAccessModal';
 const BrandAccessModal = React.lazy(() => import('./Dibs/BrandAccessModal').then(module => ({ default: module.BrandAccessModal })));
 
@@ -53,6 +56,16 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     const [showShareModal, setShowShareModal] = React.useState(false);
     const [showAuraModal, setShowAuraModal] = React.useState(false);
     const [copied, setCopied] = React.useState(false);
+    const navigate = useNavigate();
+    const { updateUser, refreshProfile } = useAuth();
+    const settingsRef = React.useRef<HTMLDivElement>(null);
+
+    useOnClickOutside(settingsRef, () => setShowSettingsMenu(false));
+
+    // Auto-refresh when opening profile to ensure latest admin status
+    useEffect(() => {
+        if (isMe) refreshProfile();
+    }, [isMe]);
 
     return (
         <div className="relative w-full bg-transparent text-white mb-4">
@@ -94,7 +107,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                                         <Share2 size={20} />
                                     </button>
 
-                                    <div className="relative">
+                                    <div className="relative" ref={settingsRef}>
                                         <button
                                             onClick={() => setShowSettingsMenu(!showSettingsMenu)}
                                             className={`p-2.5 backdrop-blur-xl rounded-full text-white border border-white/10 transition-all active:scale-95 ${showSettingsMenu ? 'bg-electric-teal text-black border-electric-teal' : 'bg-white/5 hover:bg-white/10'}`}
@@ -112,6 +125,50 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                                                     exit={{ opacity: 0, scale: 0.95, y: 10, x: 20 }}
                                                     className="absolute top-full right-0 mt-4 w-44 bg-white/[0.1] backdrop-blur-3xl backdrop-saturate-[180%] border border-white/20 rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] p-1"
                                                 >
+                                                    {isMe && (
+                                                        <button
+                                                            onClick={() => { refreshProfile(); setShowSettingsMenu(false); }}
+                                                            className="w-full px-2.5 py-1.5 text-left text-white/90 hover:bg-white/10 transition-colors flex items-center gap-2 group rounded-lg"
+                                                        >
+                                                            <div className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                                                                <Activity size={11} />
+                                                            </div>
+                                                            <span className="text-[9px] font-bold block">Sync Data</span>
+                                                        </button>
+                                                    )}
+
+                                                    {isMe && user.is_admin && (
+                                                        <div className="px-2 py-2 mb-1 bg-electric-teal/5 border border-white/5 rounded-xl">
+                                                            <div className="flex items-center gap-1.5 mb-2">
+                                                                <Zap size={10} className="text-electric-teal" />
+                                                                <span className="text-[7px] font-black uppercase tracking-widest text-white/50">God Mode</span>
+                                                            </div>
+                                                            <div className="flex gap-1">
+                                                                <button
+                                                                    onClick={() => { updateUser({ is_operator: false }); setShowSettingsMenu(false); }}
+                                                                    className={`flex-1 py-1.5 rounded-lg text-[7px] font-black uppercase tracking-wider transition-all ${!user.is_operator ? 'bg-electric-teal text-black' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
+                                                                >User</button>
+                                                                <button
+                                                                    onClick={() => { updateUser({ is_operator: true }); setShowSettingsMenu(false); }}
+                                                                    className={`flex-1 py-1.5 rounded-lg text-[7px] font-black uppercase tracking-wider transition-all ${user.is_operator ? 'bg-electric-teal text-black' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
+                                                                >Brand</button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {isMe && user.is_admin && (
+                                                        <button
+                                                            onClick={() => { navigate('/app/admin'); setShowSettingsMenu(false); }}
+                                                            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-electric-teal/10 transition-all text-electric-teal group"
+                                                        >
+                                                            <div className="w-5 h-5 rounded-md bg-electric-teal/10 flex items-center justify-center group-hover:bg-electric-teal group-hover:text-black transition-all">
+                                                                <Zap size={11} />
+                                                            </div>
+                                                            <span className="text-[9px] font-bold">Admin Command</span>
+                                                        </button>
+                                                    )}
+
+                                                    {(isMe && user.is_admin) && <div className="h-px bg-white/5 mx-2 my-0.5" />}
 
                                                     <button
                                                         onClick={() => {
@@ -167,30 +224,19 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
                                                     <div className="h-px bg-white/5 mx-2 my-0.5" />
 
-                                                    <div className="flex items-center justify-between px-1 py-1">
+                                                    <div className="px-1 py-1">
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 onLogout?.();
                                                                 setShowSettingsMenu(false);
                                                             }}
-                                                            className="flex items-center gap-1.5 px-1.5 py-1 rounded-lg hover:bg-red-500/10 transition-all text-red-500 group active:scale-95"
+                                                            className="w-full flex items-center gap-1.5 px-1.5 py-1 rounded-lg hover:bg-red-500/10 transition-all text-red-500 group active:scale-95"
                                                         >
                                                             <div className="w-5 h-5 rounded-md bg-red-500/10 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-all shadow-sm">
                                                                 <LogOut size={11} />
                                                             </div>
                                                             <span className="text-[7px] font-black uppercase tracking-[0.15em] group-hover:text-red-400 transition-colors whitespace-nowrap">Log Out</span>
-                                                        </button>
-
-                                                        <button
-                                                            onClick={() => {
-                                                                window.location.href = '/app/dibs';
-                                                                setShowSettingsMenu(false);
-                                                            }}
-                                                            className="flex items-center gap-1 px-1 py-1 text-gray-500 hover:text-white transition-colors group"
-                                                        >
-                                                            <span className="text-[6px] font-black uppercase tracking-widest whitespace-nowrap">Explore Brands</span>
-                                                            <ArrowRight size={8} className="group-hover:translate-x-0.5 transition-transform" />
                                                         </button>
                                                     </div>
                                                 </motion.div>
@@ -470,9 +516,17 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                                         <LayoutDashboard size={14} />
                                         Manage
                                     </button>
+                                ) : user.is_admin ? (
+                                    <button
+                                        onClick={() => navigate('/app/admin')}
+                                        className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-electric-teal/10 border border-electric-teal/30 text-electric-teal rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-electric-teal/20 transition-all active:scale-95 shadow-xl"
+                                    >
+                                        <Zap size={14} />
+                                        Command
+                                    </button>
                                 ) : (
                                     <button
-                                        onClick={() => window.location.href = '/app/quests/create'}
+                                        onClick={() => navigate('/app/quests/create')}
                                         className="flex-1 px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95 shadow-xl"
                                     >
                                         Create Quest
@@ -498,7 +552,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     </div>
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 

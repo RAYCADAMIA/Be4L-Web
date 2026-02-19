@@ -98,9 +98,13 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children 
                 return;
             }
 
-            // 2. Admin Logic
+            // 2. Admin Logic - Unified Experience
             if (profile.is_admin) {
-                if (!location.pathname.startsWith('/app/admin')) navigate('/app/admin');
+                if (location.pathname === '/app/admin') {
+                    // Allow them to stay if they explicitly navigate there
+                } else if (!location.pathname.startsWith('/app')) {
+                    navigate('/app/home');
+                }
                 setIsVerifying(false);
                 return;
             }

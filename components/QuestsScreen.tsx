@@ -13,7 +13,6 @@ import { EKGLoader } from './ui/AestheticComponents';
 import { useToast } from './Toast';
 import { useNavigation } from '../contexts/NavigationContext';
 import { QuestSidebar, QuestHeader, MinimalCalendar } from './Quest/QuestFilters';
-import CreateQuestScreen from './CreateQuestScreen';
 import QuestDropModal from './Quest/QuestDropModal';
 import QuestDropCard from './Quest/QuestDropCard';
 
@@ -52,7 +51,6 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showGenerator, setShowGenerator] = useState(false);
-    const [showCreate, setShowCreate] = useState(false);
     const [showCalendar, setShowCalendar] = useState(false);
     const [activeDrop, setActiveDrop] = useState<any>(null);
     const [viewingLocation, setViewingLocation] = useState('Global');
@@ -354,7 +352,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                     whileTap={{ scale: 0.9 }}
                     onClick={() => {
                         if (currentUser) {
-                            setShowCreate(true);
+                            navigate('/app/quests/create');
                         } else {
                             window.dispatchEvent(new CustomEvent('trigger-auth-modal'));
                         }
@@ -367,21 +365,6 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
             </div>
 
 
-            <AnimatePresence>
-                {showCreate && (
-                    <CreateQuestScreen
-                        currentUser={currentUser}
-                        onClose={() => setShowCreate(false)}
-                        onQuestCreated={(id, title) => {
-                            setShowCreate(false);
-                            showToast(`Quest "${title}" deployed!`, "success");
-                            // Trigger refresh locally
-                            setLoading(true);
-                            setLocalRefresh(prev => prev + 1);
-                        }}
-                    />
-                )}
-            </AnimatePresence>
 
             <AnimatePresence>
                 {showCalendar && (

@@ -22,11 +22,13 @@ const QuestDetailScreen = lazy(() => import('./components/Quest/QuestDetailScree
 const LorePage = lazy(() => import('./pages/LorePage').then(module => ({ default: module.LorePage })));
 const OperatorDashboard = lazy(() => import('./components/Dibs/OperatorDashboard'));
 const AdminDashboard = lazy(() => import('./components/Dibs/AdminDashboard'));
-const CreateQuestPage = lazy(() => import('./components/CreateQuestScreen'));
+const CreateQuestPage = lazy(() => import('./pages/CreateQuestPage'));
+const CreateQuestScreen = lazy(() => import('./components/CreateQuestScreen'));
 const LandingPage = lazy(() => import('./components/LandingPage').then(module => ({ default: module.LandingPage })));
 const BookScreen = lazy(() => import('./components/BookScreen'));
 const PartnerPage = lazy(() => import('./pages/PartnerPage'));
-const PartnerApplyPage = lazy(() => import('./pages/Partner/PartnerApplyPage').then(module => ({ default: module.PartnerPage })));
+const PartnerApplyPage = lazy(() => import('./pages/Partner/PartnerApplyPage').then(module => ({ default: module.PartnerApplyPage })));
+const TeamPage = lazy(() => import('./pages/TeamPage').then(module => ({ default: module.TeamPage })));
 const PartnerPendingPage = lazy(() => import('./pages/Partner/PartnerPendingPage').then(module => ({ default: module.PartnerPendingPage })));
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage').then(module => ({ default: module.OnboardingPage })));
 const VerifyBooking = lazy(() => import('./components/Dibs/VerifyBooking'));
@@ -88,6 +90,10 @@ export const router = createBrowserRouter([
                     }
                 ]
             },
+            {
+                path: 'team',
+                element: <Suspense fallback={<HeartbeatLoader />}><TeamPage /></Suspense>
+            },
             // Public Verify Route
             {
                 path: 'verify/:bookingId',
@@ -115,6 +121,10 @@ export const router = createBrowserRouter([
             {
                 path: 'quests',
                 element: <Suspense fallback={<HeartbeatLoader />}><QuestPage /></Suspense>
+            },
+            {
+                path: 'quests/create',
+                element: <Suspense fallback={<HeartbeatLoader />}><CreateQuestPage /></Suspense>
             },
             {
                 path: 'quest/:questId',

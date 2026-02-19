@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Check, X, Building, MapPin, User, Mail, Phone } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, X, Building, Mail, Phone, Instagram, Globe, FileText, Zap } from 'lucide-react';
 import { EKGLoader } from '../ui/AestheticComponents';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { supabase } from '../../utils/supabaseClient';
 
 interface PendingOperator {
     id: string;
     business_name: string;
-    contact_name: string;
-    email: string;
-    phone: string;
-    location_text: string;
-    status: 'pending';
+    contact_email: string;
+    contact_number: string;
+    category: string;
+    social_handle?: string;
+    website?: string;
+    proof_url?: string;
+    status: 'pending' | 'approved' | 'rejected';
     created_at: string;
 }
 
@@ -20,115 +23,139 @@ const AdminDashboard: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [requests, setRequests] = useState<PendingOperator[]>([]);
 
+    const loadRequests = async () => {
+        setLoading(true);
+        const { data, error } = await supabase
+            .from('operators')
+            .select('*')
+            .eq('status', 'pending')
+            .order('created_at', { ascending: false });
+
+        if (!error && data) {
+            setRequests(data);
+        }
+        setLoading(false);
+    };
+
     useEffect(() => {
-        const loadRequests = async () => {
-            setRequests([
-                {
-                    id: 'op_123',
-                    business_name: 'Davao Pickleball Club',
-                    contact_name: 'John Doe',
-                    email: 'john@example.com',
-                    phone: '0917-123-4567',
-                    location_text: 'Ecoland, Davao City',
-                    status: 'pending',
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: 'op_456',
-                    business_name: 'Mt. Apo Coffee',
-                    contact_name: 'Jane Smith',
-                    email: 'jane@example.com',
-                    phone: '0918-987-6543',
-                    location_text: 'Toril, Davao City',
-                    status: 'pending',
-                    created_at: new Date().toISOString()
-                }
-            ]);
-            setLoading(false);
-        };
         loadRequests();
     }, []);
 
-    const handleApprove = (id: string) => {
-        setRequests(prev => prev.filter(r => r.id !== id));
+    const handleUpdateStatus = async (id: string, status: 'approved' | 'rejected') => {
+        const { error } = await supabase
+            .from('operators')
+            .update({ status })
+            .eq('id', id);
+
+        if (!error) {
+            setRequests(prev => prev.filter(r => r.id !== id));
+        } else {
+            alert('Error updating status: ' + error.message);
+        }
     };
 
-    const handleReject = (id: string) => {
-        setRequests(prev => prev.filter(r => r.id !== id));
-    };
-
-    if (loading) return <div className="flex h-screen items-center justify-center bg-deep-void"><EKGLoader /></div>;
+    if (loading) return <div className="flex h-screen items-center justify-center bg-transparent"><EKGLoader /></div>;
 
     return (
-        <div className="min-h-screen bg-deep-void text-white p-6 pb-24">
-            <header className="mb-8">
-                <h1 className="text-3xl font-black uppercase tracking-tighter text-white">Admin Command</h1>
-                <p className="text-gray-500 text-sm">Review partnership applications and manage platform integrity.</p>
+        <div className="min-h-screen bg-transparent text-white p-6 pt-32 pb-24">
+            <header className="mb-12 max-w-4xl mx-auto flex items-end justify-between">
+                <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-electric-teal/20 flex items-center justify-center text-electric-teal">
+                            <Zap size={18} fill="currentColor" />
+                        </div>
+                        <h1 className="text-4xl font-black uppercase tracking-tighter animate-liquid-text">Admin Command</h1>
+                    </div>
+                    <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] ml-11">Platform Integrity & Oversight</p>
+                </div>
             </header>
 
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="grid gap-4"
+                className="grid gap-6 max-w-4xl mx-auto"
             >
-                {requests.length === 0 ? (
-                    <div className="text-center py-20 text-gray-500">
-                        <Check size={48} className="mx-auto mb-4 opacity-20" />
-                        <p className="uppercase tracking-widest font-bold">All Caught Up</p>
-                        <p className="text-xs">No pending partnership requests.</p>
-                    </div>
-                ) : (
-                    requests.map(req => (
+                <AnimatePresence mode="popLayout">
+                    {requests.length === 0 ? (
                         <motion.div
-                            layout
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            key={req.id}
-                            className="bg-white/[0.03] border border-white/5 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-white/10 transition-colors group"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-center py-32 text-white/20"
                         >
-                            <div className="flex-1 space-y-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-xl bg-electric-teal/10 flex items-center justify-center text-electric-teal shadow-[0_0_15px_rgba(45,212,191,0.1)] group-hover:scale-110 transition-transform">
-                                        <Building size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-black uppercase text-white leading-none tracking-tight">{req.business_name}</h3>
-                                        <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1.5">
-                                            <div className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded-full"><MapPin size={10} /> {req.location_text}</div>
-                                            <span className="text-white/10">•</span>
-                                            <span>{new Date(req.created_at).toLocaleDateString()}</span>
+                            <div className="w-24 h-24 rounded-full bg-white/[0.02] border border-white/5 flex items-center justify-center mx-auto mb-8 shadow-inner">
+                                <Check size={40} strokeWidth={3} className="opacity-30" />
+                            </div>
+                            <p className="uppercase tracking-[0.4em] font-black text-xs text-white/40">All Caught Up</p>
+                            <p className="text-[10px] font-bold mt-3 text-white/10 uppercase tracking-widest">No pending partnership requests.</p>
+                        </motion.div>
+                    ) : (
+                        requests.map(req => (
+                            <motion.div
+                                layout
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                key={req.id}
+                                className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-10 flex flex-col md:flex-row md:items-center justify-between gap-10 hover:bg-white/[0.05] hover:border-white/20 transition-all duration-500 group shadow-[0_30px_100px_rgba(0,0,0,0.5)] relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-electric-teal/5 blur-[100px] -mr-32 -mt-32 rounded-full pointer-events-none group-hover:bg-electric-teal/10 transition-all duration-700" />
+
+                                <div className="flex-1 space-y-6 relative z-10">
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-electric-teal shadow-xl group-hover:scale-110 group-hover:border-electric-teal/30 transition-all duration-500">
+                                            <Building size={32} strokeWidth={1.5} />
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-3 mb-1">
+                                                <h3 className="text-2xl font-black uppercase text-white leading-none tracking-tight group-hover:text-electric-teal transition-colors">{req.business_name}</h3>
+                                                <span className="px-3 py-1 rounded-full bg-electric-teal/10 border border-electric-teal/20 text-[9px] font-black uppercase tracking-widest text-electric-teal">{req.category}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-[10px] text-white/30 font-black uppercase tracking-widest">
+                                                <span>Submitted {new Date(req.created_at).toLocaleDateString()}</span>
+                                            </div>
                                         </div>
                                     </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-[11px] text-white/50 pl-0 md:pl-20 uppercase font-bold tracking-wider">
+                                        <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center text-white/20"><Mail size={12} /></div> {req.contact_email}</div>
+                                        <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center text-white/20"><Phone size={12} /></div> {req.contact_number}</div>
+                                        {req.social_handle && <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center text-white/20"><Instagram size={12} /></div> {req.social_handle}</div>}
+                                        {req.website && <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center text-white/20"><Globe size={12} /></div> {req.website}</div>}
+                                        {req.proof_url && (
+                                            <a
+                                                href={req.proof_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-3 text-electric-teal hover:text-white transition-colors group/link"
+                                            >
+                                                <div className="w-6 h-6 rounded-lg bg-electric-teal/10 flex items-center justify-center group-hover/link:bg-electric-teal group-hover/link:text-black transition-all"><FileText size={12} /></div>
+                                                <span className="border-b border-electric-teal/30 group-hover:border-white transition-all">Verification Proof</span>
+                                            </a>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs text-gray-400 pl-16">
-                                    <div className="flex items-center gap-2 hover:text-white transition-colors"><User size={12} className="text-electric-teal/50" /> {req.contact_name}</div>
-                                    <div className="flex items-center gap-2 hover:text-white transition-colors"><Mail size={12} className="text-electric-teal/50" /> {req.email}</div>
-                                    <div className="flex items-center gap-2 hover:text-white transition-colors"><Phone size={12} className="text-electric-teal/50" /> {req.phone}</div>
-                                </div>
-                            </div>
 
-                            <div className="flex items-center gap-3 pl-16 md:pl-0">
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => handleReject(req.id)}
-                                    className="px-5 py-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 font-bold uppercase text-[10px] tracking-widest transition-colors flex items-center gap-2 border border-transparent hover:border-red-500/30"
-                                >
-                                    <X size={14} strokeWidth={3} /> Reject
-                                </motion.button>
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => handleApprove(req.id)}
-                                    className="px-6 py-2.5 rounded-xl bg-electric-teal text-black hover:bg-electric-teal/90 font-black uppercase text-[10px] tracking-widest transition-colors shadow-[0_0_20px_rgba(45,212,191,0.3)] hover:shadow-[0_0_30px_rgba(45,212,191,0.5)] flex items-center gap-2"
-                                >
-                                    <Check size={14} strokeWidth={3} /> Approve
-                                </motion.button>
-                            </div>
-                        </motion.div>
-                    ))
-                )}
+                                <div className="flex flex-row md:flex-col items-center gap-4 relative z-10 w-full md:w-auto">
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => handleUpdateStatus(req.id, 'approved')}
+                                        className="flex-1 md:w-40 py-4 rounded-2xl bg-white text-black font-black uppercase text-[10px] tracking-[0.2em] transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] hover:shadow-[0_25px_50px_rgba(255,255,255,0.2)] flex items-center justify-center gap-2"
+                                    >
+                                        <Check size={16} strokeWidth={4} /> Approve
+                                    </motion.button>
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => handleUpdateStatus(req.id, 'rejected')}
+                                        className="flex-1 md:w-40 py-4 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 font-black uppercase text-[10px] tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <X size={16} strokeWidth={4} /> Reject
+                                    </motion.button>
+                                </div>
+                            </motion.div>
+                        ))
+                    )}
+                </AnimatePresence>
             </motion.div>
         </div>
     );

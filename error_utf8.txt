@@ -1,0 +1,148 @@
+﻿components/Quest/QuestFilters.tsx(2,41): error TS2792: Cannot find module 'framer-motion'. Did you mean to set the 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?
+components/Quest/QuestFilters.tsx(3,94): error TS2792: Cannot find module 'lucide-react'. Did you mean to set the 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?
+components/Quest/QuestFilters.tsx(25,14): error TS2322: Type '({ selectedDate, onSelect, onClose }: { selectedDate: Date; onSelect: (d: Date) => void; onClose: () => void; }) => Element' is not assignable to type 'FC<{ selectedDate: Date; onSelect: (d: Date) => void; onClose: () => void; }>'.
+  Type 'Element' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+components/Quest/QuestFilters.tsx(48,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(49,17): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(51,17): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(52,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(53,21): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(53,153): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(54,21): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(56,21): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(57,21): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(57,154): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(58,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(59,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(62,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(64,21): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(64,86): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(66,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(67,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(68,72): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(80,25): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(92,25): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(95,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(100,14): error TS2322: Type '({ selectedDate, onDateChange, onOpenCalendar, activeCat, setActiveCat, activeTab, setActiveTab, viewingLocation, setViewingLocation }: QuestFiltersProps) => Element' is not assignable to type 'FC<QuestFiltersProps>'.
+  Type 'Element' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+components/Quest/QuestFilters.tsx(123,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(125,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(127,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(128,21): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(137,29): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(139,21): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(149,33): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(153,45): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(165,45): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(168,33): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(172,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(175,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(177,21): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(185,25): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(185,100): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(193,21): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(196,21): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(204,25): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(204,101): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(212,21): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(213,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(214,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(217,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(228,29): error TS2339: Property 'h3' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(228,128): error TS2339: Property 'h3' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(230,29): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(232,33): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(239,41): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(256,49): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(259,45): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(261,45): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(262,45): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(264,45): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(265,41): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(269,33): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(273,37): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(274,37): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(276,37): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(277,33): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(278,29): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(284,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(285,21): error TS2339: Property 'h3' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(285,151): error TS2339: Property 'h3' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(286,21): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(290,33): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(306,33): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(309,21): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(310,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(311,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(312,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(321,14): error TS2322: Type '({ selectedDate, onDateChange, activeCat, setActiveCat, activeTab, setActiveTab, viewingLocation, setViewingLocation, onOpenCalendar }: QuestFiltersProps) => Element' is not assignable to type 'FC<QuestFiltersProps>'.
+  Type 'Element' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+components/Quest/QuestFilters.tsx(339,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(343,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(344,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(345,21): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(353,25): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(353,111): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(360,21): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(361,21): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(369,25): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(369,112): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(376,21): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(377,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(378,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(381,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(382,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(386,29): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(401,29): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(404,17): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(405,13): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(417,29): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(419,33): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(420,37): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(425,37): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(436,49): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(437,53): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(437,146): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(438,49): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(442,57): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(454,57): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(460,33): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(463,33): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(464,37): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(473,37): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(475,37): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(476,41): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(478,41): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(479,41): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(481,41): error TS2339: Property 'span' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(482,37): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(484,37): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(493,37): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(494,33): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(497,33): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(502,33): error TS2339: Property 'button' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(503,29): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+components/Quest/QuestFilters.tsx(507,9): error TS2339: Property 'div' does not exist on type 'JSX.IntrinsicElements'.
+constants.ts(66,3): error TS2353: Object literal may only specify known properties, and 'aura_history' does not exist in type 'User'.
+constants.ts(96,542): error TS2353: Object literal may only specify known properties, and 'aura_history' does not exist in type 'User'.
+constants.ts(97,547): error TS2353: Object literal may only specify known properties, and 'aura_history' does not exist in type 'User'.
+constants.ts(98,524): error TS2353: Object literal may only specify known properties, and 'aura_history' does not exist in type 'User'.
+constants.ts(99,538): error TS2353: Object literal may only specify known properties, and 'aura_history' does not exist in type 'User'.
+constants.ts(100,508): error TS2353: Object literal may only specify known properties, and 'aura_history' does not exist in type 'User'.
+constants.ts(101,506): error TS2353: Object literal may only specify known properties, and 'aura_history' does not exist in type 'User'.
+constants.ts(102,491): error TS2353: Object literal may only specify known properties, and 'aura_history' does not exist in type 'User'.
+constants.ts(103,491): error TS2353: Object literal may only specify known properties, and 'aura_history' does not exist in type 'User'.
+constants.ts(104,493): error TS2353: Object literal may only specify known properties, and 'aura_history' does not exist in type 'User'.
+constants.ts(105,526): error TS2353: Object literal may only specify known properties, and 'aura_history' does not exist in type 'User'.
+constants.ts(263,3): error TS2741: Property 'location' is missing in type '{ id: string; user_id: string; user: User; media_type: "image"; front_media_url: string; back_media_url: string; caption: string; created_at: string; captured_at: string; location_name: string; visibility: "public"; state: "active"; reaction_count: number; comment_count: number; }' but required in type 'LoreEntry'.
+constants.ts(279,3): error TS2741: Property 'location' is missing in type '{ id: string; user_id: string; user: User; media_type: "image"; front_media_url: string; back_media_url: string; caption: string; created_at: string; captured_at: string; location_name: string; visibility: "public"; state: "active"; reaction_count: number; comment_count: number; }' but required in type 'LoreEntry'.
+constants.ts(295,3): error TS2741: Property 'location' is missing in type '{ id: string; user_id: string; user: User; media_type: "image"; front_media_url: string; back_media_url: string; caption: string; created_at: string; captured_at: string; location_name: string; visibility: "public"; state: "active"; reaction_count: number; comment_count: number; }' but required in type 'LoreEntry'.
+constants.ts(311,3): error TS2741: Property 'location' is missing in type '{ id: string; user_id: string; user: User; media_type: "image"; front_media_url: string; back_media_url: string; caption: string; created_at: string; captured_at: string; location_name: string; visibility: "public"; state: "active"; reaction_count: number; comment_count: number; }' but required in type 'LoreEntry'.
+constants.ts(327,3): error TS2741: Property 'location' is missing in type '{ id: string; user_id: string; user: User; media_type: "image"; front_media_url: string; back_media_url: string; caption: string; created_at: string; captured_at: string; location_name: string; visibility: "public"; state: "active"; reaction_count: number; comment_count: number; }' but required in type 'LoreEntry'.
+constants.ts(343,3): error TS2741: Property 'location' is missing in type '{ id: string; user_id: string; user: User; media_type: "image"; front_media_url: string; back_media_url: string; caption: string; created_at: string; captured_at: string; location_name: string; visibility: "public"; state: "active"; reaction_count: number; comment_count: number; }' but required in type 'LoreEntry'.
+constants.ts(359,3): error TS2741: Property 'location' is missing in type '{ id: string; user_id: string; user: User; media_type: "image"; front_media_url: string; back_media_url: string; caption: string; created_at: string; captured_at: string; location_name: string; visibility: "public"; state: "active"; reaction_count: number; comment_count: number; }' but required in type 'LoreEntry'.
+constants.ts(375,3): error TS2741: Property 'location' is missing in type '{ id: string; user_id: string; user: User; media_type: "image"; front_media_url: string; back_media_url: string; caption: string; created_at: string; captured_at: string; location_name: string; visibility: "public"; state: "active"; reaction_count: number; comment_count: number; }' but required in type 'LoreEntry'.
+constants.ts(391,3): error TS2741: Property 'location' is missing in type '{ id: string; user_id: string; user: User; media_type: "image"; front_media_url: string; back_media_url: string; caption: string; created_at: string; captured_at: string; location_name: string; visibility: "public"; state: "active"; reaction_count: number; comment_count: number; }' but required in type 'LoreEntry'.
+constants.ts(407,3): error TS2741: Property 'location' is missing in type '{ id: string; user_id: string; user: User; media_type: "image"; front_media_url: string; back_media_url: string; caption: string; created_at: string; captured_at: string; location_name: string; visibility: "public"; state: "active"; reaction_count: number; comment_count: number; }' but required in type 'LoreEntry'.
+constants.ts(734,5): error TS2322: Type '"OPERATOR_CREATED"' is not assignable to type '"USER_CREATED" | "SYSTEM_GENERATED" | "CANON_ESCALATED"'.
+constants.ts(979,5): error TS2741: Property 'type' is missing in type '{ id: string; operator_id: string; title: string; price: number; image_url: string; category: string; description: string; available_slots: number; total_slots: number; is_active: true; tiers: { id: string; ... 4 more ...; available: number; }[]; }' but required in type 'DibsItem'.

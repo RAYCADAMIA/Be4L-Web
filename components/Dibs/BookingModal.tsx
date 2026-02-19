@@ -1264,13 +1264,21 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                                     })}
                                                                 </div>
                                                             ))
+                                                        ) : bookingType === 'TIER_BASED' ? (
+                                                            <div className="flex justify-between items-center text-[10px] bg-white/[0.02] border border-white/5 p-3 rounded-xl border-l-2 border-l-electric-teal">
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-white font-bold">{quantity}x {item.tiers?.find(t => t.id === selectedTierId)?.name || 'Ticket'}</span>
+                                                                    <span className="text-[8px] text-zinc-500 uppercase font-black">{item.event_date ? new Date(item.event_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'TBA'}</span>
+                                                                </div>
+                                                                <span className="text-zinc-300 font-mono">₱{totalPrice.toLocaleString()}</span>
+                                                            </div>
                                                         ) : (
                                                             <div className="flex justify-between items-center text-[10px] bg-white/[0.02] border border-white/5 p-2 rounded-lg">
                                                                 <div className="flex flex-col">
                                                                     <span className="text-white font-bold">{quantity} {item.unit_label || 'Units'}</span>
                                                                     <span className="text-[8px] text-zinc-500 uppercase font-black">{new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                                                                 </div>
-                                                                <span className="text-zinc-300 font-mono">₱{totalPrice}</span>
+                                                                <span className="text-zinc-300 font-mono">₱{totalPrice.toLocaleString()}</span>
                                                             </div>
                                                         )}
                                                     </div>

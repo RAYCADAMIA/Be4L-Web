@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign, MapPin, ListFilter, ChevronDown } from 'lucide-react';
+import { useOnClickOutside } from '../../hooks/useOnClickOutside';
 
 export const DIB_CATEGORIES = [
     { id: 'All', label: 'All' },
@@ -164,6 +165,9 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
     setLocationFilter,
 }) => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const filterRef = useRef<HTMLDivElement>(null);
+
+    useOnClickOutside(filterRef, () => setIsFilterOpen(false));
     const MAX_VAL = 10000;
 
     // Rail Logic for Web
@@ -229,7 +233,7 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
             {/* Categories & Filter Toggle */}
             <div className="flex gap-2 items-center relative z-[100] w-full">
                 {/* Single Consolidated Filter Toggle - Replicating Quest Behavior */}
-                <div className="relative shrink-0">
+                <div className="relative shrink-0" ref={filterRef}>
                     <button
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
                         className={`
@@ -243,73 +247,66 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
                     {/* Premium Frozen Glass Filter Window - Same as Quest */}
                     <AnimatePresence>
                         {isFilterOpen && (
-                            <>
-                                {/* Invisible Backdrop for click-outside behavior */}
-                                <div
-                                    className="fixed inset-0 z-[150] cursor-default"
-                                    onClick={() => setIsFilterOpen(false)}
-                                />
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    className="absolute top-full left-0 mt-2 p-1.5 min-w-[260px] bg-white/[0.05] backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[200] space-y-6"
-                                >
-                                    {/* Location Section */}
-                                    <div className="space-y-3">
-                                        <label className="text-[9px] font-black uppercase text-white/20 tracking-widest flex items-center gap-1.5 px-1">
-                                            Select City
+                            <motion.div
+                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                className="absolute top-full left-0 mt-2 p-1.5 min-w-[260px] bg-white/[0.05] backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[200] space-y-6"
+                            >
+                                {/* Location Section */}
+                                <div className="space-y-3">
+                                    <label className="text-[9px] font-black uppercase text-white/20 tracking-widest flex items-center gap-1.5 px-1">
+                                        Select City
+                                    </label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {['All Cities', 'Manila', 'Davao', 'Cebu', 'Makati'].map(city => {
+                                            const isAll = city === 'All Cities';
+                                            const value = isAll ? '' : city;
+                                            const isActive = (locationFilter === value);
+                                            return (
+                                                <button
+                                                    key={city}
+                                                    onClick={() => setLocationFilter?.(value)}
+                                                    className={`px-3 py-1.5 rounded-[0.75rem] text-[8px] font-black uppercase tracking-widest transition-all ${isActive ? 'bg-white/10 text-white border border-white/20 shadow-[0_4px_12px_rgba(255,255,255,0.05)]' : 'bg-white/5 text-white/40 hover:bg-white/10 border border-white/5'}`}
+                                                >
+                                                    {city}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Price Range Section */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between px-1">
+                                        <label className="text-[9px] font-black uppercase text-white/20 tracking-widest">
+                                            Max Price
                                         </label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {['All Cities', 'Manila', 'Davao', 'Cebu', 'Makati'].map(city => {
-                                                const isAll = city === 'All Cities';
-                                                const value = isAll ? '' : city;
-                                                const isActive = (locationFilter === value);
-                                                return (
-                                                    <button
-                                                        key={city}
-                                                        onClick={() => setLocationFilter?.(value)}
-                                                        className={`px-3 py-1.5 rounded-[0.75rem] text-[8px] font-black uppercase tracking-widest transition-all ${isActive ? 'bg-white/10 text-white border border-white/20 shadow-[0_4px_12px_rgba(255,255,255,0.05)]' : 'bg-white/5 text-white/40 hover:bg-white/10 border border-white/5'}`}
-                                                    >
-                                                        {city}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
+                                        <span className="text-[12px] font-black text-white tracking-widest">
+                                            ₱{priceRange[1].toLocaleString()}
+                                            {priceRange[1] === MAX_VAL && '+'}
+                                        </span>
                                     </div>
-
-                                    {/* Price Range Section */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between px-1">
-                                            <label className="text-[9px] font-black uppercase text-white/20 tracking-widest">
-                                                Max Price
-                                            </label>
-                                            <span className="text-[12px] font-black text-white tracking-widest">
-                                                ₱{priceRange[1].toLocaleString()}
-                                                {priceRange[1] === MAX_VAL && '+'}
-                                            </span>
-                                        </div>
-                                        <div className="relative h-4 flex items-center">
-                                            <input
-                                                type="range"
-                                                min="0"
-                                                max={MAX_VAL}
-                                                step="100"
-                                                value={priceRange[1]}
-                                                onChange={(e) => setPriceRange?.([priceRange[0], Number(e.target.value)])}
-                                                className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
-                                            />
-                                        </div>
+                                    <div className="relative h-4 flex items-center">
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max={MAX_VAL}
+                                            step="100"
+                                            value={priceRange[1]}
+                                            onChange={(e) => setPriceRange?.([priceRange[0], Number(e.target.value)])}
+                                            className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
+                                        />
                                     </div>
+                                </div>
 
-                                    <button
-                                        onClick={() => setIsFilterOpen(false)}
-                                        className="w-full py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95 shadow-[0_10px_30px_rgba(255,255,255,0.1)]"
-                                    >
-                                        Close Filters
-                                    </button>
-                                </motion.div>
-                            </>
+                                <button
+                                    onClick={() => setIsFilterOpen(false)}
+                                    className="w-full py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95 shadow-[0_10px_30px_rgba(255,255,255,0.1)]"
+                                >
+                                    Close Filters
+                                </button>
+                            </motion.div>
                         )}
                     </AnimatePresence>
                 </div>

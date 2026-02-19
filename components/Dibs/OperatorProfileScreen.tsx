@@ -190,7 +190,7 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                             key="showcase"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="space-y-6"
+                            className="space-y-6 max-w-4xl mx-auto px-2"
                         >
                             {/* Add Post Button for Owner */}
                             {isOwner && (
@@ -205,57 +205,55 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                                 </button>
                             )}
 
-                            {/* Feed Style Posts */}
-                            <div className="space-y-8">
+                            {/* Feed Style Posts - 2 Column Grid for Compactness */}
+                            <div className="grid grid-cols-2 gap-2 md:gap-4 pb-12">
                                 {posts.map((post) => (
-                                    <div key={post.id} className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden">
+                                    <div key={post.id} className="bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden flex flex-col group/post">
                                         {/* Media */}
-                                        <div className="aspect-square relative group">
-                                            <img src={post.media_urls[0]} className="w-full h-full object-cover" />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <div className="aspect-square relative overflow-hidden bg-black/40 shrink-0">
+                                            <img src={post.media_urls[0]} className="w-full h-full object-cover transition-transform duration-500 group-hover/post:scale-105" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/post:opacity-100 transition-opacity" />
 
                                             {post.tagged_item && (
-                                                <div className="absolute bottom-6 left-6 right-6">
+                                                <div className="absolute bottom-2 left-2 right-2">
                                                     <button
                                                         onClick={() => setSelectedItem(post.tagged_item)}
-                                                        className="w-full py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all"
+                                                        className="w-full py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl flex items-center justify-center gap-1.5 text-[8px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all shadow-xl"
                                                     >
-                                                        <ShoppingBag size={14} /> Shop {post.tagged_item.title}
+                                                        <ShoppingBag size={10} /> Shop Item
                                                     </button>
                                                 </div>
                                             )}
                                         </div>
 
-                                        {/* Stats & Caption */}
-                                        <div className="p-6 space-y-4">
-                                            <div className="flex items-center gap-6">
-                                                <button className="flex items-center gap-2 text-white">
-                                                    <Heart size={20} />
-                                                    <span className="text-xs font-bold">{post.likes_count}</span>
-                                                </button>
-                                                <button className="flex items-center gap-2 text-white">
-                                                    <MessageCircle size={20} />
-                                                    <span className="text-xs font-bold">{post.comments_count}</span>
-                                                </button>
-                                                <button className="ml-auto text-white/50">
-                                                    <Share2 size={20} />
-                                                </button>
-                                            </div>
+                                        {/* Minimal Stats & Caption */}
+                                        <div className="p-3 space-y-2 flex-1 flex flex-col justify-between">
                                             <div>
-                                                <p className="text-gray-300 text-sm leading-relaxed">
-                                                    <span className="font-black text-white mr-2">{operator.business_name}</span>
+                                                <p className="text-gray-300 text-[10px] md:text-xs leading-relaxed line-clamp-2 font-medium">
                                                     {post.caption}
                                                 </p>
-                                                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mt-2">
-                                                    {new Date(post.created_at).toLocaleDateString()}
-                                                </p>
+                                            </div>
+                                            <div className="flex items-center justify-between border-t border-white/5 pt-2 mt-1">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-1 text-[8px] font-bold text-zinc-500">
+                                                        <Heart size={10} className="text-zinc-400" />
+                                                        {post.likes_count}
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-[8px] font-bold text-zinc-500">
+                                                        <MessageCircle size={10} className="text-zinc-400" />
+                                                        {post.comments_count}
+                                                    </div>
+                                                </div>
+                                                <span className="text-[7px] font-black text-zinc-600 uppercase tracking-tighter">
+                                                    {new Date(post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
 
                                 {posts.length === 0 && (
-                                    <div className="h-64 flex flex-col items-center justify-center text-gray-600 space-y-4 opacity-50">
+                                    <div className="col-span-2 h-64 flex flex-col items-center justify-center text-gray-600 space-y-4 opacity-50">
                                         <Grid size={40} />
                                         <p className="text-[10px] font-black uppercase tracking-widest">No updates posted yet</p>
                                     </div>
@@ -270,7 +268,7 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                             key="services"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="grid grid-cols-2 gap-4 pb-24"
+                            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4 pb-24 max-w-5xl mx-auto px-2"
                         >
                             {(items || []).filter(item => isOwner || item.is_active !== false).map(item => (
                                 <DibsItemCard

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Plus, Trash2, Bell, Star, Heart, MessageCircle, Calendar, CheckSquare, LogOut, Settings, User, ArrowRight } from 'lucide-react';
+import { Check, Plus, Trash2, Bell, Star, Heart, MessageCircle, Calendar, CheckSquare, LogOut, Settings, User, ArrowRight, Zap } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { dailyService } from '../../services/dailyService';
@@ -166,8 +166,13 @@ export const NotificationWindow: React.FC = () => {
 };
 // --- PROFILE WINDOW ---
 export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-    const { user, logout } = useAuth();
+    const { user, logout, refreshProfile, updateUser } = useAuth();
     const navigate = useNavigate();
+
+    // Auto-refresh profile data when menu opens to catch admin status changes
+    useEffect(() => {
+        refreshProfile();
+    }, []);
 
     if (!user) return null;
 
@@ -195,10 +200,59 @@ export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     <p className="text-[6px] font-black uppercase tracking-[0.2em] text-electric-teal mt-0.5">
                         {user.aura_points || 0} Aura Points
                     </p>
+                    <button
+                        onClick={() => refreshProfile()}
+                        className="text-[5px] font-black uppercase tracking-[0.3em] text-white/20 hover:text-white transition-colors mt-1"
+                    >
+                        Sync Data
+                    </button>
                 </div>
             </div>
 
             <div className="p-0.5 space-y-0.5">
+                {/* Admin Role Switcher */}
+                {user.is_admin && (
+                    <div className="px-2 py-2 mb-1 bg-electric-teal/5 border border-white/5 rounded-xl">
+                        <div className="flex items-center gap-1.5 mb-2">
+                            <Zap size={10} className="text-electric-teal" />
+                            <span className="text-[7px] font-black uppercase tracking-widest text-white/50">God Mode</span>
+                        </div>
+                        <div className="flex gap-1">
+                            <button
+                                onClick={() => {
+                                    updateUser({ is_operator: false });
+                                    onClose();
+                                }}
+                                className={`flex-1 py-1.5 rounded-lg text-[7px] font-black uppercase tracking-wider transition-all ${!user.is_operator ? 'bg-electric-teal text-black' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
+                            >
+                                User
+                            </button>
+                            <button
+                                onClick={() => {
+                                    updateUser({ is_operator: true });
+                                    onClose();
+                                }}
+                                className={`flex-1 py-1.5 rounded-lg text-[7px] font-black uppercase tracking-wider transition-all ${user.is_operator ? 'bg-electric-teal text-black' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
+                            >
+                                Brand
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {user.is_admin && (
+                    <button
+                        onClick={() => {
+                            navigate('/app/admin');
+                            onClose();
+                        }}
+                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-electric-teal/10 transition-all text-electric-teal group"
+                    >
+                        <Zap size={11} className="text-electric-teal/50 group-hover:text-electric-teal transition-colors" />
+                        <span className="text-[8px] font-black uppercase tracking-wider">Admin Command</span>
+                    </button>
+                )}
+
                 <button
                     onClick={() => {
                         navigate('/app/myprofile');
@@ -221,28 +275,17 @@ export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =>
 
                 <div className="h-px bg-white/5 my-0.5 mx-2" />
 
-                <div className="flex items-center justify-between px-1">
+                <div className="px-1">
                     <button
                         onClick={() => {
                             logout();
                             onClose();
                             navigate('/');
                         }}
-                        className="flex items-center gap-1.5 px-1.5 py-1.5 rounded-lg hover:bg-red-500/10 transition-all text-red-500 group"
+                        className="w-full flex items-center gap-1.5 px-1.5 py-1.5 rounded-lg hover:bg-red-500/10 transition-all text-red-500 group"
                     >
                         <LogOut size={11} className="text-red-500/50 group-hover:text-red-500 transition-colors" />
                         <span className="text-[7px] font-black uppercase tracking-[0.2em]">Logout</span>
-                    </button>
-
-                    <button
-                        onClick={() => {
-                            navigate('/app/dibs');
-                            onClose();
-                        }}
-                        className="flex items-center gap-1 px-1.5 py-1.5 text-gray-500 hover:text-white transition-colors group"
-                    >
-                        <span className="text-[6px] font-black uppercase tracking-widest">Explore Brands</span>
-                        <ArrowRight size={8} className="group-hover:translate-x-0.5 transition-transform" />
                     </button>
                 </div>
             </div>

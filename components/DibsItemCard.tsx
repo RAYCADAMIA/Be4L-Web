@@ -17,7 +17,7 @@ const DibsItemCard: React.FC<DibsItemCardProps> = ({ item, operator, onClick }) 
     return (
         <div
             onClick={onClick}
-            className="group flex flex-col w-full bg-white/5 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer hover:border-electric-teal/30 transition-all duration-500 shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] bg-gradient-to-br from-white/[0.05] to-transparent"
+            className="group flex flex-col w-full bg-white/5 rounded-2xl md:rounded-2xl overflow-hidden border border-white/5 cursor-pointer hover:border-electric-teal/30 transition-all duration-500 shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] bg-gradient-to-br from-white/[0.05] to-transparent"
         >
             {/* Image Container */}
             <div className="relative aspect-[4/3] w-full overflow-hidden">
