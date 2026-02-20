@@ -8,11 +8,12 @@ const LandingPageContent = React.lazy(() => import('../LandingPage').then(module
 
 interface AnimationOrchestratorProps {
     children?: React.ReactNode;
+    bypassSplash?: boolean;
 }
 
-export const AnimationOrchestrator: React.FC<AnimationOrchestratorProps> = ({ children }) => {
+export const AnimationOrchestrator: React.FC<AnimationOrchestratorProps> = ({ children, bypassSplash = false }) => {
     // Check if splash has already been shown in this window session
-    const hasSplashShown = (window as any).__hasSplashShown;
+    const hasSplashShown = bypassSplash || (window as any).__hasSplashShown;
 
     const [viewState, setViewState] = useState<'splash' | 'hero'>(hasSplashShown ? 'hero' : 'splash');
     const [expanded, setExpanded] = useState(hasSplashShown ? false : true); // Start fully expanded ("Be For Life") unless already shown

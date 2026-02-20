@@ -1,5 +1,6 @@
 import React from 'react';
 import { StarIcon } from './StarIcon';
+import { Link } from 'react-router-dom';
 
 export const Footer: React.FC = () => {
     return (
@@ -48,9 +49,9 @@ export const Footer: React.FC = () => {
                         <div className="space-y-6">
                             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 font-display">Platform</h4>
                             <ul className="space-y-3">
-                                <li><a href="/about" className="text-xs font-bold text-cool-grey hover:text-white transition-colors block">About</a></li>
-                                <li><a href="/partner" className="text-xs font-bold text-cool-grey hover:text-white transition-colors block">Partner</a></li>
-                                <li><a href="/team" className="text-xs font-bold text-cool-grey hover:text-white transition-colors block">Team</a></li>
+                                <li><Link to="/about" className="text-xs font-bold text-cool-grey hover:text-white transition-colors block">About</Link></li>
+                                <li><Link to="/partner" className="text-xs font-bold text-cool-grey hover:text-white transition-colors block">Partner</Link></li>
+                                <li><Link to="/team" className="text-xs font-bold text-cool-grey hover:text-white transition-colors block">Team</Link></li>
                                 <li><a href="#vision" className="text-xs font-bold text-cool-grey hover:text-white transition-colors block">Vision</a></li>
                             </ul>
                         </div>
@@ -59,8 +60,8 @@ export const Footer: React.FC = () => {
                         <div className="space-y-6">
                             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 font-display">Legal</h4>
                             <ul className="space-y-3">
-                                <li><a href="/privacy" className="text-xs font-bold text-cool-grey hover:text-white transition-colors block">Privacy Policy</a></li>
-                                <li><a href="/terms" className="text-xs font-bold text-cool-grey hover:text-white transition-colors block">Terms of Service</a></li>
+                                <li><Link to="/privacy" className="text-xs font-bold text-cool-grey hover:text-white transition-colors block">Privacy Policy</Link></li>
+                                <li><Link to="/terms" className="text-xs font-bold text-cool-grey hover:text-white transition-colors block">Terms of Service</Link></li>
                                 <li><a href="#" className="text-xs font-bold text-cool-grey hover:text-white transition-colors block">Cookie Policy</a></li>
                             </ul>
                         </div>

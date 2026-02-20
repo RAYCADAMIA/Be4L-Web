@@ -64,7 +64,7 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: 'about',
-                        element: <Suspense fallback={<HeartbeatLoader />}><LandingPage bypassSplash /></Suspense>
+                        element: <Suspense fallback={<HeartbeatLoader />}><AnimationOrchestrator bypassSplash={true}><LandingPage bypassSplash /></AnimationOrchestrator></Suspense>
                     },
                     {
                         path: 'auth',

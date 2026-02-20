@@ -67,11 +67,11 @@ export const PreLaunchWelcome = () => {
                                     <div className="flex items-center gap-3 text-cyan-400">
                                         <Rocket size={18} />
                                         <h3 className="text-[11px] font-black uppercase tracking-widest leading-none">
-                                            <span className="animate-liquid-text">MVP Launch: Feb 20, 2026</span>
+                                            <span className="animate-liquid-text">MVP Launch: Feb 23, 2026</span>
                                         </h3>
                                     </div>
                                     <p className="text-[11px] text-gray-400 font-medium leading-relaxed">
-                                        The full ecosystem with real-time functionality drops this Saturday, Feb 20, 2026. <span className="text-white">Accounts created before launch will receive Aura Points.</span>
+                                        The full ecosystem with real-time functionality drops this Monday, Feb 23, 2026. <span className="text-white">Accounts created before launch will receive Aura Points.</span>
                                     </p>
                                 </div>
 

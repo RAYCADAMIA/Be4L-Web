@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Send, Sparkles, Star, MapPin, ArrowRight } from 'lucide-react';
 
 interface UserCTAProps {
     onJoinClick: () => void;
@@ -101,6 +102,116 @@ export const TeamRecruitment: React.FC = () => {
                 </button>
             </motion.div>
         </section>
+    );
+};
+
+export const HowItWorks: React.FC = () => {
+    return (
+        <>
+            {/* How Quests Works */}
+            <section className="py-12 px-6 relative overflow-hidden">
+                <div className="max-w-7xl mx-auto">
+                    <div className="text-center mb-16 space-y-4">
+                        <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-white font-fui">
+                            How Quests <span className="text-electric-teal animate-pulse">Works</span>
+                        </h3>
+                        <p className="text-cool-grey text-sm max-w-md mx-auto">
+                            Complete side quests, earn rewards, and build your aura.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+                        {/* Step 1 */}
+                        <div className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all group text-center space-y-6">
+                            <div className="w-16 h-16 mx-auto rounded-2xl bg-electric-teal/10 flex items-center justify-center text-electric-teal border border-electric-teal/20 group-hover:scale-110 transition-transform">
+                                <Send size={28} />
+                            </div>
+                            <div className="space-y-3">
+                                <h4 className="text-lg font-black uppercase tracking-wide text-white">1. Create / Join</h4>
+                                <p className="text-cool-grey text-xs leading-relaxed">
+                                    Invite friends or join randoms for sports, travel, jobs, training, or any side quest.
+                                </p>
+                            </div>
+                        </div>
+                        {/* Step 2 */}
+                        <div className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all group text-center space-y-6">
+                            <div className="w-16 h-16 mx-auto rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20 group-hover:scale-110 transition-transform">
+                                <Sparkles size={28} />
+                            </div>
+                            <div className="space-y-3">
+                                <h4 className="text-lg font-black uppercase tracking-wide text-white">2. Sponty</h4>
+                                <p className="text-cool-grey text-xs leading-relaxed">
+                                    Undecided? Let the random quest generator decide, or challenge someone: "Swim with your uniform on for ₱500".
+                                </p>
+                            </div>
+                        </div>
+                        {/* Step 3 */}
+                        <div className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all group text-center space-y-6">
+                            <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20 group-hover:scale-110 transition-transform">
+                                <Star size={28} />
+                            </div>
+                            <div className="space-y-3">
+                                <h4 className="text-lg font-black uppercase tracking-wide text-white">3. Complete</h4>
+                                <p className="text-cool-grey text-xs leading-relaxed">
+                                    Have fun and Complete the quest. Be 4 Life.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* How Dibs Work */}
+            <section className="py-12 px-6 relative overflow-hidden">
+                <div className="max-w-7xl mx-auto">
+                    <div className="text-center mb-16 space-y-4">
+                        <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-white font-fui">
+                            How Dibs <span className="text-purple-500 animate-pulse">Work</span>
+                        </h3>
+                        <div className="h-1 w-12 bg-purple-500 mx-auto rounded-full" />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+                        {/* Step 1 */}
+                        <div className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5 hover:border-purple-500/30 transition-all group text-center space-y-6">
+                            <div className="w-16 h-16 mx-auto rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 group-hover:bg-purple-500/20 transition-colors">
+                                <MapPin size={28} />
+                            </div>
+                            <div className="space-y-3">
+                                <h4 className="text-lg font-black uppercase tracking-wide text-white">1. Choose Brands</h4>
+                                <p className="text-cool-grey text-xs leading-relaxed">
+                                    Find exclusive social brands from different domains: sports, events, flea markets, hotels, etc.
+                                </p>
+                            </div>
+                        </div>
+                        {/* Step 2 */}
+                        <div className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5 hover:border-purple-500/30 transition-all group text-center space-y-6">
+                            <div className="w-16 h-16 mx-auto rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 group-hover:bg-purple-500/20 transition-colors">
+                                <ArrowRight size={28} />
+                            </div>
+                            <div className="space-y-3">
+                                <h4 className="text-lg font-black uppercase tracking-wide text-white">2. Call Dibs</h4>
+                                <p className="text-cool-grey text-xs leading-relaxed">
+                                    One-tap booking system. Pay and receive your unique code. We keep it simple.
+                                </p>
+                            </div>
+                        </div>
+                        {/* Step 3 */}
+                        <div className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5 hover:border-purple-500/30 transition-all group text-center space-y-6">
+                            <div className="w-16 h-16 mx-auto rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 group-hover:bg-purple-500/20 transition-colors">
+                                <Star size={28} />
+                            </div>
+                            <div className="space-y-3">
+                                <h4 className="text-lg font-black uppercase tracking-wide text-white">3. Show Up</h4>
+                                <p className="text-cool-grey text-xs leading-relaxed">
+                                    Enjoy and chill with convenience.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </>
     );
 };
 
