@@ -2,7 +2,7 @@
 import { supabase } from '../utils/supabaseClient';
 import { User, Capture, Quest, Message, QuestStatus, QuestType, QuestParticipantStatus } from '../types';
 import { dailyService } from './dailyService';
-import { MOCK_USER, MOCK_CAPTURES, MOCK_QUESTS, OTHER_USERS, POSITIVE_QUOTES } from '../constants';
+import { MOCK_USER, MOCK_ADMIN, MOCK_OPERATOR, MOCK_CAPTURES, MOCK_QUESTS, OTHER_USERS, POSITIVE_QUOTES } from '../constants';
 
 const isValidUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
@@ -109,6 +109,27 @@ let localItems: any[] = loadFromStorage('be4l_local_items', []);
 // Cache for social proof logic
 const friendsCache: Record<string, string[]> = {};
 const friendsRequestCache: Record<string, Promise<string[]>> = {};
+
+// --- STATIC DATA FOR FALLBACKS ---
+const STATIC_OPERATORS = [
+  { user_id: 'op1', business_name: '&Friends', slug: 'and-friends', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=1000', logo_url: '/brands/and_friends.png', bio: 'Bringing together the best music and even better company.', location_text: 'Manila / Davao', followers_count: 5400, is_verified: true, rating: 5.0 },
+  { user_id: 'op2', business_name: 'SuperSmasher', slug: 'supersmasher', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1626245550578-8ae7f6368d49?q=80&w=1000', logo_url: '/brands/supersmasher.png', bio: 'Premier Pickleball destination in Davao. Smash your limits.', location_text: 'Lanang, Davao City', followers_count: 2100, is_verified: true, rating: 4.8 },
+  { user_id: 'op3', business_name: 'Psyched', slug: 'psyched', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1514525253361-bee1a1bb441f?q=80&w=1000', logo_url: '/brands/psyched.png', bio: 'Davao\'s wildest house parties and underground sessions.', location_text: 'Davao City', followers_count: 3200, is_verified: true, rating: 4.9 },
+  { user_id: 'op4', business_name: 'Secret Society', slug: 'secretsoc', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1566737236500-c8ac43014a67?q=80&w=1000', logo_url: '/brands/secretsoc.png', bio: 'Exclusive events for the elite. Silence is golden.', location_text: 'Davao City', followers_count: 1560, is_verified: true, rating: 4.7 },
+  { user_id: 'op5', business_name: 'Pickletown', slug: 'pickletown', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1599586120429-48281b6f0ece?q=80&w=1000', logo_url: '/brands/pickletown.png', bio: 'Your neighborhood pickleball community. Play, dink, repeat.', location_text: 'Obrero, Davao City', followers_count: 1250, is_verified: true, rating: 4.9 },
+  { user_id: 'op6', business_name: 'Homecourt', slug: 'homecourt', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=1000', logo_url: '/brands/homecourt.png', bio: 'The heart of Davao basketball. Where legends are born.', location_text: 'Torres, Davao City', followers_count: 4500, is_verified: true, rating: 4.8 },
+  { user_id: 'op7', business_name: 'Quinspot', slug: 'quinspot', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000', logo_url: '/brands/quinspot.png', bio: 'Fitness, Billiards, and community. Your daily grind spot.', location_text: 'Bajada, Davao City', followers_count: 2100, is_verified: true, rating: 4.8 },
+  { user_id: 'op8', business_name: 'SM Bowling Center', slug: 'sm-bowling', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1538510114873-1d3a41e9c93a?q=80&w=1000', logo_url: '/brands/sm_bowling.png', bio: 'Ultimate leisure destination. Bowling, Archery, and Pool.', location_text: 'SM Lanang, Davao City', followers_count: 8900, is_verified: true, rating: 4.6 },
+  { user_id: 'op9', business_name: 'Cloud29', slug: 'cloud29', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=Cloud+29&background=6366f1&color=fff', bio: 'High-altitude house parties. Elevate your nightlife experience.', location_text: 'Davao City', followers_count: 4200, is_verified: true, rating: 5.0 }
+];
+
+const STATIC_DIB_ITEMS = [
+  { id: 'i1', operator_id: 'op1', title: 'Summer EDC Manila', description: 'The ultimate summer electronic dance festival by &Friends.', price: 3750, category: 'Event', image_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3', unit_label: 'ticket', type: 'EVENT' },
+  { id: 'i2', operator_id: 'op2', title: 'Pickleball Courts', description: 'Reserve a professional pickleball court.', price: 300, category: 'Court', image_url: 'https://images.unsplash.com/photo-1626245550578-8ae7f6368d49', unit_label: 'hour', type: 'PLACE' },
+  { id: 'i3', operator_id: 'op3', title: 'Hearts On Fire HP', description: 'Psyched House Party: Hearts On Fire Edition.', price: 500, category: 'Event', image_url: 'https://images.unsplash.com/photo-1514525253361-bee1a1bb441f', unit_label: 'entry', type: 'EVENT' },
+  { id: 'i4', operator_id: 'op4', title: '2nd Chance to Cupid', description: 'Secret Society: 2nd Chance to Cupid event.', price: 1000, category: 'Event', image_url: 'https://images.unsplash.com/photo-1566737236500-c8ac43014a67', unit_label: 'entry', type: 'EVENT' },
+  { id: 'i11', operator_id: 'op9', title: 'Second Chance To Cupid', description: 'A valentines masquerade house party. Find your match.', price: 500, category: 'Event', image_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3', unit_label: 'ticket', type: 'EVENT' }
+];
 
 export const supabaseService = {
   auth: {
@@ -280,17 +301,28 @@ export const supabaseService = {
     computeDisplayStreak,
     syncStreak,
     followUser: async (f: string, t: string) => {
-      const { error } = await supabase.from('follows').insert({ follower_id: f, following_id: t });
-      if (!error) { await supabase.rpc('increment_following', { user_id: f }); await supabase.rpc('increment_followers', { user_id: t }); return true; }
+      if (!isValidUUID(f) || !isValidUUID(t)) return true;
+      const { error } = await supabase.from('follows').insert({ follower_id: f, following_id: t, type: 'user' });
+      if (!error) {
+        await supabase.rpc('increment_following', { user_id: f });
+        await supabase.rpc('increment_followers', { user_id: t });
+        return true;
+      }
       return error.code === '23505';
     },
     unfollowUser: async (f: string, t: string) => {
-      const { error } = await supabase.from('follows').delete().match({ follower_id: f, following_id: t });
-      if (!error) { await supabase.rpc('decrement_following', { user_id: f }); await supabase.rpc('decrement_followers', { user_id: t }); return true; }
+      if (!isValidUUID(f) || !isValidUUID(t)) return true;
+      const { error } = await supabase.from('follows').delete().match({ follower_id: f, following_id: t, type: 'user' });
+      if (!error) {
+        await supabase.rpc('decrement_following', { user_id: f });
+        await supabase.rpc('decrement_followers', { user_id: t });
+        return true;
+      }
       return false;
     },
     getFollowStatus: async (f: string, t: string) => {
-      const { data } = await supabase.from('follows').select('*').match({ follower_id: f, following_id: t }).single();
+      if (!isValidUUID(f) || !isValidUUID(t)) return false;
+      const { data } = await supabase.from('follows').select('*').match({ follower_id: f, following_id: t, type: 'user' }).single();
       return !!data;
     },
     getMutualFollows: async (uid: string): Promise<string[]> => {
@@ -341,6 +373,63 @@ export const supabaseService = {
         aura_points: currentAura + 100
       }).eq('id', uid);
       return !error;
+    },
+    getFollowersList: async (uid: string): Promise<User[]> => {
+      if (!isValidUUID(uid)) return OTHER_USERS.slice(0, 3);
+      const { data } = await supabase
+        .from('follows')
+        .select('follower:profiles!follower_id(*)')
+        .eq('following_id', uid)
+        .eq('type', 'user')
+        .order('created_at', { ascending: false });
+      return ((data || []).map((d: any) => d.follower).filter(Boolean)) as User[];
+    },
+    getFollowingList: async (uid: string): Promise<User[]> => {
+      if (!isValidUUID(uid)) return OTHER_USERS.slice(0, 2);
+      const { data } = await supabase
+        .from('follows')
+        .select('profile:profiles!following_id(*)')
+        .eq('follower_id', uid)
+        .eq('type', 'user')
+        .order('created_at', { ascending: false });
+      return ((data || []).map((d: any) => d.profile).filter(Boolean)) as User[];
+    },
+    searchUsers: async (query: string): Promise<User[]> => {
+      console.log("[SearchUsers] Query:", query);
+      if (!query || query.length < 1) return [];
+      const q = query.toLowerCase();
+
+      let dbUsers: User[] = [];
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .or(`username.ilike.%${query}%,name.ilike.%${query}%,handle.ilike.%${query}%`)
+          .limit(20);
+
+        if (error) {
+          console.error("[SearchUsers] DB Error:", error);
+        } else {
+          dbUsers = (data || []) as User[];
+          console.log("[SearchUsers] DB Results:", dbUsers.length);
+        }
+      } catch (e) {
+        console.error("[SearchUsers] Exception:", e);
+      }
+
+      const mockUsers = [...OTHER_USERS, MOCK_USER, MOCK_ADMIN, MOCK_OPERATOR].filter(u =>
+        (u.username || '').toLowerCase().includes(q) ||
+        (u.name || '').toLowerCase().includes(q) ||
+        (u.handle || '').toLowerCase().includes(q)
+      );
+
+      // Merge and unique
+      const all = [...dbUsers];
+      mockUsers.forEach(m => {
+        if (!all.find(u => u.id === m.id)) all.push(m);
+      });
+      console.log("[SearchUsers] Total:", all.length);
+      return all;
     }
   },
   captures: {
@@ -349,27 +438,59 @@ export const supabaseService = {
         const { data: { user: au } } = await supabase.auth.getUser();
         const cid = uid || au?.id || MOCK_USER.id;
         const ws = dailyService.getCurrentWindowStart();
+
+        // Fetch real captures
         const { data } = await supabase.from('captures').select(`*, user:profiles(*), quest:quests(*)`).gte('created_at', ws.toISOString());
         let all = [...((data || []) as Capture[]), ...localCaptures].filter(c => new Date(c.captured_at || c.created_at) >= ws);
-        OTHER_USERS.slice(0, 5).forEach((u, i) => {
-          if (!all.find(c => c.user_id === u.id)) {
-            all.push({
-              id: `m-${u.id}-${i}`, user_id: u.id, user: u,
-              front_media_url: `https://picsum.photos/150/200?random=${i}`, back_media_url: `https://picsum.photos/400/600?random=${i + 10}`,
-              media_type: 'image', location: { lat: 0, lng: 0, place_name: 'Davao City' },
-              caption: POSITIVE_QUOTES[i % POSITIVE_QUOTES.length],
-              created_at: ws.toISOString(), captured_at: ws.toISOString(),
-              visibility: 'public', state: 'active', reaction_count: 0, comment_count: 0
-            });
-          }
-        });
+
+        // Add mock content for variety if empty (Legacy/Demo support)
+        if (all.length < 5) {
+          OTHER_USERS.slice(0, 5).forEach((u, i) => {
+            if (!all.find(c => c.user_id === u.id)) {
+              all.push({
+                id: `m-${u.id}-${i}`, user_id: u.id, user: u,
+                front_media_url: `https://picsum.photos/150/200?random=${i}`, back_media_url: `https://picsum.photos/400/600?random=${i + 10}`,
+                media_type: 'image', location: { lat: 0, lng: 0, place_name: 'Davao City' },
+                caption: POSITIVE_QUOTES[i % POSITIVE_QUOTES.length],
+                created_at: ws.toISOString(), captured_at: ws.toISOString(),
+                visibility: 'public', state: 'active', reaction_count: 0, comment_count: 0
+              });
+            }
+          });
+        }
+
+        // Handle Friendship Gates
+        const friends = (type === 'friends' || all.some(c => c.visibility === 'friends'))
+          ? await supabaseService.profiles.getMutualFollows(cid)
+          : [];
+
         const filtered = all.filter(c => {
-          if (c.visibility === 'private' && c.user_id !== cid) return false;
+          // Self always sees own
+          if (c.user_id === cid) return true;
+
+          // Private is only for self (handled above)
+          if (c.visibility === 'private') return false;
+
+          // Friends only: check if mutuals
+          if (c.visibility === 'friends') {
+            return friends.includes(c.user_id);
+          }
+
+          // Discover mode: only public
           if (type === 'discover') return c.visibility === 'public';
-          return true;
+
+          // Friends feed mode: only from people I follow (or mutuals specifically if preferred)
+          // For Be4L, 'friends feed' usually means people you are mutuals with
+          if (type === 'friends') return friends.includes(c.user_id);
+
+          return c.visibility === 'public';
         });
+
         return filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      } catch (e) { return localCaptures; }
+      } catch (e) {
+        console.error("Feed fetch error:", e);
+        return localCaptures;
+      }
     },
     getVault: async (uid: string) => {
       if (!isValidUUID(uid)) return localCaptures.filter(c => c.user_id === uid);
@@ -431,17 +552,43 @@ export const supabaseService = {
       }));
     },
     getQuests: async (cat: string = 'All') => {
-      let q = supabase.from('quests').select(`*, host:profiles!host_id(*), user_quests(user_id, status)`)
+      const { data: { user: au } } = await supabase.auth.getUser();
+      const cid = au?.id;
+
+      let query = supabase.from('quests').select(`*, host:profiles!host_id(*), user_quests(user_id, status)`)
         .eq('status', QuestStatus.DISCOVERABLE);
-      if (cat !== 'All') q = q.eq('category', cat);
-      const { data } = await q.order('start_time', { ascending: true });
-      return (data || []).map((i: any) => ({
+
+      if (cat !== 'All') query = query.eq('category', cat);
+
+      const { data } = await query.order('start_time', { ascending: true });
+      const rawQuests = data || [];
+
+      // If no auth user, only show public quests
+      if (!cid) {
+        return rawQuests.filter(q => q.visibility_scope !== 'friends').map((i: any) => ({
+          ...i,
+          mode: i.type,
+          capacity: i.max_participants,
+          participant_ids: i.user_quests?.map((uq: any) => uq.user_id) || [],
+          current_participants: i.user_quests?.filter((uq: any) => uq.status === QuestParticipantStatus.ACCEPTED).length || 0
+        }));
+      }
+
+      // Fetch friends for filtering friends-only quests
+      const friends = await supabaseService.profiles.getMutualFollows(cid);
+
+      return rawQuests.map((i: any) => ({
         ...i,
         mode: i.type,
         capacity: i.max_participants,
         participant_ids: i.user_quests?.map((uq: any) => uq.user_id) || [],
         current_participants: i.user_quests?.filter((uq: any) => uq.status === QuestParticipantStatus.ACCEPTED).length || 0
-      }));
+      })).filter((q: any) => {
+        if (q.visibility_scope === 'friends') {
+          return q.host_id === cid || friends.includes(q.host_id);
+        }
+        return true;
+      });
     },
     getQuestById: async (id: string) => {
       if (!isValidUUID(id)) return { data: null };
@@ -501,8 +648,8 @@ export const supabaseService = {
         status: QuestStatus.DISCOVERABLE,
         aura_reward: d.aura_reward,
         exp_reward: d.exp_reward,
-        host_id: hid
-        // source: 'USER_CREATED' // Column doesn't exist yet
+        host_id: hid,
+        visibility_scope: d.visibility_scope || 'public'
       };
 
       const { data: nq, error } = await supabase.from('quests')
@@ -557,6 +704,45 @@ export const supabaseService = {
       if (!isValidUUID(qid)) return { success: true };
       const { error } = await supabase.from('quests').delete().eq('id', qid);
       return !error;
+    },
+    searchQuests: async (query: string): Promise<Quest[]> => {
+      if (!query || query.length < 1) return [];
+      const q = query.toLowerCase();
+
+      let dbQuests: Quest[] = [];
+      try {
+        const { data, error } = await supabase
+          .from('quests')
+          .select(`*, host:profiles!host_id(*), user_quests(user_id, status)`)
+          .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+          .limit(10);
+
+        if (error) {
+          console.error("Supabase quest search error:", error);
+        } else {
+          dbQuests = (data || []).map((i: any) => ({
+            ...i,
+            mode: i.type,
+            capacity: i.max_participants,
+            participant_ids: i.user_quests?.map((uq: any) => uq.user_id) || [],
+            current_participants: i.user_quests?.filter((uq: any) => uq.status === QuestParticipantStatus.ACCEPTED).length || 0
+          })) as Quest[];
+        }
+      } catch (e) {
+        console.error("Search quests exception:", e);
+      }
+
+      const mockQuests = MOCK_QUESTS.filter(quest =>
+        quest.title.toLowerCase().includes(q) ||
+        quest.description.toLowerCase().includes(q)
+      );
+
+      const all = [...dbQuests];
+      mockQuests.forEach(m => {
+        if (!all.find(u => u.id === m.id)) all.push(m);
+      });
+
+      return all;
     }
   },
   chat: {
@@ -647,26 +833,7 @@ export const supabaseService = {
         const { data } = await supabase.from('operators').select('*');
         if (data && data.length > 0) return data;
       } catch (e) { }
-      const ALL_STATIC = [
-        { user_id: 'op1', business_name: '&Friends', slug: 'and-friends', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=1000', logo_url: '/brands/and_friends.png', bio: 'Bringing together the best music and even better company.', location_text: 'Manila / Davao', gcash_name: 'And Friends Inc', gcash_number: '0917-111-2222', followers_count: 5400, is_verified: true, rating: 5.0 },
-        { user_id: 'op2', business_name: 'SuperSmasher', slug: 'supersmasher', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1626245550578-8ae7f6368d49?q=80&w=1000', logo_url: '/brands/supersmasher.png', bio: 'Premier Pickleball destination in Davao. Smash your limits.', location_text: 'Lanang, Davao City', gcash_name: 'SuperSmasher Ph', gcash_number: '0917-222-3333', followers_count: 2100, is_verified: true, rating: 4.8 },
-        { user_id: 'op3', business_name: 'Psyched', slug: 'psyched', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1514525253361-bee1a1bb441f?q=80&w=1000', logo_url: '/brands/psyched.png', bio: 'Davao\'s wildest house parties and underground sessions.', location_text: 'Davao City', gcash_name: 'Psyched Events', gcash_number: '0917-333-4444', followers_count: 3200, is_verified: true, rating: 4.9 },
-        { user_id: 'op4', business_name: 'Secret Society', slug: 'secretsoc', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1566737236500-c8ac43014a67?q=80&w=1000', logo_url: '/brands/secretsoc.png', bio: 'Exclusive events for the elite. Silence is golden.', location_text: 'Davao City', gcash_name: 'Secret Soc', gcash_number: '0917-444-5555', followers_count: 1560, is_verified: true, rating: 4.7 },
-        { user_id: 'op5', business_name: 'Pickletown', slug: 'pickletown', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1599586120429-48281b6f0ece?q=80&w=1000', logo_url: '/brands/pickletown.png', bio: 'Your neighborhood pickleball community. Play, dink, repeat.', location_text: 'Obrero, Davao City', gcash_name: 'Pickletown Davao', gcash_number: '0917-555-6666', followers_count: 1250, is_verified: true, rating: 4.9 },
-        { user_id: 'op6', business_name: 'Homecourt', slug: 'homecourt', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=1000', logo_url: '/brands/homecourt.png', bio: 'The heart of Davao basketball. Where legends are born.', location_text: 'Torres, Davao City', gcash_name: 'Homecourt Ph', gcash_number: '0917-666-7777', followers_count: 4500, is_verified: true, rating: 4.8 },
-        { user_id: 'op7', business_name: 'Quinspot', slug: 'quinspot', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000', logo_url: '/brands/quinspot.png', bio: 'Fitness, Billiards, and community. Your daily grind spot.', location_text: 'Bajada, Davao City', gcash_name: 'Quinspot Ph', gcash_number: '0917-777-8888', followers_count: 2100, is_verified: true, rating: 4.8 },
-        { user_id: 'op8', business_name: 'SM Bowling Center', slug: 'sm-bowling', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1538510114873-1d3a41e9c93a?q=80&w=1000', logo_url: '/brands/sm_bowling.png', bio: 'Ultimate leisure destination. Bowling, Archery, and Pool.', location_text: 'SM Lanang, Davao City', gcash_name: 'SM Leisure', gcash_number: '0917-888-9999', followers_count: 8900, is_verified: true, rating: 4.6 },
-        { user_id: 'op9', business_name: 'Cloud29', slug: 'cloud29', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=Cloud+29&background=6366f1&color=fff', bio: 'High-altitude house parties. Elevate your nightlife experience.', location_text: 'Davao City', gcash_name: 'Cloud 29 Events', gcash_number: '0917-999-0000', followers_count: 4200, is_verified: true, rating: 5.0 },
-        // Manila Brands
-        { user_id: 'op-m1', business_name: 'The Palace', slug: 'the-palace', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=The+Palace&background=E11D48&color=fff', bio: 'The premier nightlife destination in Manila.', location_text: 'BGC, Manila', followers_count: 12500, is_verified: true, rating: 4.9 },
-        { user_id: 'op-m2', business_name: 'Manila Padel Club', slug: 'manila-padel', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=MPC&background=059669&color=fff', bio: 'Exclusive Padel & Lifestyle club in the heart of BGC.', location_text: 'Manila', followers_count: 8400, is_verified: true, rating: 4.8 },
-        // Cebu Brands
-        { user_id: 'op-c1', business_name: 'Cebu Padel', slug: 'cebu-padel', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1599586120429-48281b6f0ece?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=Cebu+Padel&background=2563EB&color=fff', bio: 'Bringing the Padel craze to the Queen City of the South.', location_text: 'Cebu City', followers_count: 3200, is_verified: true, rating: 4.7 },
-        { user_id: 'op-c2', business_name: 'Island Rave', slug: 'island-rave', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=Cebu+Rave&background=7C3AED&color=fff', bio: 'Cebu\'s most anticipated beach and island music festivals.', location_text: 'Lapu-Lapu, Cebu', followers_count: 6700, is_verified: true, rating: 4.9 },
-        // Makati Brands
-        { user_id: 'op-mk1', business_name: 'Poblacion Sessions', slug: 'pob-sessions', category: 'event', cover_photo_url: 'https://images.unsplash.com/photo-1514525253361-bee1a1bb441f?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=Pob+Sessions&background=F59E0B&color=fff', bio: 'Curated underground beats in the heart of Makati.', location_text: 'Makati', followers_count: 2800, is_verified: true, rating: 4.8 },
-        { user_id: 'op-mk2', business_name: 'The Loft Makati', slug: 'the-loft-makati', category: 'venue', cover_photo_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000', logo_url: 'https://ui-avatars.com/api/?name=The+Loft&background=111827&color=fff', bio: 'Upscale fitness and social club with a view of the Makati skyline.', location_text: 'Makati City', followers_count: 4100, is_verified: true, rating: 4.9 }
-      ];
+      const ALL_STATIC = STATIC_OPERATORS;
 
       // Dynamically add operators from localItems who aren't in the static list
       const localOpIds = [...new Set(localItems.map(i => i.operator_id))];
@@ -699,91 +866,59 @@ export const supabaseService = {
         if (data && data.length > 0) return data;
       } catch (e) { }
 
-      const STATIC_ITEMS = [
-        {
-          id: 'i1',
-          operator_id: 'op1',
-          title: 'Summer EDC Manila',
-          description: 'The ultimate summer electronic dance festival by &Friends.',
-          price: 3750,
-          category: 'Event',
-          image_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3',
-          unit_label: 'ticket',
-          type: 'EVENT',
-          event_date: '2025-03-20',
-          event_location: 'Manila',
-          is_active: true,
-          tiers: [
-            { id: 't1', name: 'LAST CHANCE - GEN AD', price: 3750, perks: ['1x GA Ticket', '2 Welcome Drinks'], capacity: 1000, available: 1000 },
-            { id: 't2', name: 'BARKADA BUNDLE - GEN AD', price: 15000, perks: ['5x GA Ticket', '10 Welcome Drinks'], capacity: 1000, available: 1000 },
-            { id: 't3', name: 'LAST CHANCE - VIP', price: 6500, perks: ['1x VIP Ticket', '4 Welcome Drinks', 'Bossed Ups'], capacity: 1000, available: 1000 },
-            { id: 't4', name: 'BARKADA BUNDLE - VIP', price: 26000, perks: ['5x VIP Ticket', '20 Welcome Drinks', 'Special Gifts'], capacity: 1000, available: 1000 }
-          ]
-        },
-        { id: 'i2', operator_id: 'op2', title: 'Pickleball Courts', description: 'Reserve a professional pickleball court.', price: 300, category: 'Court', image_url: 'https://images.unsplash.com/photo-1626245550578-8ae7f6368d49', unit_label: 'hour', type: 'PLACE', available_slots: 4, is_active: true },
-        { id: 'i3', operator_id: 'op3', title: 'Hearts On Fire HP', description: 'Psyched House Party: Hearts On Fire Edition.', price: 500, category: 'Event', image_url: 'https://images.unsplash.com/photo-1514525253361-bee1a1bb441f', unit_label: 'entry', type: 'EVENT', event_date: '2025-02-14', is_active: true },
-        { id: 'i4', operator_id: 'op4', title: '2nd Chance to Cupid', description: 'Secret Society: 2nd Chance to Cupid event.', price: 1000, category: 'Event', image_url: 'https://images.unsplash.com/photo-1566737236500-c8ac43014a67', unit_label: 'entry', type: 'EVENT', event_date: '2025-02-21', is_active: true },
-        { id: 'i5', operator_id: 'op5', title: 'Pickleball Courts', description: 'Community pickleball action at Pickletown.', price: 250, category: 'Court', image_url: 'https://images.unsplash.com/photo-1599586120429-48281b6f0ece', unit_label: 'hour', type: 'PLACE', is_active: true },
-        { id: 'i6', operator_id: 'op6', title: 'Basketball Court', description: 'Full court rental for competitive play.', price: 1500, category: 'Court', image_url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc', unit_label: 'hour', type: 'PLACE', is_active: true },
-        { id: 'i7', operator_id: 'op7', title: 'Pool Table', description: 'Quality billiards table at Quinspot.', price: 150, category: 'Table', image_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48', unit_label: 'hour', type: 'PLACE', is_active: true },
-        { id: 'i8', operator_id: 'op8', title: 'Bowling Lanes', description: 'World-class bowling experience at SM.', price: 500, category: 'Lane', image_url: 'https://images.unsplash.com/photo-1538510114873-1d3a41e9c93a', unit_label: 'game', type: 'PLACE', is_active: true },
-        { id: 'i9', operator_id: 'op8', title: 'Archery', description: 'Test your aim at the SM Archery range.', price: 350, category: 'Target', image_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb', unit_label: 'session', type: 'PLACE', is_active: true },
-        { id: 'i10', operator_id: 'op8', title: 'Pool Table', description: 'Leisure billiards at SM Bowling Center.', price: 200, category: 'Table', image_url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd', unit_label: 'hour', type: 'PLACE', is_active: true },
-        {
-          id: 'i11',
-          operator_id: 'op9',
-          title: 'Second Chance To Cupid',
-          description: 'A valentines masquerade house party. Find your match.',
-          price: 500,
-          category: 'Event',
-          image_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3',
-          unit_label: 'ticket',
-          type: 'EVENT',
-          event_date: '2025-02-14',
-          is_active: true,
-          tiers: [
-            { id: 't1', name: 'Early Bird', price: 500, perks: ['1 Free Drink', 'Mask Included'], capacity: 50, available: 12 },
-            { id: 't2', name: 'Standard', price: 800, perks: ['1 Free Drink'], capacity: 100, available: 80 },
-            { id: 't3', name: 'VIP Table', price: 5000, perks: ['Bottle Service', 'Private Area', '6 Pax'], capacity: 5, available: 2 }
-          ]
-        },
-        {
-          id: 'i12',
-          operator_id: 'op9',
-          title: 'First Wave',
-          description: 'High energy rave-like house party. Electronic vibes only.',
-          price: 1000,
-          category: 'Event',
-          image_url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745',
-          unit_label: 'ticket',
-          type: 'EVENT',
-          event_date: '2025-03-01',
-          is_active: true,
-          tiers: [
-            { id: 't1', name: 'General Admission', price: 1000, perks: ['Entry'], capacity: 200, available: 150 },
-            { id: 't2', name: 'Rave Pack', price: 1500, perks: ['Glow Kit', 'Unlimited Mixes'], capacity: 50, available: 5 }
-          ]
-        },
-        {
-          id: 'i13',
-          operator_id: 'op9',
-          title: 'Murder on the Dancefloor',
-          description: 'Mystery themed party. Dress to kill.',
-          price: 600,
-          category: 'Event',
-          image_url: 'https://images.unsplash.com/photo-1514525253361-bee1a1bb441f',
-          unit_label: 'ticket',
-          type: 'EVENT',
-          event_date: '2025-03-15',
-          is_active: true,
-          tiers: [
-            { id: 't1', name: 'Detective', price: 600, perks: ['Entry', 'Case File'], capacity: 100, available: 40 },
-            { id: 't2', name: 'Suspect (VIP)', price: 1200, perks: ['Front Row', 'Main Suspect Role'], capacity: 10, available: 1 }
-          ]
-        }
-      ];
+      const STATIC_ITEMS = STATIC_DIB_ITEMS;
 
       return [...STATIC_ITEMS, ...localItems];
+    },
+    searchItems: async (query: string): Promise<any[]> => {
+      if (!query) return [];
+      const q = query.toLowerCase();
+
+      let dbItems: any[] = [];
+      try {
+        const { data } = await supabase
+          .from('dibs_items')
+          .select('*')
+          .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+          .limit(10);
+        dbItems = data || [];
+      } catch (e) { }
+
+      const mockItems = STATIC_DIB_ITEMS.filter(item =>
+        item.title.toLowerCase().includes(q) ||
+        (item.description || '').toLowerCase().includes(q)
+      );
+
+      const all = [...dbItems];
+      mockItems.forEach(m => {
+        if (!all.find(i => i.id === m.id)) all.push(m);
+      });
+      return all;
+    },
+    searchOperators: async (query: string): Promise<any[]> => {
+      if (!query) return [];
+      const q = query.toLowerCase();
+
+      let dbOps: any[] = [];
+      try {
+        const { data } = await supabase
+          .from('operators')
+          .select('*')
+          .or(`business_name.ilike.%${query}%,bio.ilike.%${query}%`)
+          .limit(10);
+        dbOps = data || [];
+      } catch (e) { }
+
+      const mockOps = STATIC_OPERATORS.filter(op =>
+        op.business_name.toLowerCase().includes(q) ||
+        (op.bio || '').toLowerCase().includes(q)
+      );
+
+      const all = [...dbOps];
+      mockOps.forEach(m => {
+        if (!all.find(o => o.user_id === m.user_id)) all.push(m as any);
+      });
+      return all;
     },
     getItems: async (operatorId: string): Promise<any[]> => {
       try {
@@ -924,8 +1059,36 @@ export const supabaseService = {
       return [...localBookings.filter(b => b.operator_id === oid), { id: 'b1', item_id: 'i1', user_id: 'u2', status: 'PENDING_VERIFICATION', quantity: 1, total_amount: 350, created_at: new Date().toISOString(), user: { name: 'Sarah J' }, item: { title: 'Court Rental' }, booking_ref: 'DIB-9XJ2' }];
     },
     updateBookingStatus: async (id: string, s: string) => true,
-    followOperator: async (id: string) => true,
-    unfollowOperator: async (id: string) => true,
+    followOperator: async (id: string) => {
+      const { data: { user: au } } = await supabase.auth.getUser();
+      if (!au || !isValidUUID(id) || !isValidUUID(au.id)) return false;
+      const { error } = await supabase.from('follows').insert({
+        follower_id: au.id,
+        following_id: id,
+        type: 'operator'
+      });
+      if (!error) {
+        await supabase.rpc('increment_following', { user_id: au.id });
+      }
+      return !error || error.code === '23505';
+    },
+    unfollowOperator: async (id: string) => {
+      const { data: { user: au } } = await supabase.auth.getUser();
+      if (!au || !isValidUUID(id) || !isValidUUID(au.id)) return false;
+      const { error } = await supabase.from('follows').delete()
+        .match({ follower_id: au.id, following_id: id, type: 'operator' });
+      if (!error) {
+        await supabase.rpc('decrement_following', { user_id: au.id });
+      }
+      return !error;
+    },
+    getOperatorFollowStatus: async (id: string) => {
+      const { data: { user: au } } = await supabase.auth.getUser();
+      if (!au || !isValidUUID(id) || !isValidUUID(au.id)) return false;
+      const { data } = await supabase.from('follows').select('id')
+        .match({ follower_id: au.id, following_id: id, type: 'operator' }).single();
+      return !!data;
+    },
     redeemBooking: async (ref: string) => {
       const b = localBookings.find(bk => bk.booking_ref === ref);
       if (b) b.status = 'RECLAIMED';
@@ -999,6 +1162,54 @@ export const supabaseService = {
     likePost: async (postId: string): Promise<boolean> => {
       // Mock like for now
       return true;
+    }
+  },
+  search: {
+    globalSearch: async (query: string) => {
+      console.log("[GlobalSearch] Query:", query);
+      if (!query || query.length < 2) return { quests: [], brands: [], people: [], items: [] };
+
+      // Individual search wrappers to prevent one failure from killing the whole search
+      const safeSearch = async (fn: () => Promise<any[]>, label: string) => {
+        try {
+          return await fn();
+        } catch (e) {
+          console.error(`[GlobalSearch] ${label} search failed:`, e);
+          return [];
+        }
+      };
+
+      const [quests, people, brands, items] = await Promise.all([
+        safeSearch(() => supabaseService.quests.searchQuests(query), 'Quests'),
+        safeSearch(() => supabaseService.profiles.searchUsers(query), 'People'),
+        safeSearch(() => supabaseService.dibs.searchOperators(query), 'Brands'),
+        safeSearch(() => supabaseService.dibs.searchItems(query), 'Items')
+      ]);
+
+      const results = {
+        quests: (quests || []).slice(0, 5),
+        people: (people || []).filter(p => !brands.some((b: any) => (b.user_id || b.id) === p.id)).slice(0, 5),
+        brands: (brands || []).slice(0, 5),
+        items: (items || []).slice(0, 5)
+      };
+
+      console.log("[GlobalSearch] Final Results:", results);
+      return results;
+    },
+    getFeaturedContent: async () => {
+      const [allBrands, allQuests, topPeople, allItems] = await Promise.all([
+        supabaseService.dibs.getOperators(),
+        supabaseService.quests.getQuests(),
+        supabase.from('profiles').select('*').order('aura_points', { ascending: false }).limit(5),
+        supabaseService.dibs.getAllItems()
+      ]);
+
+      return {
+        brands: allBrands.slice(0, 6), // Top 6 brands (3 rows × 2 cols)
+        quests: allQuests.slice(0, 6), // 6 Hot quests (3 rows × 2 cols)
+        people: (topPeople.data || []).slice(0, 4), // Top 4 aura people
+        items: allItems.slice(0, 6) // Top 6 hot items (3 rows × 2 cols)
+      };
     }
   }
 };

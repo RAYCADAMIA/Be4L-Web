@@ -79,7 +79,7 @@ export const ProfilePage: React.FC = () => {
             }}
             onOpenPostDetail={(p) => console.log("Post Detail", p)}
             onOpenQuest={(q) => navigate(`/app/quest/${q.id}`)}
-            onOpenUser={(u) => navigate(u.id === currentUser?.id ? '/app/myprofile' : `/app/profile/${u.id}`)}
+            onOpenUser={(u) => navigate(u.id === currentUser?.id ? '/app/myprofile' : `/app/${u.id}`)}
             onProfileUpdate={(u) => login(u)}
             onOpenChat={(id, name) => navigate('/app/chat')}
             onNavigate={handleLegacyNavigate}

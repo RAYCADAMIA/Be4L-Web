@@ -4,8 +4,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigation } from '../../contexts/NavigationContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TaskWindow, NotificationWindow, ProfileWindow } from './ControlDropdowns';
+import { TaskWindow, NotificationWindow, ProfileWindow, SearchWindow } from './ControlDropdowns';
 import { StarIcon } from '../Shared/StarIcon';
+import { supabaseService } from '../../services/supabaseService';
 import { useOnClickOutside } from '../../hooks/useOnClickOutside';
 
 export const GlobalHeader: React.FC = () => {
@@ -20,8 +21,44 @@ export const GlobalHeader: React.FC = () => {
     const searchContainerRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<{ quests: any[], brands: any[], people: any[], items: any[] }>({ quests: [], brands: [], people: [], items: [] });
+    const [isSearching, setIsSearching] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 640);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Functional Search Logic
+    useEffect(() => {
+        const performSearch = async () => {
+            if (searchQuery.length < 2) {
+                setSearchResults({ quests: [], brands: [], people: [], items: [] });
+                return;
+            }
+            setIsSearching(true);
+            try {
+                const results = await supabaseService.search.globalSearch(searchQuery);
+                setSearchResults(results);
+            } catch (error) {
+                console.error("Search failed:", error);
+            } finally {
+                setIsSearching(false);
+            }
+        };
+
+        const timer = setTimeout(performSearch, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
     useOnClickOutside(dropdownRef, () => setActiveControl(null));
-    useOnClickOutside(searchContainerRef, () => setIsSearchOpen(false));
+    useOnClickOutside(searchContainerRef, () => {
+        setIsSearchOpen(false);
+        setSearchQuery('');
+    });
 
     // Simplified Guest Header
     const [isSplashActive, setIsSplashActive] = useState(false);
@@ -119,14 +156,13 @@ export const GlobalHeader: React.FC = () => {
     }
 
     const isChatDetail = location.pathname.startsWith('/app/chat') && new URLSearchParams(location.search).has('id');
-    const isMobile = window.innerWidth < 768; // Simple mobile check
 
     return (
         <div className="relative">
             <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 pointer-events-none">
 
                 {/* 1. Floating Logo (Left) + Search */}
-                <div className="pointer-events-auto flex items-center gap-3 transition-all duration-500 opacity-100">
+                <div className="pointer-events-auto flex items-center gap-1 sm:gap-3 transition-all duration-500 opacity-100 min-w-0">
                     <button
                         onClick={() => {
                             if (location.pathname === '/app/home') {
@@ -141,33 +177,52 @@ export const GlobalHeader: React.FC = () => {
                     >
                         <div className="flex items-center gap-2">
                             <StarIcon className="w-8 h-8 text-electric-teal drop-shadow-[0_0_10px_rgba(45,212,191,0.5)]" />
-                            <h1 className="text-3xl font-black tracking-tighter animate-liquid-text">
-                                Be4L
-                            </h1>
+                            <AnimatePresence mode="wait">
+                                {!isSearchOpen && (
+                                    <motion.h1
+                                        key="logo-text"
+                                        initial={{ opacity: 0, width: 0, x: -10 }}
+                                        animate={{ opacity: 1, width: 'auto', x: 0 }}
+                                        exit={{ opacity: 0, width: 0, x: -10 }}
+                                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                                        className="text-3xl font-black tracking-tighter animate-liquid-text overflow-hidden whitespace-nowrap"
+                                    >
+                                        Be4L
+                                    </motion.h1>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </button>
 
-                    {!isSearchOpen && !location.pathname.startsWith('/app/chat') && (
-                        <div className="flex sm:hidden relative items-center ml-2">
-                            <button
-                                onClick={() => {
-                                    setIsSearchOpen(true);
-                                    setTimeout(() => searchInputRef.current?.focus(), 100);
-                                }}
-                                className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white transition-colors"
+                    <AnimatePresence>
+                        {!isSearchOpen && !location.pathname.startsWith('/app/chat') && (
+                            <motion.div
+                                key="global-search-trigger"
+                                initial={{ opacity: 0, width: 0 }}
+                                animate={{ opacity: 1, width: 'auto' }}
+                                exit={{ opacity: 0, width: 0 }}
+                                className="flex relative items-center ml-1"
                             >
-                                <Search size={22} strokeWidth={2.5} />
-                            </button>
-                        </div>
-                    )}
+                                <button
+                                    onClick={() => {
+                                        setIsSearchOpen(true);
+                                        setTimeout(() => searchInputRef.current?.focus(), 100);
+                                    }}
+                                    className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white transition-colors"
+                                >
+                                    <Search size={22} strokeWidth={2.5} />
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-                    <div className={`${isSearchOpen ? 'flex absolute left-[70px] top-1/2 -translate-y-1/2 z-50' : 'hidden sm:flex'} items-center h-[40px] sm:h-[52px]`} ref={searchContainerRef}>
+                    <div className={`${isSearchOpen ? 'flex ml-1' : 'hidden'} items-center h-[40px] sm:h-[52px] relative`} ref={searchContainerRef}>
                         <motion.div
                             initial={false}
                             animate={{
-                                width: isSearchOpen ? '260px' : '100%',
+                                width: isSearchOpen ? (isMobile ? '180px' : '320px') : '100%',
                             }}
-                            className={`flex items-center h-full sm:h-[52px] w-full overflow-hidden transition-all duration-300 ${isSearchOpen ? 'bg-white/[0.08] backdrop-blur-3xl border border-white/10 rounded-full p-1 pr-3 shadow-xl' : 'sm:w-[52px]'}`}
+                            className={`flex items-center h-full sm:h-[52px] w-full overflow-hidden transition-all duration-300 relative z-[100] ${isSearchOpen ? 'bg-white/[0.04] backdrop-blur-3xl border border-white/10 rounded-full p-1 pr-3 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' : 'sm:w-[52px]'}`}
                         >
                             <button
                                 onClick={() => {
@@ -184,9 +239,13 @@ export const GlobalHeader: React.FC = () => {
                             <input
                                 ref={searchInputRef}
                                 type="text"
-                                placeholder="Search..."
-                                className={`bg-transparent border-none outline-none text-xs sm:text-sm font-bold w-full text-white placeholder-gray-500 ml-1 ${isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                                placeholder="Search"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className={`bg-transparent border-none outline-none text-[11px] sm:text-xs font-black tracking-widest w-full text-white placeholder-white/20 ml-1 selection:bg-electric-teal/30 ${isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                             />
+
+
 
                             <AnimatePresence>
                                 {isSearchOpen && (
@@ -197,6 +256,7 @@ export const GlobalHeader: React.FC = () => {
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setIsSearchOpen(false);
+                                            setSearchQuery('');
                                         }}
                                         className="shrink-0 p-1 hover:bg-white/10 rounded-full text-gray-400 hover:text-white ml-0.5"
                                     >
@@ -205,6 +265,24 @@ export const GlobalHeader: React.FC = () => {
                                 )}
                             </AnimatePresence>
                         </motion.div>
+
+                        {/* Search Results Dropdown */}
+                        <AnimatePresence>
+                            {(isSearchOpen || searchQuery.length > 0) && isSearchOpen && (
+                                <div className="fixed sm:absolute top-[72px] sm:top-full left-1/2 sm:left-0 -translate-x-1/2 sm:translate-x-0 w-[92vw] sm:w-[400px] mt-1 z-[90]">
+                                    <SearchWindow
+                                        query={searchQuery}
+                                        setSearchQuery={setSearchQuery}
+                                        results={searchResults}
+                                        isSearching={isSearching}
+                                        onClose={() => {
+                                            setIsSearchOpen(false);
+                                            setSearchQuery('');
+                                        }}
+                                    />
+                                </div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
 

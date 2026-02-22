@@ -1,0 +1,36 @@
+  search: {
+    globalSearch: async (query: string) => {
+      if (!query || query.length < 2) return { quests: [], brands: [], people: [] };
+
+      const [quests, people, allBrands] = await Promise.all([
+        supabaseService.quests.searchQuests(query),
+        supabaseService.profiles.searchUsers(query),
+        supabaseService.dibs.getOperators()
+      ]);
+
+      const brands = allBrands.filter(b =>
+        (b.business_name || '').toLowerCase().includes(query.toLowerCase()) ||
+        (b.bio || '').toLowerCase().includes(query.toLowerCase())
+      ).slice(0, 5);
+
+      return {
+        quests: quests.slice(0, 5),
+        people: people.filter(p => !brands.some(b => b.user_id === p.id)).slice(0, 5),
+        brands
+      };
+    },
+    getFeaturedContent: async () => {
+      const [allBrands, allQuests, topPeople] = await Promise.all([
+        supabaseService.dibs.getOperators(),
+        supabaseService.quests.getQuests(),
+        supabase.from('profiles').select('*').order('aura_points', { ascending: false }).limit(5)
+      ]);
+
+      return {
+        brands: allBrands.slice(0, 4), // Top 4 brands
+        quests: allQuests.slice(0, 4), // 4 Hot quests
+        people: (topPeople.data || []).slice(0, 4) // Top 4 aura people
+      };
+    }
+  }
+};

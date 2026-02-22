@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     ArrowLeft, ArrowRight, MapPin, Users, Star, MessageCircle, Heart, Share2, Grid, Info,
     ShoppingBag, Settings, QrCode, BadgeCheck, ChevronLeft, Phone, Globe, Instagram, Clock
@@ -17,6 +17,7 @@ import ProfileHeader from '../ProfileHeader';
 import DibsItemCard from '../DibsItemCard';
 import CreatePostModal from './CreatePostModal';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import UserListModal from '../UserListModal';
 
 interface OperatorProfileScreenProps {
     operatorData?: Operator;
@@ -26,6 +27,7 @@ interface OperatorProfileScreenProps {
 const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorData, isOwnerView = false }) => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { user: currentUser } = useAuth(); // Get current user
 
     const [operator, setOperator] = useState<Operator | null>(operatorData || null);
@@ -42,6 +44,9 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
     const [showCreatePost, setShowCreatePost] = useState(false);
     const [initialDashboardTab, setInitialDashboardTab] = useState<'overview' | 'orders' | 'verify' | 'menu' | 'business'>('overview');
     const [isOwner, setIsOwner] = useState(isOwnerView);
+    const [showFollowers, setShowFollowers] = useState(false);
+    const [showFollowing, setShowFollowing] = useState(false);
+    const { updateUser } = useAuth();
 
     // Local tab state initialization
     useEffect(() => {
@@ -74,6 +79,10 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                 // Check Ownership
                 if (currentUser && currentUser.id === opData.user_id) {
                     setIsOwner(true);
+                } else if (currentUser) {
+                    // Check Follow Status
+                    const status = await supabaseService.dibs.getOperatorFollowStatus(opData.user_id);
+                    setIsFollowing(status);
                 }
 
                 // Load Posts
@@ -85,11 +94,46 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
         loadData();
     }, [slug, currentUser, operatorData]);
 
-    const handleFollow = () => {
-        setIsFollowing(!isFollowing);
-        if (operator) {
-            if (!isFollowing) supabaseService.dibs.followOperator(operator.user_id);
-            else supabaseService.dibs.unfollowOperator(operator.user_id);
+    // Auto-open item modal from deep-link ?item= param
+    useEffect(() => {
+        const itemId = searchParams.get('item');
+        if (itemId && items.length > 0 && !selectedItem) {
+            const target = items.find(i => i.id === itemId);
+            if (target) {
+                setLocalTab('services'); // Switch to the Dibs tab
+                setSelectedItem(target);
+            }
+        }
+    }, [items, searchParams]);
+
+    const handleFollow = async () => {
+        if (!operator || isOwner) return;
+        if (!currentUser) {
+            window.dispatchEvent(new Event('trigger-auth-modal'));
+            return;
+        }
+
+        const nextState = !isFollowing;
+        setIsFollowing(nextState); // Optimistic
+
+        // Optimistically update count
+        setOperator(prev => prev ? {
+            ...prev,
+            followers_count: (prev.followers_count || 0) + (nextState ? 1 : -1)
+        } : null);
+
+        if (nextState) {
+            const success = await supabaseService.dibs.followOperator(operator.user_id);
+            if (success) {
+                // Update current user's following count locally
+                updateUser({ following_count: (currentUser.following_count || 0) + 1 });
+            }
+        } else {
+            const success = await supabaseService.dibs.unfollowOperator(operator.user_id);
+            if (success) {
+                // Update current user's following count locally
+                updateUser({ following_count: Math.max(0, (currentUser.following_count || 0) - 1) });
+            }
         }
     };
 
@@ -151,6 +195,8 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                         }
                     }
                 }}
+                onShowFollowers={() => setShowFollowers(true)}
+                onShowFollowing={() => setShowFollowing(true)}
             />
 
             {/* 2. Sticky Info Bar / Tabs (TikTok Shop Style) - Glassy Motif aligned with Cover */}
@@ -423,6 +469,23 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                 )}
             </AnimatePresence>
 
+            {/* Followers/Following Modals */}
+            <UserListModal
+                isOpen={showFollowers}
+                onClose={() => setShowFollowers(false)}
+                title="Followers"
+                userId={operator.user_id}
+                type="followers"
+                onOpenProfile={(u) => navigate(u.id === currentUser?.id ? '/app/myprofile' : `/app/${u.id}`)}
+            />
+            <UserListModal
+                isOpen={showFollowing}
+                onClose={() => setShowFollowing(false)}
+                title="Following"
+                userId={operator.user_id}
+                type="following"
+                onOpenProfile={(u) => navigate(u.id === currentUser?.id ? '/app/myprofile' : `/app/${u.id}`)}
+            />
         </div >
     );
 };

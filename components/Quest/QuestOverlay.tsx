@@ -156,7 +156,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
     return (
         <AnimatePresence>
             {questId && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center px-4 pt-20 pb-24 md:p-4">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -169,7 +169,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                        className="relative w-full max-w-4xl h-[85vh] bg-deep-black/80 backdrop-blur-3xl border border-white/10 rounded-[2rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] flex flex-col md:flex-row"
+                        className="relative w-full max-w-4xl h-full md:h-[85vh] bg-deep-black/80 backdrop-blur-3xl border border-white/10 rounded-[2rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] flex flex-col md:flex-row"
                     >
                         {loading ? (
                             <div className="w-full h-full flex items-center justify-center"><EKGLoader /></div>

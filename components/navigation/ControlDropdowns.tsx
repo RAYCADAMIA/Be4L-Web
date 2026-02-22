@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Plus, Trash2, Bell, Star, Heart, MessageCircle, Calendar, CheckSquare, LogOut, Settings, User, ArrowRight, Zap } from 'lucide-react';
+import { Check, Plus, Trash2, Bell, Star, Heart, MessageCircle, Calendar, CheckSquare, LogOut, Settings, User, ArrowRight, Zap, Search, Layout, Bookmark, History, Target, TrendingUp, Sparkles, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { dailyService } from '../../services/dailyService';
 import { DailyTask } from '../../types';
 
@@ -290,6 +290,392 @@ export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                 </div>
             </div>
         </motion.div>
+    );
+};
+
+// --- SEARCH WINDOW ---
+export const SearchWindow: React.FC<{
+    query: string,
+    setSearchQuery: (q: string) => void,
+    results: { quests: any[], brands: any[], people: any[], items: any[] },
+    isSearching?: boolean;
+    onClose: () => void
+}> = ({ query, setSearchQuery, results, isSearching, onClose }) => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [activeFilter, setActiveFilter] = useState<'all' | 'people' | 'quests' | 'brands' | 'items'>('all');
+
+    const [featured, setFeatured] = useState<{ brands: any[], quests: any[], people: any[], items: any[] }>({ brands: [], quests: [], people: [], items: [] });
+
+    useEffect(() => {
+        if (query.length < 2) {
+            import('../../services/supabaseService').then(({ supabaseService }) => {
+                supabaseService.search.getFeaturedContent().then(setFeatured);
+            });
+        }
+    }, [query]);
+
+    const hasResults = (results.quests?.length || 0) > 0 || (results.brands?.length || 0) > 0 || (results.people?.length || 0) > 0 || (results.items?.length || 0) > 0;
+
+    const filterCounts = {
+        all: (results.quests?.length || 0) + (results.brands?.length || 0) + (results.people?.length || 0) + (results.items?.length || 0),
+        people: results.people?.length || 0,
+        quests: results.quests?.length || 0,
+        brands: results.brands?.length || 0,
+        items: results.items?.length || 0
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="w-full bg-white/[0.14] backdrop-blur-[80px] backdrop-contrast-[0.85] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[520px]"
+        >
+
+
+            {/* Filter Tabs */}
+            {query.length >= 2 && (
+                <div className="px-3 py-3 flex gap-2 overflow-x-auto no-scrollbar border-b border-white/5 bg-white/[0.02]">
+                    {[
+                        { id: 'all', label: 'All', icon: null, count: filterCounts.all },
+                        { id: 'people', label: 'People', icon: User, count: filterCounts.people },
+                        { id: 'quests', label: 'Quests', icon: Zap, count: filterCounts.quests },
+                        { id: 'brands', label: 'Brands', icon: Star, count: filterCounts.brands },
+                        { id: 'items', label: 'Dibs', icon: ShoppingBag, count: filterCounts.items },
+                    ].map((filter) => (
+                        <button
+                            key={filter.id}
+                            onClick={() => setActiveFilter(filter.id as any)}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all shrink-0 ${activeFilter === filter.id
+                                ? 'bg-white text-black border-white'
+                                : 'bg-white/5 border-white/5 text-white/50 hover:bg-white/10 hover:border-white/10'
+                                }`}
+                        >
+                            {filter.icon && <filter.icon size={12} className={activeFilter === filter.id ? 'text-black' : 'text-white/40'} />}
+                            <span className="text-[10px] font-black uppercase tracking-widest">{filter.label}</span>
+                            {filter.count !== undefined && (
+                                <span className={`text-[9px] font-black ml-0.5 ${activeFilter === filter.id ? 'text-black/40' : 'text-white/20'}`}>
+                                    {filter.count}
+                                </span>
+                            )}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            <div className="flex-1 overflow-y-auto no-scrollbar p-2 space-y-4">
+                {query.length < 2 ? (
+                    <div className="p-2 space-y-5">
+                        {/* Featured Brands — 2-col grid */}
+                        {featured.brands.length > 0 && (
+                            <section>
+                                <div className="px-1 mb-2">
+                                    <span className="text-[8px] font-black text-primary uppercase tracking-widest">Featured Brands</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-1.5">
+                                    {featured.brands.map(b => (
+                                        <button
+                                            key={b.user_id}
+                                            onClick={() => { navigate(`/app/shop/${b.slug}`); onClose(); }}
+                                            className="text-left p-2.5 rounded-xl hover:bg-white/10 transition-all flex items-center gap-2 bg-white/[0.04] border border-white/5 group"
+                                        >
+                                            <div className="w-8 h-8 rounded-full border border-white/10 overflow-hidden shrink-0">
+                                                <img src={b.logo_url} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="text-[9px] font-black text-white truncate leading-tight">{b.business_name}</h4>
+                                                <p className="text-[7px] text-white/30 font-bold uppercase truncate mt-0.5">{b.category}</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Hot Quests — 2-col grid */}
+                        {featured.quests.length > 0 && (
+                            <section>
+                                <div className="px-1 mb-2">
+                                    <span className="text-[8px] font-black text-electric-teal uppercase tracking-widest">Hot Quests</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-1.5">
+                                    {featured.quests.map(q => (
+                                        <button
+                                            key={q.id}
+                                            onClick={() => {
+                                                const params = new URLSearchParams(location.search);
+                                                params.set('quest', q.id);
+                                                navigate({
+                                                    pathname: location.pathname,
+                                                    search: params.toString()
+                                                });
+                                                onClose();
+                                            }}
+                                            className="text-left p-2.5 rounded-xl hover:bg-white/10 transition-all flex items-center gap-2 bg-white/[0.04] border border-white/5 group"
+                                        >
+                                            <div className="w-8 h-8 rounded-lg bg-electric-teal/10 border border-electric-teal/20 flex items-center justify-center shrink-0">
+                                                <Zap size={13} className="text-electric-teal" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="text-[9px] font-black text-white truncate leading-tight">{q.title}</h4>
+                                                <p className="text-[7px] text-white/30 font-bold uppercase truncate mt-0.5">{q.aura_reward} Aura</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Hot Items — 2-col grid */}
+                        {featured.items?.length > 0 && (
+                            <section>
+                                <div className="px-1 mb-2">
+                                    <span className="text-[8px] font-black text-orange-400 uppercase tracking-widest">Hot Items</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-1.5">
+                                    {featured.items.map(item => (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => {
+                                                navigate(`/app/dibs?item=${item.id}`);
+                                                onClose();
+                                            }}
+                                            className="text-left rounded-xl overflow-hidden hover:ring-1 hover:ring-white/20 transition-all bg-white/[0.04] border border-white/5 group"
+                                        >
+                                            {/* Thumbnail */}
+                                            <div className="w-full h-16 overflow-hidden relative">
+                                                {item.image_url ? (
+                                                    <img src={item.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
+                                                        <ShoppingBag size={16} className="text-white/20" />
+                                                    </div>
+                                                )}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                                                <span className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-black/60 backdrop-blur-sm rounded text-[7px] font-black text-orange-300">₱{item.price?.toLocaleString()}</span>
+                                            </div>
+                                            {/* Info */}
+                                            <div className="p-2">
+                                                <h4 className="text-[9px] font-black text-white truncate leading-tight">{item.title}</h4>
+                                                <p className="text-[7px] text-white/30 font-bold uppercase truncate mt-0.5">{item.category}</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Top People — keep as list */}
+                        {featured.people.length > 0 && (
+                            <section>
+                                <div className="px-1 mb-2">
+                                    <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Top People</span>
+                                </div>
+                                <div className="space-y-1">
+                                    {featured.people.map(p => (
+                                        <button
+                                            key={p.id}
+                                            onClick={() => {
+                                                navigate(`/app/${p.id}`);
+                                                onClose();
+                                            }}
+                                            className="w-full text-left p-2 rounded-xl hover:bg-white/10 transition-all flex items-center gap-3"
+                                        >
+                                            <div className="w-8 h-8 rounded-full border border-white/10 overflow-hidden shrink-0">
+                                                <img src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="text-[10px] font-black text-white truncate">{p.username}</h4>
+                                                <p className="text-[7px] text-white/40 font-black uppercase truncate mt-0.5">{p.aura_points} Aura • Level {p.level}</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+                    </div>
+                ) : isSearching ? (
+                    <div className="py-20 text-center">
+                        <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"
+                        />
+                        <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Searching...</p>
+                    </div>
+                ) : (
+                    <>
+                        {/* Empty state for search */}
+                        {activeFilter === 'all' && !hasResults && (
+                            <div className="py-20 text-center">
+                                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/5">
+                                    <Search size={20} className="text-white/10" />
+                                </div>
+                                <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">
+                                    No matches found for "{query}"
+                                </p>
+                            </div>
+                        )}
+
+                        {(activeFilter !== 'all' && filterCounts[activeFilter as keyof typeof filterCounts] === 0) ? (
+                            <div className="py-20 text-center">
+                                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/5">
+                                    <Search size={20} className="text-white/10" />
+                                </div>
+                                <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">
+                                    No {activeFilter} found
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                {/* PEOPLE */}
+                                {(activeFilter === 'all' || activeFilter === 'people') && results.people.length > 0 && (
+                                    <section>
+                                        <div className="px-3 mb-2">
+                                            <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">People</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            {results.people.map(p => (
+                                                <button
+                                                    key={p.id}
+                                                    onClick={() => {
+                                                        navigate(`/app/${p.id}`);
+                                                        onClose();
+                                                    }}
+                                                    className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-all group flex items-center gap-3"
+                                                >
+                                                    <div className="w-10 h-10 rounded-full border border-white/10 bg-zinc-900 overflow-hidden shrink-0">
+                                                        {p.avatar_url ? (
+                                                            <img src={p.avatar_url} className="w-full h-full object-cover" />
+                                                        ) : <User size={14} className="text-white/20" />}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-[11px] font-black text-white truncate">{p.name || p.username}</h4>
+                                                        <p className="text-[8px] text-white/40 font-black uppercase truncate mt-0.5">
+                                                            Level {p.level || 1} • {p.aura_points || 0} Aura
+                                                        </p>
+                                                    </div>
+                                                    <div className="px-2 py-0.5 rounded bg-white/5 text-[7px] font-black text-white/30 uppercase">Profile</div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </section>
+                                )}
+
+                                {/* QUESTS */}
+                                {(activeFilter === 'all' || activeFilter === 'quests') && results.quests.length > 0 && (
+                                    <section>
+                                        <div className="px-3 mb-2 flex items-center justify-between">
+                                            <span className="text-[8px] font-black text-electric-teal uppercase tracking-widest">Quests</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            {results.quests.map(q => (
+                                                <button
+                                                    key={q.id}
+                                                    onClick={() => {
+                                                        const params = new URLSearchParams(location.search);
+                                                        params.set('quest', q.id);
+                                                        navigate({
+                                                            pathname: location.pathname,
+                                                            search: params.toString()
+                                                        });
+                                                        onClose();
+                                                    }}
+                                                    className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-all group flex items-center gap-3"
+                                                >
+                                                    <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-white/5 flex items-center justify-center shrink-0 overflow-hidden">
+                                                        {q.host?.avatar_url ? (
+                                                            <img src={q.host.avatar_url} className="w-full h-full object-cover" />
+                                                        ) : <Zap size={16} className="text-white/20" />}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-[11px] font-black text-white truncate">{q.title}</h4>
+                                                        <p className="text-[8px] text-white/40 font-black uppercase truncate mt-0.5">
+                                                            {q.location?.place_name || 'Global'} • {q.aura_reward} Aura
+                                                        </p>
+                                                    </div>
+                                                    <ArrowRight size={12} className="text-white/0 group-hover:text-white/40 group-hover:translate-x-1 transition-all" />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </section>
+                                )}
+
+                                {/* BRANDS / OPERATORS */}
+                                {(activeFilter === 'all' || activeFilter === 'brands') && results.brands.length > 0 && (
+                                    <section>
+                                        <div className="px-3 mb-2">
+                                            <span className="text-[8px] font-black text-primary uppercase tracking-widest">Brands</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            {results.brands.map(b => (
+                                                <button
+                                                    key={b.user_id}
+                                                    onClick={() => {
+                                                        navigate(`/app/shop/${b.slug}`);
+                                                        onClose();
+                                                    }}
+                                                    className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-all group flex items-center gap-3"
+                                                >
+                                                    <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden shrink-0">
+                                                        <img src={b.logo_url} className="w-full h-full object-cover" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-1">
+                                                            <h4 className="text-[11px] font-black text-white truncate">{b.business_name}</h4>
+                                                            {b.is_verified && <Star size={8} className="text-primary fill-primary" />}
+                                                        </div>
+                                                        <p className="text-[8px] text-white/40 font-black uppercase truncate mt-0.5">
+                                                            {b.category} • {b.location_text}
+                                                        </p>
+                                                    </div>
+                                                    <ArrowRight size={12} className="text-white/0 group-hover:text-white/40 group-hover:translate-x-1 transition-all" />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </section>
+                                )}
+
+                                {/* ITEMS */}
+                                {(activeFilter === 'all' || activeFilter === 'items') && (results.items?.length || 0) > 0 && (
+                                    <section>
+                                        <div className="px-3 mb-2">
+                                            <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Shop</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            {results.items.map(item => (
+                                                <button
+                                                    key={item.id}
+                                                    onClick={() => {
+                                                        navigate(`/app/dibs?item=${item.id}`);
+                                                        onClose();
+                                                    }}
+                                                    className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-all group flex items-center gap-3"
+                                                >
+                                                    <div className="w-10 h-10 rounded-lg border border-white/10 bg-zinc-900 overflow-hidden shrink-0">
+                                                        {item.image_url ? (
+                                                            <img src={item.image_url} className="w-full h-full object-cover" />
+                                                        ) : <ShoppingBag size={14} className="text-white/20" />}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-[11px] font-black text-white truncate">{item.title}</h4>
+                                                        <p className="text-[8px] text-white/40 font-black uppercase truncate mt-0.5">
+                                                            ₱{item.price?.toLocaleString()} • {item.category}
+                                                        </p>
+                                                    </div>
+                                                    <div className="px-2 py-0.5 rounded bg-primary/10 text-[7px] font-black text-primary uppercase">Dibs</div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </section>
+                                )}
+                            </>
+                        )}
+                    </>
+                )}
+            </div>
+        </motion.div >
     );
 };
 

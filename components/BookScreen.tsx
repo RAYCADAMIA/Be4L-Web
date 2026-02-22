@@ -47,12 +47,18 @@ const BookScreen: React.FC<{
                     }));
                     setBrands(enhanced);
 
-                    // Handle deep-link from item param
+                    // Handle deep-link from item param:
+                    // Navigate to the brand profile page, which will auto-open the item modal.
                     const itemId = searchParams.get('item');
-                    if (itemId && itemData) {
+                    if (itemId && itemData && opData) {
                         const targetItem = itemData.find(i => i.id === itemId);
                         if (targetItem) {
-                            setSelectedItem(targetItem);
+                            const targetOperator = opData.find(op => op.user_id === targetItem.operator_id);
+                            if (targetOperator?.slug) {
+                                // Redirect to the operator profile with item param to open the modal there
+                                navigate(`/app/shop/${targetOperator.slug}?item=${itemId}`, { replace: true });
+                                return; // Don't continue loading this page
+                            }
                         }
                     }
                 }

@@ -30,6 +30,7 @@ import { Operator } from '../types';
 import ProfileHeader from './ProfileHeader';
 import DibsItemCard from './DibsItemCard';
 import PostCard from './PostCard';
+import UserListModal from './UserListModal';
 
 interface ProfileScreenProps {
     user: UserType;
@@ -67,6 +68,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
     const [loadingQuests, setLoadingQuests] = useState(false);
     const [isFollowing, setIsFollowing] = useState(false);
     const [isFollowLoading, setIsFollowLoading] = useState(false);
+    const { updateUser } = useAuth();
 
     // Confirmation States
     const [showDiscardModal, setShowDiscardModal] = useState(false);
@@ -155,15 +157,30 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
     }, [user.id]);
 
     const handleFollowToggle = async () => {
-        if (!currentUserId) return;
+        if (!currentUserId) {
+            window.dispatchEvent(new Event('trigger-auth-modal'));
+            return;
+        }
         setIsFollowLoading(true);
         try {
             if (isFollowing) {
-                await supabaseService.profiles.unfollowUser(currentUserId, user.id);
-                setIsFollowing(false);
+                const success = await supabaseService.profiles.unfollowUser(currentUserId, user.id);
+                if (success) {
+                    setIsFollowing(false);
+                    // Update current user's following count locally
+                    if (currentUser) {
+                        updateUser({ following_count: Math.max(0, (currentUser.following_count || 0) - 1) });
+                    }
+                }
             } else {
-                await supabaseService.profiles.followUser(currentUserId, user.id);
-                setIsFollowing(true);
+                const success = await supabaseService.profiles.followUser(currentUserId, user.id);
+                if (success) {
+                    setIsFollowing(true);
+                    // Update current user's following count locally
+                    if (currentUser) {
+                        updateUser({ following_count: (currentUser.following_count || 0) + 1 });
+                    }
+                }
             }
         } catch (err) {
             console.error(err);
@@ -810,53 +827,22 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
             />
             <div className="h-32 md:h-0" />
             {/* Followers/Following Modals */}
-            <AnimatePresence>
-                {(showFollowers || showFollowing) && (
-                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="bg-zinc-900 border border-white/10 rounded-[2.5rem] w-full max-w-sm overflow-hidden flex flex-col max-h-[70vh]"
-                        >
-                            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">
-                                    {showFollowers ? 'Followers' : 'Following'}
-                                </h3>
-                                <button
-                                    onClick={() => { setShowFollowers(false); setShowFollowing(false); }}
-                                    className="p-2 rounded-full bg-white/5 text-gray-400 hover:text-white"
-                                >
-                                    <X size={16} />
-                                </button>
-                            </div>
-                            <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                                {/* Mock Users */}
-                                {OTHER_USERS.slice(0, showFollowers ? 5 : 4).map(u => (
-                                    <div
-                                        key={u.id}
-                                        onClick={() => {
-                                            if (onOpenProfile) onOpenProfile(u.id);
-                                            setShowFollowers(false);
-                                            setShowFollowing(false);
-                                        }}
-                                        className="flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl transition-all cursor-pointer group"
-                                    >
-                                        <div className="w-10 h-10 rounded-full bg-zinc-800 border border-white/10 overflow-hidden">
-                                            <img src={u.avatar_url} className="w-full h-full object-cover" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-xs font-black text-white group-hover:text-electric-teal transition-colors text-gradient-static">{u.name}</p>
-                                            <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest text-gradient-static">@{u.username}</p>
-                                        </div>
-                                        <ChevronRight size={14} className="text-gray-700 group-hover:text-white transition-colors" />
-                                    </div>
-                                ))}
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+            <UserListModal
+                isOpen={showFollowers}
+                onClose={() => setShowFollowers(false)}
+                title="Followers"
+                userId={user.id}
+                type="followers"
+                onOpenProfile={(u) => onOpenUser?.(u)}
+            />
+            <UserListModal
+                isOpen={showFollowing}
+                onClose={() => setShowFollowing(false)}
+                title="Following"
+                userId={user.id}
+                type="following"
+                onOpenProfile={(u) => onOpenUser?.(u)}
+            />
 
             {/* Aura Stats Modal */}
             <AnimatePresence>
