@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Users, Zap, MessageCircle, ArrowRight, Trophy, X, Calendar, CheckSquare, List, Navigation, Trash, Play, Shield, Check } from 'lucide-react';
+import { MapPin, Users, Zap, MessageCircle, ArrowRight, Trophy, X, Calendar, CheckSquare, List, Navigation, Trash, Play, Shield, Check, Globe, Signal, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabaseService } from '../../services/supabaseService';
 import { Quest, QuestStatus } from '../../types';
@@ -45,24 +45,6 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                     }
                     const parts = await supabaseService.quests.getQuestParticipants(questId);
                     setParticipants(parts);
-                } else {
-                    // Mock fallback for development
-                    setQuest({
-                        id: questId,
-                        title: 'Activity Hub',
-                        description: 'Join the squad and participate in this local activity to earn rewards.',
-                        category: 'Social',
-                        current_participants: 8,
-                        max_participants: 15,
-                        status: QuestStatus.DISCOVERABLE,
-                        start_time: new Date().toISOString(),
-                        aura_reward: 100,
-                        exp_reward: 150,
-                        host: { id: 'host-1', username: 'System', avatar_url: '' },
-                        location: { place_name: 'City Center', lat: 7.07, lng: 125.6 },
-                        checklist: ['Good Vibe'],
-                        itinerary: [{ time: '10:00 AM', description: 'Meetup' }]
-                    } as any);
                 }
             } catch (err) {
                 console.error("Failed to load quest:", err);
@@ -156,7 +138,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
     return (
         <AnimatePresence>
             {questId && (
-                <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center px-4 pt-20 pb-24 md:p-4">
+                <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center px-2 pt-6 pb-6 md:p-4">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -192,6 +174,13 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                 <span className="px-2 py-0.5 rounded-full bg-white/5 text-gray-400 text-[8px] font-black uppercase tracking-[0.2em] border border-white/10">
                                                     {quest.current_participants}/{quest.max_participants || '∞'} Squad
                                                 </span>
+                                                <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.2em] border flex items-center gap-1
+                                                    ${quest.visibility_scope === 'public' ? 'bg-emerald-500/5 text-emerald-500 border-emerald-500/10' :
+                                                        quest.visibility_scope === 'followers' ? 'bg-primary/5 text-primary border-primary/10' :
+                                                            'bg-purple-500/5 text-purple-400 border-purple-500/10'}`}>
+                                                    {quest.visibility_scope === 'public' ? <Globe size={10} /> : quest.visibility_scope === 'followers' ? <Signal size={10} /> : <Lock size={10} />}
+                                                    {quest.visibility_scope}
+                                                </span>
                                             </div>
                                             <h2 className="text-2xl md:text-3xl font-black tracking-tight text-white leading-tight uppercase">
                                                 {quest.title}
@@ -217,14 +206,17 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                         {/* Immersive Tabs */}
                                         <div className="flex gap-6 border-b border-white/5 pb-2 mb-8 overflow-x-auto no-scrollbar">
                                             {[
-                                                { id: 'details', label: 'Briefing' },
+                                                { id: 'details', label: 'Details' },
+                                                { id: 'participants', label: 'Participants', mobileOnly: true },
                                                 { id: 'itinerary', label: 'The Plan' },
                                                 { id: 'checklist', label: 'Essentials' }
                                             ].map(tab => (
                                                 <button
                                                     key={tab.id}
                                                     onClick={() => setActiveTab(tab.id as any)}
-                                                    className={`pb-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative whitespace-nowrap ${activeTab === tab.id ? 'text-primary' : 'text-gray-600 hover:text-gray-400'}`}
+                                                    className={`pb-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative whitespace-nowrap 
+                                                        ${tab.mobileOnly ? 'md:hidden' : ''}
+                                                        ${activeTab === tab.id ? 'text-primary' : 'text-gray-600 hover:text-gray-400'}`}
                                                 >
                                                     {tab.label}
                                                     {activeTab === tab.id && (
@@ -243,68 +235,113 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                     exit={{ opacity: 0, y: -10 }}
                                                     className="space-y-6"
                                                 >
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5">
-                                                            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center mb-3 border border-primary/20">
-                                                                <MapPin className="text-primary" size={16} />
-                                                            </div>
-                                                            <h4 className="text-[8px] font-black uppercase tracking-[0.2em] text-gray-600 mb-1">Target Location</h4>
-                                                            <p className="text-xs font-bold text-white leading-tight line-clamp-2">{quest.location?.place_name || 'Davao City, PH'}</p>
+                                                    <div className="flex flex-col gap-1 p-4 rounded-2xl bg-white/[0.02] border border-white/5 relative overflow-hidden group">
+                                                        <div className="absolute top-0 left-0 w-1 h-full bg-primary/40 group-hover:bg-primary transition-colors" />
+                                                        <div className="flex items-center gap-2 mb-1.5">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_#2DD4BF]" />
+                                                            <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">Location Details</span>
                                                         </div>
-                                                        <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5">
-                                                            <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center mb-3 border border-purple-500/20">
+                                                        <h4 className="text-lg font-black uppercase text-white leading-tight">
+                                                            {quest.location?.place_name || 'Davao City, PH'}
+                                                        </h4>
+                                                        <p className="text-[9px] text-gray-500 font-medium leading-relaxed">
+                                                            {quest.location?.address_full || quest.location?.place_name || 'No address data provided.'}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="p-4 rounded-2xl bg-purple-500/[0.03] border border-purple-500/10 flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
                                                                 <Calendar className="text-purple-400" size={16} />
                                                             </div>
-                                                            <h4 className="text-[8px] font-black uppercase tracking-[0.2em] text-gray-600 mb-1">Mission Start</h4>
-                                                            <p className="text-xs font-bold text-white leading-tight">
-                                                                {new Date(quest.start_time).toLocaleDateString([], { month: 'short', day: 'numeric' })} <span className="text-gray-500">@</span> {new Date(quest.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                            </p>
+                                                            <div>
+                                                                <h4 className="text-[7px] font-black uppercase tracking-[0.2em] text-gray-500 mb-0.5">Mission Start</h4>
+                                                                <p className="text-xs font-bold text-white leading-tight">
+                                                                    {new Date(quest.start_time).toLocaleDateString([], { month: 'short', day: 'numeric' })} <span className="text-gray-500">@</span> {new Date(quest.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </p>
+                                                            </div>
                                                         </div>
                                                     </div>
 
-                                                    {/* Map */}
-                                                    <div className="rounded-3xl overflow-hidden border border-white/10 bg-zinc-900/50 relative h-48 md:h-64 shadow-xl">
-                                                        <SmartMap
-                                                            mode="view"
-                                                            initialLocation={quest.location ? {
-                                                                lat: quest.location.lat,
-                                                                lng: quest.location.lng,
-                                                                placeName: quest.location.place_name,
-                                                                formattedAddress: quest.location.address_full
-                                                            } : undefined}
-                                                            height="100%"
-                                                            className="z-0"
-                                                        />
-                                                    </div>
-
-                                                    {/* Squad */}
-                                                    <div className="pt-6 border-t border-white/5">
-                                                        <div className="flex items-center justify-between mb-4">
-                                                            <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500">Squad List</h3>
-                                                            {isHost && participants.length > 0 && (
-                                                                <button
-                                                                    onClick={() => setManagingSquad(!managingSquad)}
-                                                                    className={`text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-all ${managingSquad ? 'text-red-500 border-red-500/20 bg-red-500/10' : 'text-gray-500 border-white/10 hover:text-white'}`}
-                                                                >
-                                                                    {managingSquad ? 'Done' : 'Manage'}
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                        <div className="grid grid-cols-1 gap-2">
-                                                            {participants.map((p, idx) => (
-                                                                <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all">
-                                                                    <div className="flex items-center gap-3">
-                                                                        <img src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`} className="w-8 h-8 rounded-lg object-cover border border-white/10" />
-                                                                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">{p.username}</span>
+                                                    {/* Vibe Signals */}
+                                                    {((quest.vibe_signals && quest.vibe_signals.length > 0) || (quest.signals?.vibe && quest.signals.vibe.length > 0)) && (
+                                                        <div className="space-y-3">
+                                                            <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-600">Vibes & Signals</h4>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {[...(quest.vibe_signals || []), ...(quest.signals?.vibe || [])].map((v, i) => (
+                                                                    <div key={i} className="px-3 py-1.5 rounded-xl bg-primary/5 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-wider flex items-center gap-2">
+                                                                        <Zap size={10} />
+                                                                        {v}
                                                                     </div>
-                                                                    {managingSquad && isHost && (
-                                                                        <button onClick={() => handleKickParticipant(p.id)} className="p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
-                                                                            <Trash size={12} />
-                                                                        </button>
-                                                                    )}
-                                                                </div>
-                                                            ))}
+                                                                ))}
+                                                            </div>
                                                         </div>
+                                                    )}
+                                                </motion.div>
+                                            )}
+
+                                            {activeTab === 'participants' && (
+                                                <motion.div
+                                                    key="participants"
+                                                    initial={{ opacity: 0, x: 20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    exit={{ opacity: 0, x: -20 }}
+                                                    className="space-y-4 md:hidden"
+                                                >
+                                                    <div className="space-y-2">
+                                                        {/* Inject Mission Lead */}
+                                                        {quest.host && (
+                                                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02]">
+                                                                <button
+                                                                    onClick={() => navigate(`/app/${quest.host?.id}`)}
+                                                                    className="flex items-center gap-3"
+                                                                >
+                                                                    <div className="shrink-0">
+                                                                            <img
+                                                                                src={quest.host.avatar_url || `https://ui-avatars.com/api/?name=${quest.host.username}`}
+                                                                                className="w-8 h-8 rounded-full object-cover border border-white/10"
+                                                                            />
+                                                                    </div>
+                                                                    <div className="flex flex-col text-left">
+                                                                        <div className="flex items-center gap-1.5">
+                                                                            <span className="text-[10px] font-black text-white uppercase tracking-tight">{quest.host.name || quest.host.username}</span>
+                                                                            <span className="text-[6px] bg-primary text-black px-1 py-0.5 rounded font-black">LEAD</span>
+                                                                        </div>
+                                                                        <p className="text-[8px] text-gray-500 font-bold tracking-tight normal-case">@{(quest.host.handle || quest.host.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                                    </div>
+                                                                </button>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-2 mt-2">
+                                                            {participants
+                                                                .filter(p => (isHost ? true : p.participant_status === 'ACCEPTED') && p.id !== quest.host?.id)
+                                                                .map((p) => (
+                                                                    <div key={p.id} className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                                                                        <button
+                                                                            onClick={() => navigate(`/app/${p.id}`)}
+                                                                            className="flex items-center gap-2.5 min-w-0"
+                                                                        >
+                                                                            <div className="relative shrink-0">
+                                                                                <img
+                                                                                    src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`}
+                                                                                    className="w-7 h-7 rounded-full object-cover border border-white/10"
+                                                                                />
+                                                                                <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-deep-black" />
+                                                                            </div>
+                                                                            <div className="flex flex-col text-left min-w-0">
+                                                                                <span className="text-[9px] font-black text-white uppercase tracking-tight truncate">{p.name || p.username}</span>
+                                                                                <p className="text-[7px] text-gray-500 font-bold tracking-tight normal-case truncate">@{(p.handle || p.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                                            </div>
+                                                                        </button>
+                                                                    </div>
+                                                                ))}
+                                                        </div>
+                                                        {participants.filter(p => (isHost ? true : p.participant_status === 'ACCEPTED') && p.id !== quest.host?.id).length === 0 && !quest.host && (
+                                                            <div className="py-12 text-center border border-white/5 border-dashed rounded-3xl">
+                                                                <Users className="mx-auto text-gray-800 mb-2 opacity-30" size={32} />
+                                                                <p className="text-[10px] text-gray-600 font-black uppercase tracking-widest">Waiting for signals</p>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </motion.div>
                                             )}
@@ -371,45 +408,104 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                 <div className="w-full md:w-[320px] md:border-l border-white/5 bg-white/[0.01] flex flex-col p-6 shrink-0 relative z-30">
                                     <button
                                         onClick={onClose}
-                                        className="hidden md:flex absolute top-6 right-6 w-8 h-8 rounded-full bg-white/5 border border-white/10 items-center justify-center text-gray-500 hover:text-white transition-all hover:bg-white/10"
+                                        className="hidden md:flex absolute top-4 right-4 w-7 h-7 rounded-full bg-white/5 border border-white/10 items-center justify-center text-gray-500 hover:text-white transition-all hover:bg-white/10 z-50"
                                     >
                                         <X size={16} />
                                     </button>
+                                    <div className="hidden md:flex flex-col flex-1 min-h-0 mb-6 mt-4">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="space-y-0.5">
+                                                <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">Participants</h3>
+                                                <p className="text-[7px] text-primary/60 font-black uppercase tracking-widest">{participants.filter(p => p.participant_status === 'ACCEPTED').length} Active</p>
+                                            </div>
+                                            {isHost && participants.length > 0 && (
+                                                <button
+                                                    onClick={() => setManagingSquad(!managingSquad)}
+                                                    className={`text-[7px] font-black uppercase tracking-widest px-2 py-1.5 rounded-lg border transition-all ${managingSquad ? 'text-red-500 border-red-500/20 bg-red-500/10' : 'text-gray-400 border-white/5 hover:text-white hover:border-white/10'}`}
+                                                >
+                                                    {managingSquad ? 'Finish' : 'Edit'}
+                                                </button>
+                                            )}
+                                        </div>
 
-                                    <div className="flex-1 hidden md:block" />
+                                        <div className="flex-1 overflow-y-auto no-scrollbar grid grid-cols-2 gap-2 pr-1 content-start">
+                                            {/* Inject Mission Lead */}
+                                            {quest.host && (
+                                                <div className="col-span-2 flex items-center justify-between p-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all group/member">
+                                                    <button
+                                                        onClick={() => navigate(`/app/${quest.host?.id}`)}
+                                                        className="flex items-center gap-2.5 hover:opacity-80 transition-opacity text-left cursor-pointer"
+                                                    >
+                                                        <div className="shrink-0">
+                                                            <img
+                                                                src={quest.host.avatar_url || `https://ui-avatars.com/api/?name=${quest.host.username}`}
+                                                                className="w-7 h-7 rounded-full object-cover border border-white/5"
+                                                            />
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="text-[10px] font-black text-white uppercase tracking-tight group-hover/member:text-primary transition-colors">{quest.host.name || quest.host.username}</span>
+                                                                <span className="text-[6px] bg-primary text-black px-1 py-0.5 rounded font-black">LEAD</span>
+                                                            </div>
+                                                            <p className="text-[7px] text-gray-500 font-bold tracking-tight normal-case">@{(quest.host.handle || quest.host.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                        </div>
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {participants
+                                                .filter(p => (isHost ? true : p.participant_status === 'ACCEPTED') && p.id !== quest.host?.id)
+                                                .map((p) => (
+                                                    <div key={p.id} className="flex items-center justify-between p-2 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all group/member">
+                                                        <button
+                                                            onClick={() => navigate(`/app/${p.id}`)}
+                                                            className="flex items-center gap-2.5 hover:opacity-80 transition-opacity text-left cursor-pointer"
+                                                        >
+                                                            <div className="relative shrink-0">
+                                                                <img
+                                                                    src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`}
+                                                                    className="w-7 h-7 rounded-full object-cover border border-white/5"
+                                                                />
+                                                                <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-deep-black" />
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] font-black text-white uppercase tracking-tight group-hover/member:text-primary transition-colors line-clamp-1">{p.name || p.username}</span>
+                                                                <p className="text-[7px] text-gray-500 font-bold tracking-tight normal-case">@{(p.handle || p.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                            </div>
+                                                        </button>
+                                                        {isHost && (
+                                                            <div className="flex items-center gap-1">
+                                                                {p.participant_status === 'REQUESTED' && (
+                                                                    <button
+                                                                        onClick={() => {/* Accept logic would go here if implemented in service */ }}
+                                                                        className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center border border-emerald-500/20 shadow-lg"
+                                                                    >
+                                                                        <Check size={12} />
+                                                                    </button>
+                                                                )}
+                                                                {managingSquad && (
+                                                                    <button
+                                                                        onClick={() => handleKickParticipant(p.id)}
+                                                                        className="w-7 h-7 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center border border-red-500/20 shadow-lg"
+                                                                    >
+                                                                        <Trash size={12} />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+
+                                            {participants.filter(p => (isHost ? true : p.participant_status === 'ACCEPTED') && p.id !== quest.host?.id).length === 0 && !quest.host && (
+                                                <div className="py-8 text-center border border-white/5 border-dashed rounded-2xl">
+                                                    <Users className="mx-auto text-gray-800 mb-2 opacity-30" size={24} />
+                                                    <p className="text-[8px] text-gray-600 font-black uppercase tracking-widest">No signals</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
 
                                     <div className="space-y-6">
-                                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/5">
-                                            <div className="relative">
-                                                <img
-                                                    src={quest.host?.avatar_url || `https://ui-avatars.com/api/?name=${quest.host?.username || 'H'}`}
-                                                    className="w-10 h-10 rounded-xl object-cover border border-white/10"
-                                                />
-                                                <div className="absolute -bottom-1 -right-1 p-0.5 bg-primary rounded-md border border-deep-black">
-                                                    <Shield size={8} className="text-black" />
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <p className="text-[9px] font-black uppercase tracking-widest text-primary">Mission Lead</p>
-                                                <p className="text-xs font-bold text-white tracking-wide">{quest.host?.username || 'Network Host'}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <div className="flex justify-between text-[8px] font-black uppercase tracking-[0.2em] text-gray-500">
-                                                <span>Aura Rewards</span>
-                                                <span className="text-primary">+{quest.aura_reward || 100} EXP</span>
-                                            </div>
-                                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: '100%' }}
-                                                    transition={{ duration: 1, delay: 0.5 }}
-                                                    className="h-full bg-gradient-to-r from-primary to-emerald-400"
-                                                />
-                                            </div>
-                                        </div>
-
                                         {!isHost ? (
                                             <button
                                                 onClick={handleJoinAction}
@@ -427,15 +523,15 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                         ) : (
                                             <div className="grid grid-cols-2 gap-3">
                                                 {!isLive ? (
-                                                    <button onClick={handleStartQuest} className="col-span-2 py-4 rounded-2xl bg-electric-teal text-black font-black uppercase text-[9px] tracking-[0.2em] hover:bg-white transition-all flex items-center justify-center gap-2">
+                                                    <button onClick={handleStartQuest} className="col-span-2 py-3.5 rounded-xl bg-electric-teal text-black font-black uppercase text-[8px] tracking-[0.2em] hover:bg-white transition-all flex items-center justify-center gap-2">
                                                         <Play size={12} fill="black" /> Initiate
                                                     </button>
                                                 ) : (
-                                                    <button onClick={handleFinishQuest} className="col-span-2 py-4 rounded-2xl bg-primary text-black font-black uppercase text-[9px] tracking-[0.2em] hover:bg-white transition-all flex items-center justify-center gap-2">
+                                                    <button onClick={handleFinishQuest} className="col-span-2 py-3.5 rounded-xl bg-primary text-black font-black uppercase text-[8px] tracking-[0.2em] hover:bg-white transition-all flex items-center justify-center gap-2">
                                                         <Trophy size={14} /> Finish
                                                     </button>
                                                 )}
-                                                <button onClick={handleDeleteQuest} className="col-span-2 py-3 rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20 font-black uppercase text-[9px] tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all">
+                                                <button onClick={handleDeleteQuest} className="col-span-2 py-2.5 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 font-black uppercase text-[8px] tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all">
                                                     Scrub Mission
                                                 </button>
                                             </div>
@@ -487,8 +583,9 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                         </AnimatePresence>
                     </motion.div>
                 </div>
-            )}
-        </AnimatePresence>
+            )
+            }
+        </AnimatePresence >
     );
 };
 

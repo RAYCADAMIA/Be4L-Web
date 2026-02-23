@@ -1,6 +1,6 @@
 
 import { supabase } from '../utils/supabaseClient';
-import { User, Capture, Quest, Message, QuestStatus, QuestType, QuestParticipantStatus } from '../types';
+import { User, Capture, Quest, Message, QuestStatus, QuestType, QuestParticipantStatus, QuestVisibilityScope } from '../types';
 import { dailyService } from './dailyService';
 import { MOCK_USER, MOCK_ADMIN, MOCK_OPERATOR, MOCK_CAPTURES, MOCK_QUESTS, OTHER_USERS, POSITIVE_QUOTES } from '../constants';
 
@@ -394,6 +394,15 @@ export const supabaseService = {
         .order('created_at', { ascending: false });
       return ((data || []).map((d: any) => d.profile).filter(Boolean)) as User[];
     },
+    getFollowingIds: async (uid: string): Promise<string[]> => {
+      if (!isValidUUID(uid)) return ['u2', 'u3'];
+      const { data } = await supabase
+        .from('follows')
+        .select('following_id')
+        .eq('follower_id', uid)
+        .eq('type', 'user');
+      return (data || []).map(f => f.following_id);
+    },
     searchUsers: async (query: string): Promise<User[]> => {
       console.log("[SearchUsers] Query:", query);
       if (!query || query.length < 1) return [];
@@ -574,8 +583,11 @@ export const supabaseService = {
         }));
       }
 
-      // Fetch friends for filtering friends-only quests
-      const friends = await supabaseService.profiles.getMutualFollows(cid);
+      // Fetch relationships for filtering
+      const [friends, following] = await Promise.all([
+        supabaseService.profiles.getMutualFollows(cid),
+        supabaseService.profiles.getFollowingIds(cid)
+      ]);
 
       return rawQuests.map((i: any) => ({
         ...i,
@@ -584,21 +596,61 @@ export const supabaseService = {
         participant_ids: i.user_quests?.map((uq: any) => uq.user_id) || [],
         current_participants: i.user_quests?.filter((uq: any) => uq.status === QuestParticipantStatus.ACCEPTED).length || 0
       })).filter((q: any) => {
-        if (q.visibility_scope === 'friends') {
-          return q.host_id === cid || friends.includes(q.host_id);
+        if (q.host_id === cid) return true; // Host always sees their own
+
+        if (q.visibility_scope === QuestVisibilityScope.FRIENDS) {
+          return friends.includes(q.host_id);
+        }
+        if (q.visibility_scope === QuestVisibilityScope.FOLLOWERS) {
+          return following.includes(q.host_id);
         }
         return true;
       });
     },
     getQuestById: async (id: string) => {
+      // 1. Check for static mock quests (featured ones)
+      const mockResult = MOCK_QUESTS.find(q => q.id === id);
+      if (mockResult) {
+        return {
+          data: {
+            ...mockResult,
+            mode: mockResult.mode || (mockResult as any).type,
+            capacity: mockResult.capacity || mockResult.max_participants,
+            participant_ids: mockResult.participant_ids || [],
+            current_participants: mockResult.current_participants || 0
+          }
+        };
+      }
+
+      // 2. Check for dynamically generated guest IDs (from QuestGenerator)
+      if (id.startsWith('gen-')) {
+        return {
+          data: {
+            id,
+            title: "Field Deployment",
+            description: "A spontaneous mission detected in your sector. Join to see the signal.",
+            mode: QuestType.SPONTY,
+            status: QuestStatus.DISCOVERABLE,
+            category: "Adventures",
+            start_time: new Date().toISOString(),
+            capacity: 12,
+            current_participants: 1,
+            participant_ids: [],
+            location: { lat: 7.0707, lng: 125.6087, place_name: 'Davao City' },
+            host: OTHER_USERS[1]
+          }
+        };
+      }
+
+      // 3. Real Database UUIDs
       if (!isValidUUID(id)) return { data: null };
       const { data, error } = await supabase.from('quests').select(`*, host:profiles!host_id(*), user_quests(user_id, status)`).eq('id', id).single();
       if (data) {
         return {
           data: {
             ...data,
-            mode: data.type,
-            capacity: data.max_participants,
+            mode: data.mode || data.type,
+            capacity: data.capacity || data.max_participants,
             participant_ids: data.user_quests?.map((uq: any) => uq.user_id) || [],
             current_participants: data.user_quests?.filter((uq: any) => uq.status === QuestParticipantStatus.ACCEPTED).length || 0
           }
@@ -649,7 +701,10 @@ export const supabaseService = {
         aura_reward: d.aura_reward,
         exp_reward: d.exp_reward,
         host_id: hid,
-        visibility_scope: d.visibility_scope || 'public'
+        visibility_scope: d.visibility_scope || 'public',
+        itinerary: d.itinerary,
+        checklist: d.checklist,
+        vibe_signals: d.vibe_signals
       };
 
       const { data: nq, error } = await supabase.from('quests')

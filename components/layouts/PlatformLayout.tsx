@@ -77,6 +77,14 @@ export const PlatformLayout: React.FC = () => {
         }
     }
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const navItems = [
         { label: 'Home', path: !user ? '/' : '/app/home', icon: Home },
         { label: 'Lore', path: user ? '/app/lore' : '/lore', icon: Aperture },
@@ -94,8 +102,8 @@ export const PlatformLayout: React.FC = () => {
         location.pathname.startsWith('/app/dashboard') ||
         (segments.length === 2 && segments[0] === 'app' && !['home', 'lore', 'quests', 'chat', 'dibs', 'admin', 'dashboard', 'shop'].includes(segments[1]));
 
-    const isChatDetailMobile = location.pathname.includes('chat') && searchParams.has('id');
-    const shouldShowHeader = !isSplashActive && location.pathname !== '/auth' && !isProfileOrDashboard && !isChatDetailMobile;
+    const isChatDetailView = location.pathname.includes('chat') && searchParams.has('id');
+    const shouldShowHeader = !isSplashActive && location.pathname !== '/auth' && !isProfileOrDashboard && !(isChatDetailView && isMobile);
 
     const mainRef = React.useRef<HTMLDivElement>(null);
 
@@ -146,8 +154,8 @@ export const PlatformLayout: React.FC = () => {
 
                 <main ref={mainRef} className="flex-1 relative h-full overflow-y-auto no-scrollbar z-10 flex flex-col pt-0 pb-0">
                     {/* Content Wrapper with padding to clear the Bottom Nav Bar */}
-                    <div className={`grow shrink-0 w-full flex flex-col min-h-full ${isChatDetailMobile ? 'pb-0' : 'pb-32'} md:pb-0`}>
-                        <Outlet />
+                    <div className={`grow shrink-0 w-full flex flex-col min-h-full ${isChatDetailView ? 'pb-0' : 'pb-32'} md:pb-0`}>
+                        <Outlet key={location.pathname} />
                     </div>
                     {shouldShowFooter && <Footer />}
                 </main>
@@ -155,14 +163,14 @@ export const PlatformLayout: React.FC = () => {
 
             {/* Mobile Bottom Bar - Fixed Centering and Clipping */}
             <AnimatePresence>
-                {!isSplashActive && location.pathname !== '/auth' && !isChatDetailMobile && (
+                {!isSplashActive && location.pathname !== '/auth' && !isChatDetailView && (
                     <motion.div
                         key="mobile-nav"
                         initial={{ y: 100, x: "-50%", opacity: 0 }}
                         animate={{ y: 0, x: "-50%", opacity: 1 }}
                         exit={{ y: 100, x: "-50%", opacity: 0 }}
                         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                        className={`md:hidden fixed bottom-8 left-1/2 w-[calc(100%-2.5rem)] max-w-sm h-16 bg-white/[0.08] backdrop-blur-3xl border border-white/10 flex items-center justify-around z-[100] rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] px-2 transition-opacity duration-500 ${isChatDetailMobile ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                        className={`md:hidden fixed bottom-8 left-1/2 w-[calc(100%-2.5rem)] max-w-sm h-16 bg-white/[0.08] backdrop-blur-3xl border border-white/10 flex items-center justify-around z-[100] rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] px-2 transition-opacity duration-500 ${isChatDetailView ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                     >
                         {navItems.map((item) => {
                             const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));

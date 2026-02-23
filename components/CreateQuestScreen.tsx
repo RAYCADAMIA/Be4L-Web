@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     X, Calendar, MapPin, Zap, ArrowRight, ChevronLeft, CalendarDays,
     ChevronRight, MessageSquare, Compass, Plus, Minus, ShieldCheck, Trophy, Clock,
-    Briefcase, Dumbbell, LayoutGrid, Plane, ChevronDown, MonitorPlay, CalendarCheck
+    Briefcase, Dumbbell, LayoutGrid, Plane, ChevronDown, MonitorPlay, CalendarCheck,
+    Globe, Signal, Users
 } from 'lucide-react';
 import { useMotionValue, useTransform } from 'framer-motion';
 import { supabaseService } from '../services/supabaseService';
@@ -62,7 +64,7 @@ const SlideToLaunch: React.FC<{ onLaunch: () => void, loading: boolean }> = ({ o
     };
 
     return (
-        <div ref={containerRef} className="w-full h-16 rounded-full bg-white/[0.02] border border-white/10 relative flex items-center px-1.5 overflow-hidden backdrop-blur-xl group shadow-[0_0_30px_rgba(45,212,191,0.1)] transition-all duration-500 hover:border-electric-teal/30 hover:shadow-[0_0_40px_rgba(45,212,191,0.2)]">
+        <div ref={containerRef} className="w-full h-12 rounded-full bg-white/[0.02] border border-white/10 relative flex items-center px-1 overflow-hidden backdrop-blur-xl group shadow-[0_0_20px_rgba(45,212,191,0.05)] transition-all duration-500 hover:border-electric-teal/30 hover:shadow-[0_0_30px_rgba(45,212,191,0.15)]">
             <motion.div
                 style={{
                     opacity: useTransform(x, [0, maxDrag], [0.1, 0.4]),
@@ -73,8 +75,8 @@ const SlideToLaunch: React.FC<{ onLaunch: () => void, loading: boolean }> = ({ o
             />
             <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="flex items-center gap-3">
-                    <span className="text-[11px] font-black text-white/90 uppercase tracking-[0.3em] ml-12 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                        {loading ? 'INITIATING...' : 'SLIDE TO LAUNCH'}
+                    <span className="text-[9px] font-black text-white/90 uppercase tracking-[0.3em] ml-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                        {loading ? 'INITIATING...' : 'SLIDE TO POST'}
                     </span>
                     {!loading && (
                         <motion.div animate={{ x: [0, 5, 0], opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 1.5 }}>
@@ -89,7 +91,7 @@ const SlideToLaunch: React.FC<{ onLaunch: () => void, loading: boolean }> = ({ o
                 dragElastic={0.05}
                 style={{ x }}
                 onDragEnd={handleDragEnd}
-                className="w-14 h-14 rounded-full bg-gradient-to-br from-electric-teal to-teal-500 flex items-center justify-center text-black z-20 shadow-[0_0_20px_rgba(45,212,191,0.5)] cursor-grab active:cursor-grabbing border border-white/30 relative overflow-hidden group-hover:scale-105 transition-transform"
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-electric-teal to-teal-500 flex items-center justify-center text-black z-20 shadow-[0_0_15px_rgba(45,212,191,0.4)] cursor-grab active:cursor-grabbing border border-white/30 relative overflow-hidden group-hover:scale-105 transition-transform"
             >
                 {loading ? (
                     <motion.div
@@ -103,12 +105,13 @@ const SlideToLaunch: React.FC<{ onLaunch: () => void, loading: boolean }> = ({ o
                 {/* Gloss effect on knob */}
                 <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent rounded-t-full pointer-events-none" />
             </motion.div>
-        </div>
+        </div >
     );
 };
 
 const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestCreated, currentUser }) => {
     const { showToast } = useToast();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [step, setStep] = useState(1);
     const totalSteps = 4;
@@ -120,7 +123,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
-    const [locationName, setLocationName] = useState('TBD');
+    const [locationName, setLocationName] = useState('');
     const [locationCoords, setLocationCoords] = useState<{ latitude: number; longitude: number } | null>(null);
     const [capacity, setCapacity] = useState(10);
     const [requiresApproval, setRequiresApproval] = useState(false);
@@ -147,6 +150,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
     const [showMapPicker, setShowMapPicker] = useState(false);
     const [showVibeDropdown, setShowVibeDropdown] = useState(false);
+    const [showItinTimePicker, setShowItinTimePicker] = useState(false);
     const [customCategory, setCustomCategory] = useState('');
     const [customActivity, setCustomActivity] = useState('');
     const [customVibe, setCustomVibe] = useState('');
@@ -287,22 +291,34 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
 
                 max_participants: capacity,
                 requires_approval: requiresApproval,
+                visibility_scope: visibility,
                 host_id: currentUser.id,
                 status: QuestStatus.DISCOVERABLE,
                 aura_reward: 100,
                 exp_reward: 120,
 
-                // Exclude fields not in schema yet to prevent errors
-                // vibe_signals: vibeSignals,
-                // itinerary: itinerary,
-                // checklist: checklist
+                // v1.3 Enhanced Details
+                vibe_signals: vibeSignals,
+                itinerary: itinerary,
+                checklist: checklist
             };
 
             const response = await supabaseService.quests.createQuest(questData);
             if (response.success) {
-                showToast("Quest Deployed! 🚀", "success");
+                showToast("Quest Posted", "success", {
+                    icon: <Compass size={14} />,
+                    action: {
+                        label: "View Post Details",
+                        onClick: () => {
+                            if (response.questId) {
+                                // Since we navigate to /app/quests?questId=...
+                                // The QuestsScreen will handle opening the modal
+                                navigate(`/app/quests?questId=${response.questId}`);
+                            }
+                        }
+                    }
+                });
                 onQuestCreated?.(response.questId!, title);
-                onClose();
             } else {
                 console.error("Quest creation error:", response.error);
                 showToast(response.error || "Deployment failed.", "error");
@@ -316,26 +332,29 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 pt-24 pb-32">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
 
             <motion.div
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                className="relative w-full max-w-sm bg-white/[0.03] backdrop-blur-[40px] backdrop-saturate-150 border border-white/20 rounded-[2.5rem] overflow-hidden flex flex-col shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] min-h-[380px] max-h-[70vh] h-auto ring-1 ring-white/10"
+                className="relative w-full max-w-md bg-white/[0.03] backdrop-blur-[40px] backdrop-saturate-150 border border-white/20 rounded-[2.5rem] overflow-hidden flex flex-col shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] min-h-[420px] max-h-full h-auto ring-1 ring-white/10"
             >
                 {/* Header */}
-                <div className="px-4 pt-4 pb-2 flex justify-between items-center bg-gradient-to-b from-white/[0.02] to-transparent shrink-0">
+                <div className="px-5 pt-3 pb-1 flex justify-between items-center bg-gradient-to-b from-white/[0.02] to-transparent shrink-0">
                     <div className="flex items-center gap-3">
-                        <button onClick={step === 1 ? onClose : () => setStep(step - 1)} className="p-2.5 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-all">
-                            <ChevronLeft size={18} />
+                        <button onClick={step === 1 ? onClose : () => setStep(step - 1)} className="p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-all">
+                            <ChevronLeft size={16} />
                         </button>
                         <div>
-                            <h2 className="text-lg font-black uppercase tracking-tighter text-white">Create a Quest</h2>
-                            <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Stage {step} of {totalSteps}</p>
+                            <h2 className="text-base font-black uppercase tracking-tighter text-white">Create a Quest</h2>
+                            <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Stage {step} of {totalSteps}</p>
                         </div>
                     </div>
+                    <button onClick={onClose} className="p-2 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all">
+                        <X size={18} />
+                    </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-2">
@@ -355,13 +374,16 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                         <span className="text-[7px] font-bold text-primary uppercase tracking-widest opacity-50">Required</span>
                                     </div>
                                     <div className="grid grid-cols-3 gap-3">
-                                        <button
-                                            onClick={() => showToast("Sponty Quests coming soon!", "info")}
-                                            className="flex flex-col items-center justify-center gap-2 p-4 rounded-3xl border bg-white/[0.02] border-white/5 text-gray-500 cursor-not-allowed opacity-40 grayscale transition-all"
-                                        >
-                                            <Zap size={20} className="opacity-50" />
-                                            <span className="text-[9px] font-black uppercase tracking-widest text-center">Sponty</span>
-                                        </button>
+                                        <div className="relative group">
+                                            <button
+                                                disabled
+                                                className="w-full flex flex-col items-center justify-center gap-2 p-4 rounded-3xl border bg-white/[0.02] border-white/5 text-gray-500 opacity-40 grayscale cursor-not-allowed"
+                                            >
+                                                <Zap size={20} className="relative z-10" />
+                                                <span className="text-[9px] font-black uppercase tracking-widest relative z-10">Sponty</span>
+                                            </button>
+                                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-black text-[6px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-tighter">Coming Soon</div>
+                                        </div>
                                         <button
                                             onClick={() => setTimingIntent(QuestTimingIntent.SCHEDULED)}
                                             className={`flex flex-col items-center justify-center gap-2 p-4 rounded-3xl border transition-all duration-300 relative overflow-hidden group ${timingIntent === QuestTimingIntent.SCHEDULED ? 'bg-white/10 border-white/30 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'bg-white/[0.02] border-white/5 text-gray-500 hover:bg-white/5 hover:border-white/10'}`}
@@ -499,7 +521,6 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-center px-1">
                                                 <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Flexible Date</label>
-                                                <span className="text-[7px] font-bold text-electric-teal uppercase tracking-widest opacity-50">Vague OK</span>
                                             </div>
                                             <div className="grid grid-cols-2 gap-2">
                                                 {['Today', 'Tomorrow', 'This Weekend', 'Next Week'].map(tag => (
@@ -611,7 +632,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                     </div>
 
                                     {showVibeDropdown && (
-                                        <div ref={vibeDropdownRef} className="absolute top-full left-0 right-0 z-50 mt-2 p-3 bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200">
+                                        <div ref={vibeDropdownRef} className="absolute bottom-full left-0 right-0 z-50 mb-2 p-3 bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-2 duration-200">
                                             <div className="flex gap-2 mb-3">
                                                 <input value={customVibe} onChange={e => setCustomVibe(e.target.value)} placeholder="Custom Vibe..." className="flex-1 bg-white/5 border border-white/5 rounded-lg px-2 py-1.5 text-[10px] text-white outline-none focus:border-primary/50" />
                                                 <button onClick={() => { if (customVibe) { setVibeSignals([...vibeSignals, customVibe]); setCustomVibe(''); } }} className="p-1.5 bg-primary text-black rounded-lg"><Plus size={14} /></button>
@@ -653,7 +674,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                                 // Mock coords for valid submission
                                                 if (!locationCoords) setLocationCoords({ latitude: 14.5995, longitude: 120.9842 });
                                             }}
-                                            placeholder="ENTER LOCATION NAME..."
+                                            placeholder="ENTER LOCATION DEETS..."
                                             className="w-full bg-white/[0.02] border border-white/10 rounded-2xl px-4 py-4 text-sm text-white outline-none focus:border-electric-teal/50 focus:bg-white/[0.05] placeholder:text-white/20 font-bold uppercase tracking-wide transition-all"
                                             autoFocus
                                         />
@@ -668,7 +689,10 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                                     <button
                                                         key={city}
                                                         onClick={() => {
-                                                            setLocationName(city);
+                                                            const suffix = `, ${city}`;
+                                                            if (!locationName.includes(city)) {
+                                                                setLocationName(prev => prev ? `${prev}${suffix}` : city);
+                                                            }
                                                             setLocationCoords({ latitude: 14.5995, longitude: 120.9842 }); // Mock coords
                                                         }}
                                                         className={`px-4 py-2 rounded-xl border transition-all duration-300 active:scale-95 text-[10px] font-black uppercase tracking-widest ${locationName === city ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]' : 'bg-white/5 border-white/5 text-gray-500 hover:text-white hover:bg-white/10 hover:border-white/10'}`}
@@ -707,22 +731,13 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                                 ))}
                                                 <div className="flex gap-2 min-h-[40px]">
                                                     <div className="w-24 relative group">
-                                                        <select
-                                                            value={itinTime}
-                                                            onChange={e => setItinTime(e.target.value)}
-                                                            className="w-full h-full bg-white/[0.02] border border-white/10 rounded-2xl px-2 text-[10px] font-black uppercase text-white outline-none focus:border-electric-teal/50 appearance-none text-center cursor-pointer hover:bg-white/5 transition-all"
+                                                        <button
+                                                            onClick={() => setShowItinTimePicker(true)}
+                                                            className="w-full h-full bg-white/[0.02] border border-white/10 rounded-2xl px-2 text-[10px] font-black uppercase text-white outline-none focus:border-electric-teal/50 text-center cursor-pointer hover:bg-white/5 transition-all flex items-center justify-center gap-1"
                                                         >
-                                                            <option value="" disabled className="bg-black text-gray-500">TIME</option>
-                                                            {Array.from({ length: 24 }).map((_, i) => {
-                                                                const hour = i === 0 ? 12 : i > 12 ? i - 12 : i;
-                                                                const ampm = i < 12 ? 'AM' : 'PM';
-                                                                const val = `${hour}${ampm}`;
-                                                                return <option key={val} value={val} className="bg-black text-white">{val}</option>;
-                                                            })}
-                                                        </select>
-                                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 group-hover:text-white transition-colors">
-                                                            <ChevronDown size={10} />
-                                                        </div>
+                                                            {itinTime ? formatTime24to12(itinTime) : 'TIME'}
+                                                            <ChevronDown size={10} className="text-gray-500" />
+                                                        </button>
                                                     </div>
                                                     <input
                                                         value={itinDesc}
@@ -731,7 +746,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                                             if (e.key === 'Enter') {
                                                                 e.preventDefault();
                                                                 if (itinDesc) {
-                                                                    const finalTime = itinTime || "TBD";
+                                                                    const finalTime = itinTime ? formatTime24to12(itinTime) : "TBD";
                                                                     setItinerary([...itinerary, { time: finalTime, description: itinDesc }]);
                                                                     setItinTime('');
                                                                     setItinDesc('');
@@ -745,7 +760,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                                         type="button"
                                                         onClick={() => {
                                                             if (itinDesc) {
-                                                                const finalTime = itinTime || "TBD";
+                                                                const finalTime = itinTime ? formatTime24to12(itinTime) : "TBD";
                                                                 setItinerary([...itinerary, { time: finalTime, description: itinDesc }]);
                                                                 setItinTime('');
                                                                 setItinDesc('');
@@ -798,26 +813,52 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                     </>
                                 )}
 
-                                <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-3">
-
-                                    <div className="flex justify-between items-center">
-                                        <div>
-                                            <p className="text-white text-xs font-black uppercase tracking-widest">Approval</p>
-                                            <p className="text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em] mt-0.5">Manually review joiners</p>
+                                <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-4">
+                                    <div className="space-y-2">
+                                        <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest ml-1">Mission Pulse (Visibility)</p>
+                                        <div className="grid grid-cols-3 gap-1.5 p-1 bg-black/40 rounded-xl border border-white/5">
+                                            {[
+                                                { id: QuestVisibilityScope.PUBLIC, label: 'Public', icon: Globe },
+                                                { id: QuestVisibilityScope.FOLLOWERS, label: 'Followers', icon: Signal },
+                                                { id: QuestVisibilityScope.FRIENDS, label: 'Friends', icon: Users }
+                                            ].map((v) => (
+                                                <button
+                                                    key={v.id}
+                                                    onClick={() => setVisibility(v.id as QuestVisibilityScope)}
+                                                    className={`
+                                                        flex flex-col items-center gap-1 py-2.5 rounded-lg transition-all border
+                                                        ${visibility === v.id
+                                                            ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]'
+                                                            : 'bg-transparent text-gray-600 border-transparent hover:text-gray-400'}
+                                                    `}
+                                                >
+                                                    <v.icon size={12} />
+                                                    <span className="text-[7px] font-black uppercase tracking-widest">{v.label}</span>
+                                                </button>
+                                            ))}
                                         </div>
-                                        <button onClick={() => setRequiresApproval(!requiresApproval)} className={`w-10 h-6 rounded-full transition-all relative ${requiresApproval ? 'bg-primary' : 'bg-white/10'}`}>
-                                            <div className={`absolute top-1 left-1 w-4 h-4 bg-black rounded-full transition-all ${requiresApproval ? 'translate-x-4' : 'translate-x-0'}`} />
-                                        </button>
                                     </div>
-                                    <div className="flex justify-between items-center pt-4 border-t border-white/5">
-                                        <div>
-                                            <p className="text-white text-xs font-black uppercase tracking-widest">Squad Size</p>
-                                            <p className="text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em] mt-0.5">Max participants</p>
+
+                                    <div className="space-y-3 pt-2">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <p className="text-white text-xs font-black uppercase tracking-widest">Approval</p>
+                                                <p className="text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em] mt-0.5">Manually review joiners</p>
+                                            </div>
+                                            <button onClick={() => setRequiresApproval(!requiresApproval)} className={`w-10 h-6 rounded-full transition-all relative ${requiresApproval ? 'bg-primary' : 'bg-white/10'}`}>
+                                                <div className={`absolute top-1 left-1 w-4 h-4 bg-black rounded-full transition-all ${requiresApproval ? 'translate-x-4' : 'translate-x-0'}`} />
+                                            </button>
                                         </div>
-                                        <div className="flex items-center gap-2 bg-black/40 rounded-xl p-1.5 border border-white/10">
-                                            <button onClick={() => setCapacity(Math.max(2, capacity - 1))} className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"><Minus size={14} /></button>
-                                            <span className="text-white text-sm font-black w-8 text-center">{capacity}</span>
-                                            <button onClick={() => setCapacity(Math.min(50, capacity + 1))} className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"><Plus size={14} /></button>
+                                        <div className="flex justify-between items-center pt-4 border-t border-white/5">
+                                            <div>
+                                                <p className="text-white text-xs font-black uppercase tracking-widest">Squad Size</p>
+                                                <p className="text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em] mt-0.5">Max participants</p>
+                                            </div>
+                                            <div className="flex items-center gap-2 bg-black/40 rounded-xl p-1.5 border border-white/10">
+                                                <button onClick={() => setCapacity(Math.max(2, capacity - 1))} className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"><Minus size={14} /></button>
+                                                <span className="text-white text-sm font-black w-8 text-center">{capacity}</span>
+                                                <button onClick={() => setCapacity(Math.min(50, capacity + 1))} className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"><Plus size={14} /></button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -835,74 +876,141 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                         </div>
                                     </div>
 
-                                    <div className="space-y-3 pt-2">
-                                        <div className="flex items-start gap-3">
-                                            <MapPin size={14} className="text-gray-500 mt-0.5" />
-                                            <div>
-                                                <p className="text-white text-xs font-bold">{locationName}</p>
-                                                <p className="text-gray-500 text-[8px] uppercase tracking-wider">Location</p>
-                                            </div>
-                                        </div>
+                                    <div className="space-y-4 pt-2">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {/* Left Column: Logistical Info */}
+                                            <div className="space-y-3">
+                                                <div className="flex items-start gap-3">
+                                                    <MapPin size={14} className="text-gray-500 mt-0.5" />
+                                                    <div>
+                                                        <p className="text-white text-xs font-bold leading-tight">{locationName || 'DAVAO CITY'}</p>
+                                                        <p className="text-gray-500 text-[7px] uppercase tracking-wider mt-0.5">Location</p>
+                                                    </div>
+                                                </div>
 
-                                        <div className="flex items-start gap-3">
-                                            <CalendarDays size={14} className="text-gray-500 mt-0.5" />
-                                            <div>
-                                                <p className="text-white text-xs font-bold">
-                                                    {timingIntent === 'NOW' ? 'Happening Now' : selectedDate.toDateString()}
-                                                </p>
-                                                <p className="text-gray-500 text-[8px] uppercase tracking-wider">
-                                                    {timingIntent === 'NOW' ? `${duration}H Duration` : `${startTime || 'TBD'} - ${endTime || 'TBD'}`}
-                                                </p>
-                                            </div>
-                                        </div>
+                                                <div className="flex items-start gap-3">
+                                                    <CalendarDays size={14} className="text-gray-500 mt-0.5" />
+                                                    <div>
+                                                        <p className="text-white text-xs font-bold leading-tight">
+                                                            {timingIntent === 'NOW' ? 'Happening Now' : selectedDate.toDateString()}
+                                                        </p>
+                                                        <p className="text-gray-500 text-[7px] uppercase tracking-wider mt-0.5">
+                                                            {timingIntent === 'NOW' ? `${duration}H Duration` : `${startTime || 'TBD'} - ${endTime || 'TBD'}`}
+                                                        </p>
+                                                    </div>
+                                                </div>
 
-                                        <div className="flex items-start gap-3">
-                                            <MessageSquare size={14} className="text-gray-500 mt-0.5" />
-                                            <div>
-                                                <p className="text-gray-300 text-xs italic">"{description}"</p>
-                                                <p className="text-gray-500 text-[8px] uppercase tracking-wider mt-1">The Plan</p>
+                                                <div className="flex items-start gap-3">
+                                                    <MessageSquare size={14} className="text-gray-500 mt-0.5" />
+                                                    <div className="flex-1">
+                                                        <p className="text-gray-300 text-[10px] italic font-medium leading-tight line-clamp-3">{description || 'Join the quest.'}</p>
+                                                        <p className="text-gray-500 text-[7px] uppercase tracking-wider mt-1">Briefing</p>
+                                                    </div>
+                                                </div>
+
+                                                {vibeSignals.length > 0 && (
+                                                    <div className="flex items-start gap-3">
+                                                        <Compass size={14} className="text-primary mt-0.5" />
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {vibeSignals.map((v, i) => (
+                                                                <span key={`${v}-${i}`} className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[6px] font-black uppercase tracking-wider">{v}</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Right Column: Mission Details */}
+                                            <div className="space-y-3">
+                                                {itinerary.length > 0 ? (
+                                                    <div className="flex items-start gap-3">
+                                                        <Clock size={14} className="text-electric-teal mt-0.5" />
+                                                        <div className="space-y-1">
+                                                            {itinerary.slice(0, 3).map((it, i) => (
+                                                                <div key={i} className="flex gap-1.5 min-w-0">
+                                                                    <span className="text-[7px] font-black text-white/30 shrink-0">{it.time}</span>
+                                                                    <span className="text-[8px] font-bold text-gray-400 truncate leading-tight">{it.description}</span>
+                                                                </div>
+                                                            ))}
+                                                            {itinerary.length > 3 && <p className="text-[6px] text-gray-500 italic">+ {itinerary.length - 3} more</p>}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-start gap-3 opacity-30">
+                                                        <Clock size={14} className="text-gray-600 mt-0.5" />
+                                                        <p className="text-[8px] font-black uppercase tracking-widest text-gray-600">No Itinerary</p>
+                                                    </div>
+                                                )}
+
+                                                {checklist.length > 0 && (
+                                                    <div className="flex items-start gap-3">
+                                                        <ShieldCheck size={14} className="text-gray-500 mt-0.5" />
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {checklist.slice(0, 4).map((c, i) => (
+                                                                <span key={`${c}-${i}`} className="text-[8px] text-gray-500 font-medium tracking-tight">• {c}</span>
+                                                            ))}
+                                                            {checklist.length > 4 && <span className="text-[7px] text-gray-600 font-medium">+{checklist.length - 4}</span>}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="pt-2">
-                                    <div className="flex justify-between text-[9px] font-black uppercase text-gray-500 tracking-widest mb-2 px-1">
-                                        <span>Ready?</span>
-                                        <span>{capacity} Spots</span>
-                                    </div>
-                                    <SlideToLaunch onLaunch={handleLaunch} loading={loading} />
-                                </div>
+
                             </motion.div>
                         )}
                     </AnimatePresence>
                 </div>
 
                 {/* Footer Nav */}
-                <div className="p-4 bg-gradient-to-t from-white/[0.02] to-transparent shrink-0">
-                    {step < totalSteps && (
+                <div className="p-4 pt-2 bg-gradient-to-t from-white/[0.02] to-transparent shrink-0">
+                    {step < totalSteps ? (
                         <button
                             onClick={() => {
                                 if (step === 1) {
                                     const finalCategory = category === 'Others' ? customCategory : category;
                                     const finalActivity = activity === 'Custom' ? customActivity : activity;
-                                    if (!title || !finalCategory || !finalActivity) { showToast("Complete focus fields.", "info"); return; }
-                                    if (timingIntent === QuestTimingIntent.FLEXIBLE && !selectedDate) { showToast("Pick a date.", "info"); return; }
+
+                                    if (!title.trim()) { showToast("Mission Title required.", "info"); return; }
+                                    if (!finalCategory) { showToast("Select a Category.", "info"); return; }
+                                    if (!finalActivity) { showToast("Select an Activity.", "info"); return; }
+
+                                    if (timingIntent === QuestTimingIntent.SCHEDULED) {
+                                        // Optional as per request
+                                    }
+                                    if (timingIntent === QuestTimingIntent.FLEXIBLE) {
+                                        if (!flexibleDateTag) { showToast("Pick a timeframe.", "info"); return; }
+                                        if (!timeWindow) { showToast("Select a vibe window.", "info"); return; }
+                                    }
                                 }
                                 if (step === 2) {
-                                    // Validate Location Name
-                                    if (!locationName) { showToast("Enter a location.", "info"); return; }
-                                    if (timingIntent === QuestTimingIntent.FLEXIBLE && !timeWindow) { showToast("Select a time window.", "info"); return; }
+                                    if (!locationName.trim()) { showToast("Location details required.", "info"); return; }
                                 }
                                 if (step === 3) {
                                     // Optional checks for Itinerary 
                                 }
                                 setStep(step + 1);
                             }}
-                            className="w-full py-3 rounded-xl bg-white text-black font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] transition-all shadow-xl text-[10px]"
+                            className="w-full py-2.5 rounded-xl bg-white text-black font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] transition-all shadow-xl text-[9px]"
                         >
-                            {step === 3 ? 'Final Review' : 'Next Stage'} <ArrowRight size={18} />
+                            {step === 3 ? 'Final Review' : 'Next Stage'} <ArrowRight size={14} />
                         </button>
+                    ) : (
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-[0.2em] mb-3 px-1">
+                                <div className="flex items-center gap-1.5">
+                                    {visibility === QuestVisibilityScope.PUBLIC ? <Globe size={10} className="text-electric-teal" /> :
+                                        visibility === QuestVisibilityScope.FOLLOWERS ? <Signal size={10} className="text-primary" /> : <Users size={10} className="text-purple-400" />}
+                                    <span className="text-white">{visibility}</span>
+                                    <span className="text-gray-700 mx-1">•</span>
+                                    <span className="text-gray-500">{capacity} Spots</span>
+                                </div>
+                                <span className="text-gray-700">{timingIntent === 'now' ? 'SPONTY' : timingIntent === 'scheduled' ? 'CANON' : 'FLEX'}</span>
+                            </div>
+                            <SlideToLaunch onLaunch={handleLaunch} loading={loading} />
+                        </div>
                     )}
                 </div>
 
@@ -911,6 +1019,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                     {showDatePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticDayPicker value={selectedDate} onChange={setSelectedDate} onClose={() => setShowDatePicker(false)} /></div>}
                     {showStartTimePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={startTime} onChange={setStartTime} onClose={() => setShowStartTimePicker(false)} /></div>}
                     {showEndTimePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={endTime} onChange={setEndTime} onClose={() => setShowEndTimePicker(false)} minTime={startTime} /></div>}
+                    {showItinTimePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={itinTime} onChange={setItinTime} onClose={() => setShowItinTimePicker(false)} /></div>}
                     {showMapPicker && <div className="absolute inset-0 z-[60] bg-black"><MapPicker onSelect={(loc, addr) => { setLocationCoords(loc); setLocationName(addr); setShowMapPicker(false); }} onClose={() => setShowMapPicker(false)} /></div>}
                 </AnimatePresence>
             </motion.div>

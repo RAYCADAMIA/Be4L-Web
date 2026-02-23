@@ -51,7 +51,7 @@ const QuestDropCard: React.FC<QuestDropCardProps> = ({ drop, onAccept }) => {
                     <div className="flex-1 flex flex-col items-center justify-center text-center py-2">
 
 
-                        <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40 mb-4">Core Objective</h3>
+                        <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40 mb-4">Details</h3>
                         <p className="text-[10px] text-white font-bold uppercase tracking-[0.15em] px-4 leading-relaxed mb-6">
                             Let&apos;s heal our inner childhood.<br />
                             <span className="text-primary">Earn real rewards if you complete the dropped quest.</span>
@@ -132,20 +132,7 @@ const QuestDropCard: React.FC<QuestDropCardProps> = ({ drop, onAccept }) => {
                         </p>
                     </div>
 
-                    {/* Reward Section */}
-                    <div className="py-5 border-y border-white/5 flex items-center justify-between mt-auto">
-                        <div className="flex flex-col">
-                            <span className="text-[7px] font-black uppercase tracking-widest text-gray-500 mb-1">Grant Pool</span>
-                            <div className="flex items-center gap-2">
-                                <CreditCard size={12} className="text-primary" />
-                                <span className="text-lg font-black tracking-tighter text-white">{drop.reward}</span>
-                            </div>
-                        </div>
-                        <div className="flex flex-col items-end">
-                            <span className="text-[7px] font-black uppercase tracking-widest text-gray-500 mb-1">Total Slots</span>
-                            <span className="text-xs font-black text-white">{drop.hunters_count} Hunters</span>
-                        </div>
-                    </div>
+
 
                     {/* Action */}
                     <div className="pt-6">

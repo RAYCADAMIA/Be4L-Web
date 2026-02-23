@@ -144,7 +144,7 @@ export const AestheticTimeGrid: React.FC<AestheticTimeGridProps> = ({ value, onC
                     <button onClick={onClose} className="hover:bg-white/10 p-1 rounded-full text-gray-500 hover:text-white"><X size={16} /></button>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 max-h-[350px] overflow-y-auto no-scrollbar pb-2">
+                <div className="grid grid-cols-4 gap-2 max-h-[350px] overflow-y-auto no-scrollbar pb-2">
                     {timeSlots.map(slot => {
                         const isBlocked = slot.hour <= minHour;
                         const isSelected = value === slot.value;

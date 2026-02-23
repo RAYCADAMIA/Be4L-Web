@@ -20,7 +20,7 @@ const QuestDetailScreen: React.FC = () => {
     useDocumentTitle(quest ? quest.title : 'Quest Details');
     const [loading, setLoading] = useState(true);
     const [joinState, setJoinState] = useState<'idle' | 'requested' | 'joined'>('idle');
-    const [activeTab, setActiveTab] = useState<'details' | 'itinerary' | 'checklist'>('details');
+    const [activeTab, setActiveTab] = useState<'details' | 'participants' | 'itinerary' | 'checklist'>('details');
     const [participants, setParticipants] = useState<any[]>([]);
     const [managingSquad, setManagingSquad] = useState(false);
 
@@ -217,29 +217,10 @@ const QuestDetailScreen: React.FC = () => {
                     </h1>
 
                     <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-3 bg-white/5 p-2 pr-6 rounded-2xl border border-white/5 hover:border-primary/20 transition-all cursor-pointer group">
-                            <div className="relative">
-                                <img
-                                    src={quest.host?.avatar_url || `https://ui-avatars.com/api/?name=${quest.host?.username}`}
-                                    className="w-10 h-10 rounded-xl border border-white/10 object-cover group-hover:border-primary/40 transition-all"
-                                    alt="host"
-                                />
-                                <div className="absolute -bottom-1 -right-1 p-1 bg-primary rounded-lg border-2 border-deep-black">
-                                    <Shield size={10} className="text-black" />
-                                </div>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-white group-hover:text-primary transition-colors text-gradient-static">
-                                    {quest.host?.username || "Quest Host"}
-                                </p>
-                                <p className="text-[8px] font-bold text-gray-500 uppercase tracking-[0.2em]">Mission Lead</p>
-                            </div>
-                        </div>
-
                         {quest.vibe_signals && quest.vibe_signals.length > 0 && (
-                            <div className="hidden md:flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 {quest.vibe_signals.map((signal, i) => (
-                                    <span key={i} className="text-[9px] font-black uppercase tracking-wider text-gray-500 hover:text-gray-300 transition-colors bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
+                                    <span key={i} className="text-[9px] font-black uppercase tracking-wider text-primary/60 hover:text-primary transition-colors bg-primary/5 px-4 py-2 rounded-xl border border-primary/20">
                                         #{signal}
                                     </span>
                                 ))}
@@ -255,7 +236,8 @@ const QuestDetailScreen: React.FC = () => {
                     {/* Immersive Tabs */}
                     <div className="flex gap-8 border-b border-white/10 pb-2 overflow-x-auto no-scrollbar">
                         {[
-                            { id: 'details', label: 'Briefing' },
+                            { id: 'details', label: 'Details' },
+                            { id: 'participants', label: 'Participants' },
                             { id: 'itinerary', label: 'The Plan' },
                             { id: 'checklist', label: 'Essentials' }
                         ].map(tab => (
@@ -290,12 +272,19 @@ const QuestDetailScreen: React.FC = () => {
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                        <div className="p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/5 hover:border-primary/20 transition-all group backdrop-blur-3xl">
-                                            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 border border-primary/20 group-hover:scale-110 transition-transform">
-                                                <MapPin className="text-primary" size={24} />
+                                        <div className="p-10 rounded-[3rem] bg-white/[0.02] border border-white/5 hover:border-primary/20 transition-all group backdrop-blur-3xl relative overflow-hidden">
+                                            <div className="absolute top-0 left-0 w-2 h-full bg-primary/20 group-hover:bg-primary transition-colors" />
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_12px_#2DD4BF]" />
+                                                <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Operational Area</span>
                                             </div>
-                                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2">TARGET LOCATION</h4>
-                                            <p className="text-lg font-black text-white leading-tight">{quest.location?.place_name || 'Davao City, PH'}</p>
+                                            <h4 className="text-3xl md:text-4xl font-black uppercase text-white leading-[0.9] mb-4">
+                                                {quest.location?.place_name || 'Davao City, PH'}
+                                            </h4>
+                                            <div className="flex items-start gap-2 text-gray-500 uppercase tracking-widest text-[10px] font-bold">
+                                                <MapPin size={12} className="mt-0.5 shrink-0" />
+                                                <p>{quest.location?.address_full || quest.location?.place_name || 'Operational coordinates confirmed.'}</p>
+                                            </div>
                                         </div>
                                         <div className="p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/5 hover:border-primary/20 transition-all group backdrop-blur-3xl">
                                             <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6 border border-purple-500/20 group-hover:scale-110 transition-transform">
@@ -310,32 +299,22 @@ const QuestDetailScreen: React.FC = () => {
                                             </p>
                                         </div>
                                     </div>
+                                </motion.div>
+                            )}
 
-                                    {/* Map Preview */}
-                                    <div className="rounded-[3rem] overflow-hidden border border-white/10 bg-zinc-900/50 relative h-80 group shadow-2xl">
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10 pointer-events-none" />
-                                        <SmartMap
-                                            mode="view"
-                                            initialLocation={quest.location ? {
-                                                lat: quest.location.lat,
-                                                lng: quest.location.lng,
-                                                placeName: quest.location.place_name,
-                                                formattedAddress: quest.location.address_full
-                                            } : undefined}
-                                            height="100%"
-                                        />
-                                        <div className="absolute bottom-6 left-6 z-20">
-                                            <button className="bg-white text-black px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-primary transition-all active:scale-95">
-                                                <Navigation size={14} /> GET DIRECTIONS
-                                            </button>
-                                        </div>
-                                    </div>
-
+                            {activeTab === 'participants' && (
+                                <motion.div
+                                    key="participants"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-12"
+                                >
                                     {/* Squad Section */}
-                                    <section className="pt-12 border-t border-white/5">
+                                    <section>
                                         <div className="flex items-center justify-between mb-10">
                                             <div className="space-y-1">
-                                                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-600">CONFIRMED SQUAD</h3>
+                                                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">CONFIRMED SQUAD</h3>
                                                 <p className="text-[9px] font-bold text-gray-700 uppercase tracking-widest">{participants.length} Active Participants</p>
                                             </div>
                                             {isHost && participants.length > 0 && (
@@ -348,39 +327,72 @@ const QuestDetailScreen: React.FC = () => {
                                             )}
                                         </div>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            {participants.map((p, pIdx) => (
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {/* Mission Lead Injection */}
+                                            {quest.host && (
                                                 <motion.div
-                                                    key={p.id}
-                                                    initial={{ opacity: 0, x: -10 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ delay: pIdx * 0.1 }}
-                                                    className="flex items-center justify-between p-4 rounded-[2rem] bg-white/[0.02] border border-white/5 group hover:bg-white/[0.04] hover:border-white/10 transition-all cursor-pointer"
+                                                    initial={{ opacity: 0, scale: 0.98 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    className="flex items-center justify-between p-4 rounded-3xl bg-white/[0.02] border border-white/5 group hover:bg-white/[0.04] transition-all cursor-pointer"
+                                                    onClick={() => navigate(`/app/${quest.host?.id}`)}
                                                 >
-                                                    <div className="flex items-center gap-4" onClick={() => navigate(`?profile=${p.id}`)}>
-                                                        <div className="relative">
-                                                            <img src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`} className="w-12 h-12 rounded-2xl object-cover border border-white/10 group-hover:border-primary/30 transition-all" />
-                                                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-primary rounded-lg border-2 border-deep-black" />
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="shrink-0">
+                                                            <img
+                                                                src={quest.host.avatar_url || `https://ui-avatars.com/api/?name=${quest.host.username}`}
+                                                                className="w-10 h-10 rounded-full object-cover border border-white/10 group-hover:border-primary/30 transition-all"
+                                                            />
                                                         </div>
                                                         <div>
-                                                            <p className="text-xs font-black uppercase tracking-wider text-gray-400 group-hover:text-white transition-colors">{p.username}</p>
-                                                            <div className="flex items-center gap-1.5 mt-0.5">
-                                                                <div className="w-1 h-1 rounded-full bg-primary/60" />
-                                                                <p className="text-[8px] font-bold text-gray-600 uppercase tracking-widest">Lv. {Math.floor(Math.random() * 10) + 1}</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-sm font-black uppercase tracking-tight text-white group-hover:text-primary transition-colors">{quest.host.name || quest.host.username}</p>
+                                                                <span className="text-[7px] bg-primary text-black px-1.5 py-0.5 rounded-md font-black tracking-widest uppercase">Lead</span>
                                                             </div>
+                                                            <p className="text-[10px] font-bold text-gray-500 tracking-tight normal-case">@{(quest.host.handle || quest.host.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+
+                                            {participants.filter(p => p.id !== quest.host?.id).map((p, pIdx) => (
+                                                <motion.div
+                                                    key={p.id}
+                                                    initial={{ opacity: 0, x: -5 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: pIdx * 0.05 }}
+                                                    className="flex items-center justify-between p-4 rounded-3xl bg-white/[0.02] border border-white/5 group hover:bg-white/[0.04] transition-all cursor-pointer"
+                                                    onClick={() => navigate(`/app/${p.id}`)}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="relative">
+                                                            <img src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`} className="w-10 h-10 rounded-full object-cover border border-white/10 group-hover:border-primary/30 transition-all" />
+                                                            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-deep-black" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-black uppercase tracking-tight text-gray-400 group-hover:text-white transition-colors">{p.name || p.username}</p>
+                                                            <p className="text-[10px] font-bold text-gray-500 tracking-tight normal-case">@{(p.handle || p.username || '').toLowerCase().replace(/^@+/, '')}</p>
                                                         </div>
                                                     </div>
 
-                                                    {managingSquad && isHost && (
+                                                    {managingSquad && isHost && p.id !== quest.host?.id && (
                                                         <button
-                                                            onClick={() => handleKickParticipant(p.id)}
-                                                            className="w-10 h-10 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/20"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleKickParticipant(p.id);
+                                                            }}
+                                                            className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/10 shadow-lg"
                                                         >
                                                             <Trash size={16} />
                                                         </button>
                                                     )}
                                                 </motion.div>
                                             ))}
+                                            {participants.length === 0 && (
+                                                <div className="col-span-full py-24 flex flex-col items-center justify-center bg-white/[0.02] rounded-[3rem] border border-white/5 border-dashed">
+                                                    <Users className="text-gray-700 mb-4" size={48} />
+                                                    <p className="text-xs uppercase font-black text-gray-600 tracking-widest">Waiting for signals</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </section>
                                 </motion.div>
@@ -465,26 +477,12 @@ const QuestDetailScreen: React.FC = () => {
 
                         <div className="relative z-10">
                             <div className="flex items-center justify-between mb-10">
-                                <h3 className="text-lg font-black uppercase tracking-widest text-white"> briefing</h3>
+                                <h3 className="text-lg font-black uppercase tracking-widest text-white">Details</h3>
                                 <Zap className="text-primary group-hover:animate-bounce" size={24} />
                             </div>
 
                             <div className="space-y-8 mb-12">
-                                <div className="space-y-3">
-                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em]">
-                                        <span className="text-gray-500">POTENTIAL LOOT</span>
-                                        <span className="text-primary text-gradient-static">+{quest.aura_reward || 100} Aura</span>
-                                    </div>
-                                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: '100%' }}
-                                            transition={{ duration: 1.5, ease: "easeOut" }}
-                                            className="h-full bg-gradient-to-r from-primary to-emerald-400 shadow-[0_0_20px_rgba(45,212,191,0.4)]"
-                                        />
-                                    </div>
-                                    <p className="text-[8px] text-gray-600 font-bold uppercase tracking-widest italic text-center">Final reward based on activity verification</p>
-                                </div>
+
 
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
@@ -504,11 +502,11 @@ const QuestDetailScreen: React.FC = () => {
                                     <button
                                         onClick={handleJoinAction}
                                         className={`
-                                             w-full py-5 rounded-[2rem] flex items-center justify-center gap-4 transition-all active:scale-95 font-black uppercase tracking-widest text-xs overflow-hidden relative
-                                             ${joinState === 'idle' ? 'bg-white text-black hover:bg-primary shadow-xl hover:shadow-primary/20' : ''}
-                                             ${joinState === 'requested' ? 'bg-white/5 border border-white/10 text-gray-500' : ''}
-                                             ${joinState === 'joined' ? 'bg-primary text-black shadow-lg shadow-primary/20' : ''}
-                                         `}
+                                              w-full py-4 rounded-3xl flex items-center justify-center gap-4 transition-all active:scale-95 font-black uppercase tracking-widest text-[11px] overflow-hidden relative
+                                              ${joinState === 'idle' ? 'bg-white text-black hover:bg-primary shadow-xl hover:shadow-primary/20' : ''}
+                                              ${joinState === 'requested' ? 'bg-white/5 border border-white/10 text-gray-500' : ''}
+                                              ${joinState === 'joined' ? 'bg-primary text-black shadow-lg shadow-primary/20' : ''}
+                                          `}
                                     >
                                         <AnimatePresence mode="wait">
                                             {joinState === 'idle' && (
@@ -519,7 +517,7 @@ const QuestDetailScreen: React.FC = () => {
                                                     exit={{ opacity: 0, y: -10 }}
                                                     className="flex items-center gap-3"
                                                 >
-                                                    Request to Join (+{quest.aura_reward || 100} Aura) <ArrowRight size={18} />
+                                                    Request to Join <ArrowRight size={16} />
                                                 </motion.div>
                                             )}
                                             {joinState === 'requested' && (
@@ -551,14 +549,14 @@ const QuestDetailScreen: React.FC = () => {
                                         {!isLive ? (
                                             <button
                                                 onClick={handleStartQuest}
-                                                className="w-full py-5 rounded-[2rem] bg-electric-teal text-black hover:bg-white shadow-xl shadow-electric-teal/10 transition-all font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3"
+                                                className="w-full py-4 rounded-3xl bg-electric-teal text-black hover:bg-white shadow-xl shadow-electric-teal/10 transition-all font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-3"
                                             >
                                                 <Play size={18} fill="black" /> INITIATE MISSION
                                             </button>
                                         ) : (
                                             <button
                                                 onClick={handleFinishQuest}
-                                                className="w-full py-5 rounded-[2rem] border-2 border-primary bg-primary text-black hover:bg-white transition-all font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-xl shadow-primary/20"
+                                                className="w-full py-4 rounded-3xl border-2 border-primary bg-primary text-black hover:bg-white transition-all font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 shadow-xl shadow-primary/20"
                                             >
                                                 <Trophy size={18} /> EXTRACT & AWARD
                                             </button>
@@ -566,7 +564,7 @@ const QuestDetailScreen: React.FC = () => {
 
                                         <button
                                             onClick={handleDeleteQuest}
-                                            className="w-full py-4 rounded-[2rem] bg-white/5 text-gray-500 border border-white/5 hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-500 transition-all font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
+                                            className="w-full py-3.5 rounded-3xl bg-white/5 text-gray-500 border border-white/5 hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-500 transition-all font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2"
                                         >
                                             <Trash size={14} /> SCRUB MISSION
                                         </button>
@@ -576,8 +574,8 @@ const QuestDetailScreen: React.FC = () => {
 
                             <div className="mt-8 p-6 rounded-2xl bg-white/[0.02] border border-white/5">
                                 <p className="text-[8px] text-center text-gray-600 font-bold uppercase tracking-[0.2em] leading-relaxed">
-                                    {isHost ? "You are the mission lead. Coordinate your squad through the lobby chat and verify completion to distribute rewards." :
-                                        (joinState === 'idle' ? "Join the squad to receive a private lobby link and earn exclusive Aura rewards." :
+                                    {isHost ? "You are the mission lead. Coordinate your squad through the lobby chat and verify completion." :
+                                        (joinState === 'idle' ? "Join the squad to receive a private lobby link and start the mission." :
                                             joinState === 'requested' ? "Your request is being reviewed by the mission lead. You'll be notified of approval." :
                                                 "You are officially part of the mission. Use the lobby link to coordinate in real-time.")}
                                 </p>

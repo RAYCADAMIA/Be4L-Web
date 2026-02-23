@@ -117,7 +117,7 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
                         <ChevronLeft size={20} />
                     </button>
                     <button
-                        onClick={() => navigate(`/app/profile/${targetUserId}`)}
+                        onClick={() => navigate(`/app/${targetUserId}`)}
                         className="flex flex-col ml-1 group text-left active:scale-[0.98] transition-transform"
                     >
                         <h2 className="text-xl font-black tracking-tighter uppercase text-white flex items-center gap-2 leading-none group-hover:text-primary transition-colors">
@@ -163,7 +163,7 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
                                 <div key={msg.id} className={`flex ${msg.is_me ? 'justify-end' : 'justify-start'} group items-end gap-3`}>
                                     {!msg.is_me && (
                                         <div
-                                            onClick={() => navigate(`/app/profile/${senderId}`)}
+                                            onClick={() => navigate(`/app/${senderId}`)}
                                             className={`w-9 h-9 rounded-[1.1rem] bg-white/5 border border-white/10 shrink-0 transition-all cursor-pointer hover:border-primary/50 overflow-hidden shadow-lg ${showAvatar ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
                                         >
                                             <img

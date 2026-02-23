@@ -180,6 +180,7 @@ export enum QuestStatus {
 
 export enum QuestVisibilityScope {
   PUBLIC = 'public',
+  FOLLOWERS = 'followers',
   FRIENDS = 'friends'
 }
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Quest } from '../types';
 import QuestsScreen from '../components/QuestsScreen';
@@ -16,9 +16,9 @@ export const QuestPage: React.FC = () => {
         if (tab === 'PROFILE') navigate('/app/myprofile');
     };
 
-    const handleOpenQuest = (q: Quest) => {
+    const handleOpenQuest = useCallback((q: Quest) => {
         setSearchParams({ quest: q.id });
-    };
+    }, [setSearchParams]);
 
     if (loading) return <div>Loading...</div>;
 

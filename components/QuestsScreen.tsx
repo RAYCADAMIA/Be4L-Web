@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Zap, ChevronLeft, MapPin, Search, X, Compass, Plus, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
 
@@ -181,6 +181,42 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
             scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }, [activeTab, activeCat]);
+
+    // Handle incoming questId from URL (Direct to quest card)
+    const [searchParams, setSearchParams] = useSearchParams();
+    const incomingQuestId = searchParams.get('questId');
+
+    useEffect(() => {
+        if (incomingQuestId && quests.length > 0) {
+            const targetQuest = quests.find(q => q.id === incomingQuestId);
+            if (targetQuest) {
+                // Auto-switch date and tab to ensure quest is visible in the filtered list
+                if (targetQuest.start_time) {
+                    setSelectedDate(new Date(targetQuest.start_time));
+                }
+                if (targetQuest.mode === QuestType.SPONTY) {
+                    setActiveTab('SPONTY');
+                } else {
+                    setActiveTab('CANON');
+                }
+
+                onOpenQuest(targetQuest);
+
+                // Direct to card visually (Scroll into view)
+                setTimeout(() => {
+                    const el = document.getElementById(`quest-${incomingQuestId}`);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 800); // Increased delay to account for tab/date switch re-render
+
+                // Clear the param so it doesn't re-open on every render/refresh
+                const newParams = new URLSearchParams(searchParams);
+                newParams.delete('questId');
+                setSearchParams(newParams, { replace: true });
+            }
+        }
+    }, [incomingQuestId, quests, onOpenQuest, searchParams, setSearchParams]);
 
     const filteredQuests = useMemo(() => {
         return quests.filter(q => {

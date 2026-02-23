@@ -1,6 +1,7 @@
 import React from 'react';
-import { MapPin, Users, Clock, ArrowRight } from 'lucide-react';
+import { MapPin, Users, Clock, ArrowRight, Globe, Signal, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Quest, QuestStatus, User } from '../types';
 import { supabaseService } from '../services/supabaseService';
 
@@ -11,6 +12,7 @@ interface Props {
 }
 
 const QuestCard: React.FC<Props> = ({ quest, currentUser, onOpenDetail }) => {
+    const navigate = useNavigate();
     // Social Proof Logic
     const [friendsGoingCount, setFriendsGoingCount] = React.useState(0);
 
@@ -47,6 +49,7 @@ const QuestCard: React.FC<Props> = ({ quest, currentUser, onOpenDetail }) => {
 
     return (
         <motion.div
+            id={`quest-${quest.id}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ y: -5, transition: { duration: 0.3, ease: "easeOut" } }}
@@ -57,25 +60,31 @@ const QuestCard: React.FC<Props> = ({ quest, currentUser, onOpenDetail }) => {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-0.5 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-sm opacity-50 group-hover:opacity-100 transition-opacity" />
 
             {/* Header: Vibe Signals & Action */}
-            <div className="flex items-start justify-between mb-4 h-8">
-                <div className="flex flex-wrap gap-2 flex-1 overflow-hidden h-full">
-                    <div className="px-2.5 py-1 bg-primary/5 rounded-lg text-[8px] font-black uppercase tracking-[0.15em] text-primary whitespace-nowrap">
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 overflow-hidden mr-2">
+                    <div className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/80 whitespace-nowrap">
                         {quest.category || 'SOCIALS'}{quest.activity ? ` • ${quest.activity}` : ''}
                     </div>
+
+                    <span className="text-white/40">•</span>
+
+                    {/* Integrated Visibility Icon Only - No Pill Background */}
+                    <div className={
+                        quest.visibility_scope === 'friends'
+                            ? 'text-purple-400'
+                            : 'text-primary'
+                    }>
+                        {quest.visibility_scope === 'friends' ? <Lock size={10} /> : (quest.visibility_scope === 'public' || !quest.visibility_scope ? <Globe size={10} /> : <Signal size={10} />)}
+                    </div>
+
                     {isLive && (
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 border border-red-500/10 rounded-lg text-[8px] font-black uppercase tracking-[0.15em] text-red-500 animate-pulse whitespace-nowrap">
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-red-500/10 rounded-md text-[7px] font-black uppercase tracking-widest text-red-500 animate-pulse ml-1">
                             <span className="w-1 h-1 rounded-full bg-red-500" /> LIVE
                         </div>
                     )}
-                    {/* Always show up to 2 vibe signals if available, or fill with empty logic if needed to maintain height? No, h-8 protects the layout. */}
-                    {quest.vibe_signals?.slice(0, 2).map((vibe, i) => (
-                        <div key={i} className="px-2.5 py-1 bg-white/5 border border-white/5 rounded-lg text-[8px] font-black uppercase tracking-[0.15em] text-gray-400 whitespace-nowrap">
-                            {vibe}
-                        </div>
-                    ))}
                 </div>
 
-                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-gray-600 group-hover:text-primary group-hover:bg-primary/10 group-hover:border-primary/20 transition-all duration-300 shrink-0 ml-3">
+                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white/40 group-hover:text-primary group-hover:bg-primary/10 group-hover:border-primary/20 transition-all duration-300 shrink-0">
                     <ArrowRight size={14} strokeWidth={2.5} />
                 </div>
             </div>
@@ -86,19 +95,31 @@ const QuestCard: React.FC<Props> = ({ quest, currentUser, onOpenDetail }) => {
                     {quest.title}
                 </h3>
                 {/* Description - Enforce 2 lines height */}
-                <div className="h-[2.5rem]">
-                    <p className="text-gray-500 text-[11px] font-medium leading-relaxed line-clamp-2">
+                <div className="h-[2rem]">
+                    <p className="text-white/50 text-[11px] font-medium leading-relaxed line-clamp-2">
                         {quest.description || 'Join the squad.'}
                     </p>
                 </div>
-                <div className="flex items-center gap-1.5 mt-1">
-                    <MapPin size={10} className="text-gray-600 group-hover:text-primary/60 transition-colors" />
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-gray-600 group-hover:text-gray-400 transition-colors line-clamp-1 max-w-[120px]">
+
+                {/* Vibe & Signals - Repositioned here for better organization */}
+                {quest.vibe_signals && quest.vibe_signals.length > 0 && (
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 mb-1">
+                        {quest.vibe_signals.slice(0, 3).map((vibe, i) => (
+                            <span key={i} className="text-[9px] font-bold text-white/50 tracking-wider uppercase flex items-center gap-1.5">
+                                <span className="text-primary/60 text-[12px]">•</span> {vibe}
+                            </span>
+                        ))}
+                    </div>
+                )}
+
+                <div className="flex items-center gap-1.5 mt-2.5">
+                    <MapPin size={10} className="text-white/40 group-hover:text-primary/60 transition-colors" />
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-white/60 group-hover:text-white/80 transition-colors line-clamp-1 max-w-[120px]">
                         {quest.location?.place_name || 'Davao City, PH'}
                     </span>
-                    <span className="text-gray-700 mx-1">•</span>
-                    <Clock size={10} className="text-gray-600 group-hover:text-primary/60 transition-colors" />
-                    <span className={`text-[9px] font-bold uppercase tracking-widest transition-colors ${isStartingSoon ? 'text-electric-teal' : 'text-gray-600 group-hover:text-gray-400'}`}>
+                    <span className="text-white/30 mx-1">•</span>
+                    <Clock size={10} className="text-white/40 group-hover:text-primary/60 transition-colors" />
+                    <span className={`text-[9px] font-bold uppercase tracking-widest transition-colors ${isStartingSoon ? 'text-electric-teal' : 'text-white/60 group-hover:text-white/80'}`}>
                         {isLive ? 'NOW' : (() => {
                             const date = new Date(quest.start_time);
                             const hasTime = date.getHours() !== 0 || date.getMinutes() !== 0;
@@ -111,23 +132,9 @@ const QuestCard: React.FC<Props> = ({ quest, currentUser, onOpenDetail }) => {
                 </div>
             </div>
 
-            {/* Immediate Plan Block (Highlight Next Step) */}
-            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3 flex items-center gap-3 mb-5 group-hover:bg-white/[0.04] transition-all">
-                <div className="px-1.5 py-0.5 bg-white/5 rounded text-[7px] font-black text-gray-500 tracking-widest uppercase">NEXT</div>
-                <div className="flex-1 min-w-0">
-                    {nextStep ? (
-                        <p className="text-[10px] font-bold text-gray-400 truncate">
-                            <span className="text-white">{nextStep.time}</span> <span className="text-gray-600 mx-1">•</span> {nextStep.description}
-                        </p>
-                    ) : (
-                        <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Ready for deployment</p>
-                    )}
-                </div>
-            </div>
-
             {/* Social Proof */}
             {friendsGoingCount > 0 && (
-                <div className="flex items-center gap-1.5 mb-4 px-1 group-hover:translate-x-1 transition-transform">
+                <div className="flex items-center gap-1.5 mb-5 px-1 group-hover:translate-x-1 transition-transform">
                     <div className="flex -space-x-2">
                         {[...Array(Math.min(friendsGoingCount, 3))].map((_, i) => (
                             <div key={i} className="w-4 h-4 rounded-full border border-deep-black bg-zinc-800 flex items-center justify-center overflow-hidden ring-1 ring-white/10">
@@ -135,44 +142,28 @@ const QuestCard: React.FC<Props> = ({ quest, currentUser, onOpenDetail }) => {
                             </div>
                         ))}
                     </div>
-                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-electric-teal shadow-teal-500/20">
-                        {friendsGoingCount} {friendsGoingCount === 1 ? 'FRIEND' : 'FRIENDS'} JOINED
+                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-electric-teal shadow-electric-teal/20">
+                        {friendsGoingCount > 3 ? `+${friendsGoingCount} Friends` : `${friendsGoingCount} squad mutuals`}
                     </span>
                 </div>
             )}
 
-            {/* Footer: Squad & Host */}
-            <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
-                <div className="flex items-center gap-2">
-                    <div className="relative">
-                        <img
-                            src={quest.host?.avatar_url || `https://ui-avatars.com/api/?name=${quest.host?.username || 'H'}&background=random`}
-                            className="w-6 h-6 rounded-lg border border-white/5 object-cover group-hover:border-primary/40 transition-all duration-300"
-                            alt="host"
-                        />
-                        <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-primary rounded-md border border-deep-black" />
+            {/* Footer: Capacity & CTA */}
+            <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-4">
+                <div className="flex items-center gap-4">
+                    <div className="flex flex-col">
+                        <span className="text-[7px] font-black text-white/40 uppercase tracking-widest">Squad</span>
+                        <div className="flex items-center gap-1.5">
+                            <Users size={10} className="text-primary/60" />
+                            <span className="text-[10px] font-black text-white">{quest.current_participants || 0}/{quest.capacity || '∞'}</span>
+                        </div>
                     </div>
-                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-500 group-hover:text-white transition-colors">
-                        {quest.host?.username || 'User'}
-                    </span>
+
                 </div>
 
-                <div className="flex flex-col items-end gap-1">
-                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/[0.02] border border-white/5">
-                        <Users size={10} className="text-gray-600 group-hover:text-primary transition-colors" />
-                        <span className="text-[9px] font-bold text-gray-400">{quest.current_participants || 0}/{quest.capacity || quest.max_participants || '∞'}</span>
-                    </div>
-                    {/* Visual Progress Bar (Anchored under pill) */}
-                    {(quest.capacity || quest.max_participants) && (
-                        <div className="w-10 h-0.5 bg-white/5 rounded-full overflow-hidden">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${((quest.current_participants || 0) / (quest.capacity || quest.max_participants || 1)) * 100}%` }}
-                                className="h-full bg-primary/80"
-                                transition={{ duration: 1, ease: "easeOut" }}
-                            />
-                        </div>
-                    )}
+                <div className="flex items-center gap-2">
+                    <span className="text-[9px] font-black text-white/40 uppercase tracking-widest group-hover:text-primary group-hover:translate-x-[-2px] transition-all">Details</span>
+                    <ArrowRight size={12} className="text-white/40 group-hover:text-primary transition-all" />
                 </div>
             </div>
         </motion.div>
