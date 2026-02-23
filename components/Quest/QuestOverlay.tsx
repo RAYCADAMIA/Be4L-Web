@@ -297,10 +297,10 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                                     className="flex items-center gap-3"
                                                                 >
                                                                     <div className="shrink-0">
-                                                                            <img
-                                                                                src={quest.host.avatar_url || `https://ui-avatars.com/api/?name=${quest.host.username}`}
-                                                                                className="w-8 h-8 rounded-full object-cover border border-white/10"
-                                                                            />
+                                                                        <img
+                                                                            src={quest.host.avatar_url || `https://ui-avatars.com/api/?name=${quest.host.username}`}
+                                                                            className="w-8 h-8 rounded-full object-cover border border-white/10"
+                                                                        />
                                                                     </div>
                                                                     <div className="flex flex-col text-left">
                                                                         <div className="flex items-center gap-1.5">
@@ -310,7 +310,8 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                                         <p className="text-[8px] text-gray-500 font-bold tracking-tight normal-case">@{(quest.host.handle || quest.host.username || '').toLowerCase().replace(/^@+/, '')}</p>
                                                                     </div>
                                                                 </button>
-                                                        </div>
+                                                            </div>
+                                                        )}
 
                                                         <div className="grid grid-cols-2 gap-2 mt-2">
                                                             {participants
