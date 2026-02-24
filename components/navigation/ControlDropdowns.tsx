@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Plus, Trash2, Bell, Star, Heart, MessageCircle, Calendar, CheckSquare, LogOut, Settings, User, ArrowRight, Zap, Search, Layout, Bookmark, History, Target, TrendingUp, Sparkles, ShoppingBag } from 'lucide-react';
+import { Check, Plus, Trash2, Bell, Star, Heart, MessageCircle, Calendar, CheckSquare, LogOut, Settings, User, ArrowRight, Zap, Search, Layout, Bookmark, History, Target, TrendingUp, Sparkles, ShoppingBag, Sun, Moon, CloudSun } from 'lucide-react';
+import { ThemeMode, useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { dailyService } from '../../services/dailyService';
@@ -37,10 +38,10 @@ export const TaskWindow: React.FC = () => {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="mt-2 p-1.5 w-[240px] bg-white/[0.14] backdrop-blur-[80px] backdrop-contrast-[0.85] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[480px]"
+            className="mt-2 p-1.5 w-[240px] bg-[var(--bg-glass)] backdrop-blur-[80px] backdrop-contrast-[0.85] border border-[var(--border-glass)] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[480px]"
         >
             <div className="px-2 py-2 mb-1 border-b border-white/5 flex items-center justify-between">
-                <span className="text-[9px] font-black text-white/50 uppercase tracking-widest px-1">Side Quests</span>
+                <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest px-1">Side Quests</span>
             </div>
 
             <div className="flex-1 overflow-y-auto p-1.5 no-scrollbar space-y-1">
@@ -81,7 +82,7 @@ export const TaskWindow: React.FC = () => {
                             </button>
                             <span
                                 onClick={() => toggleTask(task.id)}
-                                className={`flex-1 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all ${task.completed ? 'line-through' : 'text-white'}`}
+                                className={`flex-1 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all ${task.completed ? 'line-through' : 'text-[var(--text-primary)]'}`}
                             >
                                 {task.text}
                             </span>
@@ -113,10 +114,10 @@ export const NotificationWindow: React.FC = () => {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="mt-2 p-1.5 w-[240px] bg-white/[0.14] backdrop-blur-[80px] backdrop-contrast-[0.85] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[480px]"
+            className="mt-2 p-1.5 w-[240px] bg-[var(--bg-glass)] backdrop-blur-[80px] backdrop-contrast-[0.85] border border-[var(--border-glass)] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[480px]"
         >
             <div className="px-3 py-2 mb-1 border-b border-white/5 flex items-center justify-between">
-                <span className="text-[9px] font-black text-white/50 uppercase tracking-widest">Notifs</span>
+                <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest">Notifs</span>
                 <button className="text-[8px] font-black text-white/20 uppercase tracking-widest hover:text-white transition-colors">Clear</button>
             </div>
 
@@ -146,8 +147,8 @@ export const NotificationWindow: React.FC = () => {
                         </div>
 
                         <div className="flex-1 min-w-0">
-                            <p className="text-[9px] font-bold text-white leading-tight">
-                                {n.user && <span className="text-[10px] font-black text-white mr-1 uppercase">{n.user.name}</span>}
+                            <p className="text-[9px] font-bold text-[var(--text-primary)] leading-tight">
+                                {n.user && <span className="text-[10px] font-black text-[var(--text-primary)] mr-1 uppercase">{n.user.name}</span>}
                                 {n.text}
                             </p>
                             <span className="text-[7px] text-white/30 font-black uppercase tracking-widest mt-1 block">{n.time}</span>
@@ -164,9 +165,77 @@ export const NotificationWindow: React.FC = () => {
         </motion.div>
     );
 };
+
+// --- VIBE WINDOW ---
+export const VibeWindow: React.FC<{ isInsideProfile?: boolean }> = ({ isInsideProfile = false }) => {
+    const { theme, setTheme } = useTheme();
+
+    const Content = (
+        <div className={`flex flex-col ${isInsideProfile ? 'p-0' : 'p-3 w-48'}`}>
+            <div className="flex items-center mb-2 px-1">
+                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)]">Switch Mode</span>
+            </div>
+            <div className="grid grid-cols-3 gap-1 bg-black/20 p-1 rounded-xl border border-white/5">
+                {[
+                    { id: 'dusk', label: 'Dusk', icon: Moon },
+                    { id: 'dawn', label: 'Dawn', icon: Zap },
+                    { id: 'sunrise', label: 'Sunrise', icon: CloudSun }
+                ].map((mode) => {
+                    const Icon = mode.icon;
+                    const isActive = theme === mode.id;
+                    return (
+                        <button
+                            key={mode.id}
+                            onClick={() => setTheme(mode.id as ThemeMode)}
+                            className={`py-2 rounded-lg flex flex-col items-center justify-center gap-1 transition-all relative group/vibe ${isActive
+                                    ? 'bg-white/10 text-[var(--text-primary)] shadow-sm'
+                                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5'
+                                }`}
+                        >
+                            {isActive && (
+                                <motion.div
+                                    layoutId="vibe-active"
+                                    className="absolute inset-0 bg-white/10 rounded-lg border border-white/10"
+                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                />
+                            )}
+                            <Icon
+                                size={12}
+                                strokeWidth={isActive ? 2.5 : 2}
+                                className={`relative z-10 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover/vibe:scale-110 opacity-50 group-hover/vibe:opacity-100'}`}
+                            />
+                            <span className="relative z-10 text-[6px] font-black uppercase tracking-widest leading-none">{mode.label}</span>
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+
+    if (isInsideProfile) {
+        return (
+            <div className="px-2 py-2 mb-1 bg-white/5 border border-white/10 rounded-xl">
+                {Content}
+            </div>
+        );
+    }
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="mt-2 bg-[var(--bg-glass)] backdrop-blur-[80px] backdrop-contrast-[0.85] border border-[var(--border-glass)] rounded-[2rem] shadow-2xl overflow-hidden"
+        >
+            {Content}
+        </motion.div>
+    );
+};
+
 // --- PROFILE WINDOW ---
 export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const { user, logout, refreshProfile, updateUser } = useAuth();
+    const { theme, setTheme } = useTheme();
     const navigate = useNavigate();
 
     // Auto-refresh profile data when menu opens to catch admin status changes
@@ -181,7 +250,7 @@ export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =>
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="mt-2 p-1 w-44 bg-white/[0.14] backdrop-blur-[80px] backdrop-contrast-[0.85] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+            className="mt-2 p-1 w-44 bg-[var(--bg-glass)] backdrop-blur-[80px] backdrop-contrast-[0.85] border border-[var(--border-glass)] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
         >
             <div className="p-2.5 border-b border-white/5 flex flex-col items-center gap-1.5">
                 <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden shadow-xl">
@@ -194,7 +263,7 @@ export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     )}
                 </div>
                 <div className="text-center">
-                    <h3 className="text-[9px] font-black uppercase tracking-widest text-white leading-tight">
+                    <h3 className="text-[9px] font-black uppercase tracking-widest text-[var(--text-primary)] leading-tight">
                         {user.name || user.username || 'Aura Seeker'}
                     </h3>
                     <p className="text-[6px] font-black uppercase tracking-[0.2em] text-electric-teal mt-0.5">
@@ -202,7 +271,7 @@ export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     </p>
                     <button
                         onClick={() => refreshProfile()}
-                        className="text-[5px] font-black uppercase tracking-[0.3em] text-white/20 hover:text-white transition-colors mt-1"
+                        className="text-[5px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mt-1"
                     >
                         Sync Data
                     </button>
@@ -210,6 +279,9 @@ export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =>
             </div>
 
             <div className="p-0.5 space-y-0.5">
+                {/* Atmosphere Switcher */}
+                <VibeWindow isInsideProfile={true} />
+
                 {/* Admin Role Switcher */}
                 {user.is_admin && (
                     <div className="px-2 py-2 mb-1 bg-electric-teal/5 border border-white/5 rounded-xl">
@@ -223,7 +295,7 @@ export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                                     updateUser({ is_operator: false });
                                     onClose();
                                 }}
-                                className={`flex-1 py-1.5 rounded-lg text-[7px] font-black uppercase tracking-wider transition-all ${!user.is_operator ? 'bg-electric-teal text-black' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
+                                className={`flex-1 py-1.5 rounded-lg text-[7px] font-black uppercase tracking-wider transition-all ${!user.is_operator ? 'bg-primary text-black' : 'bg-white/5 text-[var(--text-secondary)] hover:bg-white/10'}`}
                             >
                                 User
                             </button>
@@ -258,7 +330,7 @@ export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                         navigate('/app/myprofile');
                         onClose();
                     }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/10 transition-all text-white group"
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/10 transition-all text-[var(--text-primary)] group"
                 >
                     <User size={11} className="text-gray-500 group-hover:text-electric-teal transition-colors" />
                     <span className="text-[8px] font-black uppercase tracking-wider">My Profile</span>
@@ -267,7 +339,7 @@ export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     onClick={() => {
                         onClose();
                     }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/10 transition-all text-white group"
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/10 transition-all text-[var(--text-primary)] group"
                 >
                     <Settings size={11} className="text-gray-500 group-hover:text-electric-teal transition-colors" />
                     <span className="text-[8px] font-black uppercase tracking-wider">Settings</span>

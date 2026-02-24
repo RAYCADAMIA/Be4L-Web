@@ -41,7 +41,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onJoinClick }) => {
                     {/* Updated Text per User Request */}
                     <p className="max-w-xl mx-auto text-xs md:text-base text-cool-grey font-medium leading-relaxed mb-6 font-sans tracking-wide px-4">
                         Life is too short for just the main plot. <br className="hidden md:block" />
-                        Conquer <span className="animate-liquid-text font-black uppercase tracking-tighter">side quests</span>, collect lores to tell, and meet new people.
+                        Conquer <span className="brand-text-dusk font-black uppercase tracking-tighter">side quests</span>, collect lores to tell, and meet new people.
                     </p>
 
                     <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6">

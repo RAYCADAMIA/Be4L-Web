@@ -8,7 +8,7 @@ const FEATURES = [
         title: 'QUEST',
         subtitle: 'Your Daily Adventure Engine',
         description: "Create, discover, and join quests. Whether it's a casual pickleball game or a road trip to the unknown with your friends or with random people who loves doing side quests.",
-        color: '#2DD4BF',
+        color: '#FF8C00',
         icon: Compass,
         details: [
             { title: 'Planned', desc: 'Future-dated plans. "Pickleball tomorrow?"', icon: Calendar },
@@ -21,7 +21,7 @@ const FEATURES = [
         title: 'LORE',
         subtitle: 'Capture Life. Don\'t Just Post It.',
         description: "Capture unforgettable moments and share them with friends as they happen in real-time. every stories are worth to tell",
-        color: '#06B6D4',
+        color: '#E34234',
         icon: Camera,
         details: [
             { title: 'Real-time', desc: 'No filters needed. Just raw life.', icon: Play },
@@ -34,7 +34,7 @@ const FEATURES = [
         title: 'DIBS',
         subtitle: 'Smart Social Booking',
         description: "Secure your spot with premium brands in a single tap. From midnight matches to exclusive socials—pick, book, and be there.",
-        color: '#10B981',
+        color: '#FFB854',
         icon: Zap,
         details: [
             { title: 'Explore Brands', desc: 'Find premium Courts, Hubs, Events, and Competitions.', icon: MapPin },
@@ -47,7 +47,7 @@ const FEATURES = [
         title: 'CHAT',
         subtitle: 'Connect',
         description: "Coordinate quests and connect with those who share your intent. Join squads or go global. Let's all be friends!",
-        color: '#8B5CF6',
+        color: '#800020',
         icon: MessageCircle,
         details: [
             { title: 'Global', desc: 'Talk to everyone.', icon: Users },
@@ -83,7 +83,7 @@ const FeatureBlock: React.FC<{ feature: typeof FEATURES[0], index: number }> = (
             <div className="flex-1 space-y-8 text-center md:text-left">
                 {/* Vertical Header: Title + Pill Below */}
                 <div className="flex flex-col items-center md:items-start gap-4">
-                    <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-white font-display animate-liquid-text uppercase leading-none">
+                    <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-white font-display brand-text-dusk uppercase leading-none">
                         {feature.title}
                     </h2>
                     <div className="inline-flex items-center gap-2 md:gap-3 glass-panel rounded-full px-3 py-1.5 md:px-4 md:py-1.5 border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]">
@@ -108,7 +108,7 @@ const FeatureBlock: React.FC<{ feature: typeof FEATURES[0], index: number }> = (
                             <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mb-3 mx-auto md:mx-0 group-hover:bg-white/10 transition-colors">
                                 <detail.icon size={16} className="opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" style={{ color: feature.color }} />
                             </div>
-                            <h3 className="text-[10px] font-black text-white mb-1.5 font-display uppercase tracking-[0.1em] animate-liquid-text">{detail.title}</h3>
+                            <h3 className="text-[10px] font-black text-white mb-1.5 font-display uppercase tracking-[0.1em] brand-text-dusk">{detail.title}</h3>
                             <p className="text-[9px] text-cool-grey/80 leading-relaxed font-sans font-medium">{detail.desc}</p>
                         </div>
                     ))}

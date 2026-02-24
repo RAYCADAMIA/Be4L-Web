@@ -21,11 +21,11 @@ export const VisionSection: React.FC = () => {
                         {/* Background Glow */}
 
 
-                        <h2 className="text-sm uppercase tracking-[0.5em] text-electric-teal font-black mb-8 relative z-10 font-display animate-liquid-text">Dictionary</h2>
+                        <h2 className="text-sm uppercase tracking-[0.5em] text-electric-teal font-black mb-8 relative z-10 font-display brand-text-dusk">Dictionary</h2>
 
                         <div className="text-left max-w-2xl mx-auto space-y-6 relative z-10">
                             <div className="flex flex-wrap items-baseline gap-4">
-                                <h3 className="text-2xl md:text-5xl font-black tracking-tighter font-display animate-liquid-text uppercase">Side Quest</h3>
+                                <h3 className="text-2xl md:text-5xl font-black tracking-tighter font-display brand-text-dusk uppercase">Side Quest</h3>
                                 <span className="text-cool-grey font-mono text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold">
                                     [noun, slang]
                                 </span>
@@ -47,12 +47,12 @@ export const VisionSection: React.FC = () => {
                 >
                     <h2 className="text-2xl md:text-4xl font-black text-white tracking-tighter leading-tight font-display uppercase">
                         This is what <br className="hidden md:block" />
-                        <span className="animate-liquid-text decoration-electric-teal underline decoration-2 underline-offset-8">living</span> actually is.
+                        <span className="brand-text-dusk decoration-electric-teal underline decoration-2 underline-offset-8">living</span> actually is.
                     </h2>
 
                     <p className="text-base text-cool-grey max-w-xl mx-auto font-medium leading-relaxed font-sans">
                         Life isn't just about the main quest (the job, the routine).
-                        It's about the <span className="animate-liquid-text font-black uppercase tracking-tighter">side quests</span>.
+                        It's about the <span className="brand-text-dusk font-black uppercase tracking-tighter">side quests</span>.
                         The random pickleball game. The solo hiking trip. The midnight concert.
                     </p>
                 </motion.div>
@@ -67,7 +67,7 @@ export const VisionSection: React.FC = () => {
                 >
                     <p className="text-lg md:text-2xl font-black text-white leading-tight font-display tracking-tighter">
                         &ldquo;Be4L is a giant friend group <br />
-                        always down for <span className="animate-liquid-text font-black uppercase tracking-tighter">side quests</span> and adventures.&rdquo;
+                        always down for <span className="brand-text-dusk font-black uppercase tracking-tighter">side quests</span> and adventures.&rdquo;
                     </p>
                     <p className="mt-8 text-base font-bold tracking-[0.3em] text-electric-teal font-display">
                         We choose to be for life.

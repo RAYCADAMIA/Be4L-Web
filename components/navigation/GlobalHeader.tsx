@@ -93,8 +93,8 @@ export const GlobalHeader: React.FC = () => {
                             className="focus:outline-none shrink-0"
                         >
                             <div className="flex items-center gap-2">
-                                <StarIcon className="w-8 h-8 text-electric-teal drop-shadow-[0_0_10px_rgba(45,212,191,0.5)]" />
-                                <h1 className="text-3xl font-black tracking-tighter animate-liquid-text">
+                                <StarIcon className="w-8 h-8 text-primary drop-shadow-primary" />
+                                <h1 className="text-3xl font-black tracking-tighter brand-text-dusk">
                                     Be4L
                                 </h1>
                             </div>
@@ -103,12 +103,12 @@ export const GlobalHeader: React.FC = () => {
 
                     {/* 2. Center Tabs (Public) */}
                     <div className="hidden md:flex pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                        <div className="flex items-center justify-center h-[52px] p-1.5 bg-white/[0.08] backdrop-blur-3xl rounded-full border border-white/10 shadow-2xl">
+                        <div className="flex items-center justify-center h-[52px] p-1.5 bg-[var(--bg-glass)] backdrop-blur-3xl rounded-full border border-[var(--border-glass)] shadow-2xl">
                             {[
                                 { label: 'Home', path: '/' },
                                 { label: 'Lore', path: '/lore' },
                                 { label: 'Quests', path: '/quests' },
-                                { label: 'Chat', path: '/app/chat' }, // Restricted
+                                { label: 'Chat', path: '/app/chat' },
                                 { label: 'Dibs', path: '/dibs' }
                             ].map(item => {
                                 const isActive = item.path === '/'
@@ -125,7 +125,7 @@ export const GlobalHeader: React.FC = () => {
                                                 navigate(item.path);
                                             }
                                         }}
-                                        className={`relative h-10 px-6 flex items-center justify-center rounded-full text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 z-10 ${isActive ? 'text-white' : 'text-white/40 hover:text-white'}`}
+                                        className={`relative h-10 px-6 flex items-center justify-center rounded-full text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 z-10 ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                                     >
                                         <span className="relative z-10">{item.label}</span>
                                         {isActive && (
@@ -176,7 +176,7 @@ export const GlobalHeader: React.FC = () => {
                         className="focus:outline-none shrink-0"
                     >
                         <div className="flex items-center gap-2">
-                            <StarIcon className="w-8 h-8 text-electric-teal drop-shadow-[0_0_10px_rgba(45,212,191,0.5)]" />
+                            <StarIcon className="w-8 h-8 text-primary logo-glow" />
                             <AnimatePresence mode="wait">
                                 {!isSearchOpen && (
                                     <motion.h1
@@ -185,7 +185,7 @@ export const GlobalHeader: React.FC = () => {
                                         animate={{ opacity: 1, width: 'auto', x: 0 }}
                                         exit={{ opacity: 0, width: 0, x: -10 }}
                                         transition={{ duration: 0.3, ease: "easeInOut" }}
-                                        className="text-3xl font-black tracking-tighter animate-liquid-text overflow-hidden whitespace-nowrap"
+                                        className="text-3xl font-black tracking-tighter brand-text-dusk overflow-hidden whitespace-nowrap"
                                     >
                                         Be4L
                                     </motion.h1>
@@ -242,10 +242,8 @@ export const GlobalHeader: React.FC = () => {
                                 placeholder="Search"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className={`bg-transparent border-none outline-none text-[11px] sm:text-xs font-black tracking-widest w-full text-white placeholder-white/20 ml-1 selection:bg-electric-teal/30 ${isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                                className="bg-transparent border-none outline-none text-[11px] sm:text-xs font-black tracking-widest w-full text-white placeholder-white/20 ml-1 selection:bg-electric-teal/30"
                             />
-
-
 
                             <AnimatePresence>
                                 {isSearchOpen && (
@@ -266,7 +264,6 @@ export const GlobalHeader: React.FC = () => {
                             </AnimatePresence>
                         </motion.div>
 
-                        {/* Search Results Dropdown */}
                         <AnimatePresence>
                             {(isSearchOpen || searchQuery.length > 0) && isSearchOpen && (
                                 <div className="fixed sm:absolute top-[72px] sm:top-full left-1/2 sm:left-0 -translate-x-1/2 sm:translate-x-0 w-[92vw] sm:w-[400px] mt-1 z-[90]">
@@ -286,9 +283,9 @@ export const GlobalHeader: React.FC = () => {
                     </div>
                 </div>
 
-                {/* 2. CENTER TABS (Universal Navigation) - Hidden on Mobile */}
+                {/* 2. CENTER TABS */}
                 <div className="hidden md:flex pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <div className="flex items-center justify-center h-[52px] p-1.5 bg-white/[0.08] backdrop-blur-3xl rounded-full border border-white/10 shadow-2xl">
+                    <div className="flex items-center justify-center h-[52px] p-1.5 bg-[var(--bg-glass)] backdrop-blur-3xl rounded-full border border-[var(--border-glass)] shadow-2xl">
                         {[
                             { label: 'Home', path: '/app/home' },
                             { label: 'Lore', path: '/app/lore' },
@@ -304,11 +301,9 @@ export const GlobalHeader: React.FC = () => {
                                     key={item.path}
                                     id={`nav-${item.label.toLowerCase()}`}
                                     onClick={() => navigate(item.path)}
-                                    className={`relative h-10 px-6 flex items-center justify-center rounded-full text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 z-10 ${isActive ? 'text-white' : 'text-white/40 hover:text-white'}`}
+                                    className={`relative h-10 px-6 flex items-center justify-center rounded-full text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 z-10 ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                                 >
-                                    <span className="relative z-10">
-                                        {item.label}
-                                    </span>
+                                    <span className="relative z-10">{item.label}</span>
                                     {isActive && (
                                         <motion.div
                                             layoutId="activeTabGlobal"
@@ -322,12 +317,10 @@ export const GlobalHeader: React.FC = () => {
                     </div>
                 </div>
 
-                {/* 3. Floating Control Pill (Right) */}
+                {/* 3. Floating Control Pill */}
                 <div className="relative pointer-events-auto transition-all duration-500 opacity-100" ref={dropdownRef}>
-                    <nav className="flex items-center gap-1 h-[52px] p-1.5 bg-white/[0.08] backdrop-blur-3xl border border-white/10 rounded-full shadow-lg transition-all hover:border-white/20 relative">
-                        {/* Control Icons - Now visible on both Mobile & Desktop */}
+                    <nav className="flex items-center gap-1 h-[52px] p-1.5 bg-[var(--bg-glass)] backdrop-blur-3xl border border-[var(--border-glass)] rounded-full shadow-lg transition-all hover:border-white/20 relative">
                         <div className="flex items-center gap-0.5 relative">
-                            {/* Task List Toggle */}
                             <div className="relative z-20">
                                 <button
                                     id="nav-tasks"
@@ -339,7 +332,6 @@ export const GlobalHeader: React.FC = () => {
                                 </button>
                             </div>
 
-                            {/* Notifications Toggle */}
                             <div className="relative z-20">
                                 <button
                                     id="nav-notifications"
@@ -353,7 +345,6 @@ export const GlobalHeader: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* User Profile */}
                         <div className="flex items-center pl-1 pr-1 relative z-20">
                             <button
                                 id="nav-profile"
@@ -372,7 +363,6 @@ export const GlobalHeader: React.FC = () => {
                         </div>
                     </nav>
 
-                    {/* Unified Window Layer (Sibling to Nav to avoid nested blur glitches) */}
                     <AnimatePresence>
                         {activeControl === 'tasks' && (
                             <div className="absolute top-full right-0 mt-1 z-[200]">
@@ -391,10 +381,7 @@ export const GlobalHeader: React.FC = () => {
                         )}
                     </AnimatePresence>
                 </div>
-
-
             </header>
         </div>
     );
 };
-

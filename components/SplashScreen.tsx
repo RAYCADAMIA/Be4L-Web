@@ -58,7 +58,7 @@ const FloatingIcon = React.memo(({ index }: { index: number }) => {
             }}
             className="p-3 bg-white/[0.015] backdrop-blur-md rounded-[1.5rem] border border-white/5 shadow-lg pointer-events-none"
         >
-            <Icon size={size} className="text-electric-teal/30" strokeWidth={1.5} />
+            <Icon size={size} className="text-primary/20" strokeWidth={1.5} />
         </motion.div>
     );
 });
@@ -220,23 +220,23 @@ export const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = 
                 <div className={`flex flex-col items-center justify-center w-full max-w-xs ${!isFlatline ? 'animate-heartbeat' : ''}`}>
                     <div className={`absolute w-48 h-48 bg-primary/10 blur-[80px] rounded-full pointer-events-none transition-opacity duration-1000 ${isFlatline ? 'opacity-0' : 'opacity-100'}`} />
                     <div className={`relative flex items-center justify-center px-8 py-4 bg-white/5 backdrop-blur-3xl rounded-3xl transition-all duration-1000 border ${isFlatline ? 'border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.1)]' : 'border-white/5 shadow-2xl'} mb-12`}>
-                        <h1 className={`text-5xl font-black tracking-tighter transition-all duration-1000 ${isFlatline ? 'text-gray-600 opacity-50' : 'animate-liquid-text'}`} style={{ textShadow: isFlatline ? 'none' : '0 0 20px rgba(45, 212, 191, 0.3)' }}>
+                        <h1 className={`text-5xl font-black tracking-tighter transition-all duration-1000 ${isFlatline ? 'text-gray-600 opacity-50' : 'animate-liquid-text'}`} style={{ textShadow: isFlatline ? 'none' : '0 0 20px rgba(255, 140, 0, 0.3)' }}>
                         </h1>
                     </div>
 
                     <div className="relative flex flex-col items-center">
-                        <svg width="160" height="40" viewBox="0 0 200 40" className="drop-shadow-[0_0_10px_rgba(45,212,191,0.4)]">
+                        <svg width="160" height="40" viewBox="0 0 200 40" className="drop-shadow-[0_0_10px_rgba(255,140,0,0.4)]">
                             <path
                                 d="M 0 20 L 20 20 L 22 5 L 25 35 L 28 20 L 65 20 L 67 5 L 70 35 L 73 20 L 95 20 C 95 18, 98 18, 100 20 C 102 22, 105 22, 105 20 C 105 18, 102 18, 100 20 C 98 22, 95 22, 95 20 L 122 20 L 124 5 L 127 35 L 130 20 L 165 20 L 167 5 L 170 35 L 173 20 L 200 20"
                                 fill="none"
-                                stroke={isFlatline ? "rgba(239,68,68,0.2)" : "rgba(45,212,191,0.05)"}
+                                stroke={isFlatline ? "rgba(239,68,68,0.2)" : "rgba(255,140,0,0.05)"}
                                 strokeWidth="2"
                                 strokeLinecap="round"
                             />
                             <path
                                 d="M 0 20 L 20 20 L 22 5 L 25 35 L 28 20 L 65 20 L 67 5 L 70 35 L 73 20 L 95 20 C 95 18, 98 18, 100 20 C 102 22, 105 22, 105 20 C 105 18, 102 18, 100 20 C 98 22, 95 22, 95 20 L 122 20 L 124 5 L 127 35 L 130 20 L 165 20 L 167 5 L 170 35 L 173 20 L 200 20"
                                 fill="none"
-                                stroke={isFlatline ? "#ef4444" : "#2DD4BF"}
+                                stroke={isFlatline ? "#ef4444" : "#FF8C00"}
                                 strokeWidth="3"
                                 strokeLinecap="round"
                                 className={isFlatline ? "animate-flatline-lore" : "animate-ekg-sync"}
@@ -253,7 +253,7 @@ export const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = 
             {step === 'FEATURES' && (
                 <div className="p-6 flex flex-col justify-between h-full safe-area-bottom">
                     <div className="mt-8 flex flex-col items-center w-full">
-                        <h1 className="text-5xl font-black animate-liquid-text mb-2" style={{ textShadow: '0 0 20px rgba(45, 212, 191, 0.3)' }}>Be4L</h1>
+                        <h1 className="text-5xl font-black animate-liquid-text mb-2" style={{ textShadow: '0 0 20px rgba(255, 140, 0, 0.3)' }}>Be4L</h1>
                         <p className="text-white/40 text-[9px] tracking-[0.2em] uppercase font-bold text-center w-full">always for life</p>
                     </div>
                     {/* Feature cards simplified for brevity in extraction, ensuring imports work */}

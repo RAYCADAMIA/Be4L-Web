@@ -681,12 +681,23 @@ export const supabaseService = {
       return supabaseService.chat.getOrCreateQuestLobby(qid, name, pids);
     },
     createQuest: async (d: any) => {
+      // 1. Get truly authenticated user from Supabase
       const { data: { user: au } } = await supabase.auth.getUser();
+
+      // 2. Resolve host ID - strict UUID check for real DB insert
       const hid = au?.id || d.host_id;
-      if (!hid) return { success: false, error: "User not authenticated." };
+
+      if (!hid) {
+        return { success: false, error: "Authentication required." };
+      }
+
+      // If it's a mock user ID (starts with 'u'), handle locally or return error for real DB
+      if (!isValidUUID(hid)) {
+        if (!au) return { success: false, error: "Please sign in to post quests." };
+      }
 
       // sanitize payload to match DB schema strictly
-      const cleanData = {
+      const cleanData: any = {
         title: d.title,
         description: d.description,
         category: d.category,
@@ -701,6 +712,8 @@ export const supabaseService = {
         aura_reward: d.aura_reward,
         exp_reward: d.exp_reward,
         host_id: hid,
+        created_by: hid,
+        is_public: d.visibility_scope === 'public' || d.is_public === true,
         visibility_scope: d.visibility_scope || 'public',
         itinerary: d.itinerary,
         checklist: d.checklist,

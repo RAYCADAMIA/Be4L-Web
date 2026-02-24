@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Send, Sparkles, Star, MapPin, ArrowRight } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface UserCTAProps {
     onJoinClick: () => void;
@@ -19,7 +20,7 @@ export const UserCTA: React.FC<UserCTAProps> = ({ onJoinClick }) => {
             >
                 <h3 className="text-4xl md:text-8xl font-black mb-8 tracking-tighter font-display uppercase leading-none">
                     Urge to experience <br className="hidden md:block" />
-                    <span className="animate-liquid-text">everything?</span>
+                    <span className="brand-text-dusk">everything?</span>
                 </h3>
                 <p className="text-lg md:text-xl text-cool-grey mb-10 max-w-2xl mx-auto font-medium font-sans">
                     Sports, adventures, socials, random 3AM ideas.
@@ -37,9 +38,9 @@ export const UserCTA: React.FC<UserCTAProps> = ({ onJoinClick }) => {
                     </p>
                     <button
                         onClick={onJoinClick}
-                        className="px-16 py-6 bg-white text-deep-void font-black rounded-3xl hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_50px_rgba(45,212,191,0.5)] transition-all uppercase tracking-widest text-lg font-display group overflow-hidden"
+                        className="px-16 py-6 bg-white text-deep-void font-black rounded-3xl hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_50px_rgba(255,140,0,0.5)] transition-all uppercase tracking-widest text-lg font-display group overflow-hidden"
                     >
-                        <span className="animate-liquid-text">Sign In</span>
+                        <span className="brand-text-dusk">Sign In</span>
                     </button>
                 </div>
             </motion.div>
@@ -59,7 +60,7 @@ export const PartnerPitch: React.FC = () => {
                 viewport={{ once: true }}
                 className="max-w-4xl mx-auto text-center relative z-10"
             >
-                <h3 className="text-3xl md:text-5xl font-black text-white mb-6 font-display uppercase tracking-tighter animate-liquid-text">Are you an Operator?</h3>
+                <h3 className="text-3xl md:text-5xl font-black text-white mb-6 font-display uppercase tracking-tighter brand-text-dusk">Are you an Operator?</h3>
                 <p className="text-base md:text-lg text-cool-grey mb-8 max-w-xl mx-auto font-sans font-medium">
                     Manage venues, organize events, or offer services. Create your world in Dibs and connect with the community.
                 </p>
@@ -90,7 +91,7 @@ export const TeamRecruitment: React.FC = () => {
                     <div className="w-1.5 h-1.5 rounded-full bg-electric-teal animate-pulse" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">We are Hiring</span>
                 </div>
-                <h3 className="text-3xl md:text-6xl font-black text-white mb-6 font-display uppercase tracking-tighter animate-liquid-text">Are you up for a side quest?</h3>
+                <h3 className="text-3xl md:text-6xl font-black text-white mb-6 font-display uppercase tracking-tighter brand-text-dusk">Are you up for a side quest?</h3>
                 <p className="text-base md:text-lg text-cool-grey mb-10 max-w-xl mx-auto font-sans font-medium">
                     We're looking for dreamers, action-driven people, and anyone who chooses to live life to the fullest. Join our quest!
                 </p>
@@ -273,12 +274,12 @@ export const HUDMenu: React.FC<HUDMenuProps> = ({ onJoinClick, isScrolled = true
             >
                 <div className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center transition-transform group-hover:scale-110">
                     {/* Simplified Logo SVG - Electric Teal */}
-                    <svg viewBox="0 0 200 100" className="w-full h-full drop-shadow-[0_0_10px_rgba(45,212,191,0.5)]">
+                    <svg viewBox="0 0 200 100" className="w-full h-full drop-shadow-[0_0_10px_rgba(255,140,0,0.5)]">
                         <defs>
                             <linearGradient id="hudLogoGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="#2dd4bf" />
-                                <stop offset="40%" stopColor="#06b6d4" />
-                                <stop offset="100%" stopColor="#a855f7" />
+                                <stop offset="0%" stopColor="#FF8C00" />
+                                <stop offset="40%" stopColor="#E34234" />
+                                <stop offset="100%" stopColor="#800020" />
                             </linearGradient>
                         </defs>
                         <path d="M100,30 C100,30 90,10 70,10 C50,10 40,30 40,50 C40,75 100,90 100,90 C100,90 160,75 160,50 C160,30 150,10 130,10 C110,10 100,30 100,30 Z" fill="url(#hudLogoGradient)" />
@@ -288,8 +289,10 @@ export const HUDMenu: React.FC<HUDMenuProps> = ({ onJoinClick, isScrolled = true
                     <span className="text-sm md:text-base font-black tracking-tighter font-display text-gradient-static not-italic">Be4L</span>
                     <span className="text-[6px] md:text-[8px] font-black uppercase tracking-widest text-gradient-static opacity-50 not-italic">{isPartnerPage ? 'Operator' : 'Beta'}</span>
                 </div>
-
             </motion.div>
+
+            {/* Removed Vibe Switch Experiment */}
+
 
             <div className="hidden md:flex items-center gap-6">
                 {isPartnerPage ? (
@@ -329,6 +332,7 @@ export const HUDMenu: React.FC<HUDMenuProps> = ({ onJoinClick, isScrolled = true
 
 export const Starfield: React.FC = () => {
     const [mousePosition, setMousePosition] = React.useState({ x: 0, y: 0 });
+    const { theme } = useTheme();
 
     React.useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -342,12 +346,12 @@ export const Starfield: React.FC = () => {
     }, []);
 
     return (
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div id="starfield-canvas" className={`fixed inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${theme === 'sunrise' ? 'opacity-10' : 'opacity-100'}`}>
             {/* Removed hardcoded dark background to let global vibrant background shine through */}
 
             {/* Aurora Passing Strikes - Replacing static blobs for better clarity */}
             <motion.div
-                className="absolute top-0 left-[-50%] w-[200%] h-px bg-gradient-to-r from-transparent via-electric-teal/10 to-transparent filter blur-[1px] pointer-events-none"
+                className="absolute top-0 left-[-50%] w-[200%] h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent filter blur-[1px] pointer-events-none"
                 animate={{
                     y: ["-10vh", "110vh"],
                     opacity: [0, 0.15, 0]
@@ -360,7 +364,7 @@ export const Starfield: React.FC = () => {
                 }}
             />
             <motion.div
-                className="absolute top-0 right-[-50%] w-[150%] h-[1px] bg-gradient-to-l from-transparent via-electric-teal/10 to-transparent filter blur-[1px] transform rotate-[-15deg] pointer-events-none"
+                className="absolute top-0 right-[-50%] w-[150%] h-[1px] bg-gradient-to-l from-transparent via-primary/20 to-transparent filter blur-[1px] transform rotate-[-15deg] pointer-events-none"
                 animate={{
                     y: ["-20vh", "120vh"],
                     opacity: [0, 0.1, 0]

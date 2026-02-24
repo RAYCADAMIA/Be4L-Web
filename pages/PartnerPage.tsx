@@ -76,10 +76,10 @@ export const PartnerPage: React.FC = () => {
                             transition={{ duration: 0.8 }}
                             className="space-y-6"
                         >
-                            <span className="text-[10px] md:text-sm font-black text-electric-teal uppercase tracking-[0.5em] animate-liquid-text">
+                            <span className="text-[10px] md:text-sm font-black text-electric-teal uppercase tracking-[0.5em] brand-text-dusk">
                                 THE OPERATOR ENGINE
                             </span>
-                            <h1 className="text-5xl md:text-9xl font-black font-fui animate-liquid-text tracking-tighter uppercase leading-[0.85]">
+                            <h1 className="text-5xl md:text-9xl font-black font-fui brand-text-dusk tracking-tighter uppercase leading-[0.85]">
                                 UPSCALE YOUR <br />
                                 <span className="text-white">OPERATIONS.</span>
                             </h1>
@@ -123,7 +123,7 @@ export const PartnerPage: React.FC = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20" />
                         <div className="absolute bottom-12 left-12 right-12 flex justify-between items-end">
                             <div className="space-y-2">
-                                <h2 className="text-4xl font-black tracking-tighter uppercase animate-liquid-text">Vibrant Community.</h2>
+                                <h2 className="text-4xl font-black tracking-tighter uppercase brand-text-dusk">Vibrant Community.</h2>
                                 <p className="text-cool-grey font-bold uppercase tracking-widest text-xs">Real-world engagement at its peak.</p>
                             </div>
                             <div className="hidden md:flex gap-4">
@@ -157,7 +157,7 @@ export const PartnerPage: React.FC = () => {
                                         <span className={`text-[10px] font-black uppercase tracking-[0.4em] ${section.color} bg-white/5 px-4 py-2 rounded-lg`}>
                                             {section.badge}
                                         </span>
-                                        <h2 className="text-3xl md:text-6xl font-black font-fui text-white tracking-tighter uppercase leading-tight animate-liquid-text">
+                                        <h2 className="text-3xl md:text-6xl font-black font-fui text-white tracking-tighter uppercase leading-tight brand-text-dusk">
                                             {section.title}
                                         </h2>
                                         <p className="text-lg md:text-xl text-cool-grey font-medium leading-relaxed font-sans">
@@ -251,7 +251,7 @@ export const PartnerPage: React.FC = () => {
                             <span className="inline-block px-6 py-2 rounded-full bg-electric-teal text-black text-[10px] font-black uppercase tracking-[0.4em]">
                                 THE VANGUARD OPPORTUNITY
                             </span>
-                            <h2 className="text-4xl md:text-8xl font-black font-fui text-white tracking-tighter uppercase leading-[0.85] animate-liquid-text">
+                            <h2 className="text-4xl md:text-8xl font-black font-fui text-white tracking-tighter uppercase leading-[0.85] brand-text-dusk">
                                 JOIN THE <br />
                                 <span className="text-white">PILOT QUEST.</span>
                             </h2>
