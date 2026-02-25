@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import ProfileScreen from '../components/ProfileScreen';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { supabaseService } from '../services/supabaseService';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
@@ -66,6 +66,8 @@ export const ProfilePage: React.FC = () => {
         </div>
     );
 
+    const [searchParams, setSearchParams] = useSearchParams();
+
     return (
         <ProfileScreen
             user={targetUser}
@@ -78,7 +80,7 @@ export const ProfilePage: React.FC = () => {
                 navigate('/');
             }}
             onOpenPostDetail={(p) => console.log("Post Detail", p)}
-            onOpenQuest={(q) => navigate(`/app/quest/${q.id}`)}
+            onOpenQuest={(q) => setSearchParams({ quest: q.id })}
             onOpenUser={(u) => navigate(u.id === currentUser?.id ? '/app/myprofile' : `/app/${u.id}`)}
             onProfileUpdate={(u) => login(u)}
             onOpenChat={(id, name) => navigate('/app/chat')}

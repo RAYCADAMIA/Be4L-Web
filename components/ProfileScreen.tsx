@@ -77,7 +77,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     // Quest Filters
-    const [questFilter, setQuestFilter] = useState<'ACTIVE' | 'CREATED' | 'JOINED' | 'HISTORY'>('ACTIVE');
+    const [questFilter, setQuestFilter] = useState<'ACTIVE' | 'CREATED' | 'JOINED' | 'REQUESTED' | 'HISTORY'>('ACTIVE');
     const [dibsFilter, setDibsFilter] = useState<'ALL' | 'UNREDEEMED' | 'REDEEMED'>('ALL');
 
     // Operator Logic
@@ -109,9 +109,18 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                 const captures = await supabaseService.captures.getVault(user.id);
                 setVault(captures || []);
 
-                // 2. Fetch Quests (If not operator or just general)
-                const qr = await supabaseService.quests.getMyQuests(user.id);
-                setUserQuests(qr || []);
+                // 2. Fetch Quests (Hosted + Joined)
+                const [hosted, joined] = await Promise.all([
+                    supabaseService.quests.getMyQuests(user.id),
+                    supabaseService.quests.getJoinedQuests(user.id)
+                ]);
+
+                // Merge and remove duplicates (host is technically a participant in DB)
+                const merged = [...hosted];
+                joined.forEach(j => {
+                    if (!merged.find(m => m.id === j.id)) merged.push(j);
+                });
+                setUserQuests(merged);
 
                 // 3. Fetch Follow Status
                 if (!isMe && currentUserId) {
@@ -524,6 +533,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                                     {[
                                         { id: 'CREATED', label: 'Hosted' },
                                         { id: 'JOINED', label: 'Joined' },
+                                        { id: 'REQUESTED', label: 'Requested' },
                                         { id: 'ACTIVE', label: 'Active' },
                                         { id: 'HISTORY', label: 'Completed' }
                                     ].map((tab) => (
@@ -544,10 +554,11 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                                 <div className="col-span-full py-20 flex justify-center"><EKGLoader /></div>
                             ) : (() => {
                                 const filteredQuests = userQuests.filter(q => {
-                                    if (questFilter === 'CREATED') return q.creator_id === user.id;
-                                    if (questFilter === 'JOINED') return q.creator_id !== user.id;
-                                    if (questFilter === 'ACTIVE') return q.status === 'PUBLISHED' || q.status === 'STARTED';
-                                    if (questFilter === 'HISTORY') return q.status === 'COMPLETED' || q.status === 'CANCELLED';
+                                    if (questFilter === 'CREATED') return q.host_id === user.id;
+                                    if (questFilter === 'JOINED') return q.host_id !== user.id && (q as any).participant_status === 'ACCEPTED';
+                                    if (questFilter === 'REQUESTED') return (q as any).participant_status === 'REQUESTED';
+                                    if (questFilter === 'ACTIVE') return q.status === QuestStatus.DISCOVERABLE || q.status === QuestStatus.ACTIVE;
+                                    if (questFilter === 'HISTORY') return q.status === QuestStatus.COMPLETED || q.status === QuestStatus.CANCELLED;
                                     return true;
                                 });
 

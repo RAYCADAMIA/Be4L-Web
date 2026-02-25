@@ -66,7 +66,7 @@ export const PartnerPitchPage: React.FC = () => {
             <HUDMenu onJoinClick={() => navigate('/')} isScrolled={true} />
 
             <main className="relative z-10 pt-40 pb-32 px-6">
-                <div className="max-w-7xl mx-auto">
+                <div className="max-w-4xl mx-auto">
 
                     {/* Hero Section */}
                     <div className="text-center space-y-12 mb-40">
@@ -79,7 +79,7 @@ export const PartnerPitchPage: React.FC = () => {
                             <span className="text-[10px] md:text-sm font-black text-electric-teal uppercase tracking-[0.5em] brand-text-dusk">
                                 THE OPERATOR ENGINE
                             </span>
-                            <h1 className="text-5xl md:text-9xl font-black font-fui brand-text-dusk tracking-tighter uppercase leading-[0.85]">
+                            <h1 className="text-5xl md:text-8xl font-black font-fui brand-text-dusk tracking-tighter uppercase leading-[0.85]">
                                 UPSCALE YOUR <br />
                                 <span className="text-white">OPERATIONS.</span>
                             </h1>

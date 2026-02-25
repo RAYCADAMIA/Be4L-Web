@@ -9,6 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../Toast';
 import SmartMap from '../ui/SmartMap';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import QuestReasonModal from './QuestReasonModal';
 
 const QuestDetailScreen: React.FC = () => {
     const { questId } = useParams();
@@ -24,6 +25,19 @@ const QuestDetailScreen: React.FC = () => {
     const [participants, setParticipants] = useState<any[]>([]);
     const [managingSquad, setManagingSquad] = useState(false);
 
+    // Decision Modal State
+    const [decisionModal, setDecisionModal] = useState<{
+        isOpen: boolean;
+        type: 'ACCEPT' | 'DECLINE';
+        userId: string;
+        userName: string;
+    }>({
+        isOpen: false,
+        type: 'ACCEPT',
+        userId: '',
+        userName: ''
+    });
+
     useEffect(() => {
         const loadQuest = async () => {
             setLoading(true);
@@ -35,13 +49,12 @@ const QuestDetailScreen: React.FC = () => {
 
                 // Determine join state
                 if (user) {
-                    const myPart = parts.find((p: any) => p.id === user.id);
+                    const myPart = parts.find((p: any) => p.user_id === user.id || p.id === user.id);
                     if (myPart) {
-                        if (myPart.participant_status === QuestParticipantStatus.ACCEPTED) setJoinState('joined');
-                        else if (myPart.participant_status === QuestParticipantStatus.REQUESTED) setJoinState('requested');
-                        else setJoinState('idle');
+                        if (myPart.participant_status === QuestParticipantStatus.ACCEPTED || myPart.status === QuestParticipantStatus.ACCEPTED) setJoinState('joined');
+                        else if (myPart.participant_status === QuestParticipantStatus.REQUESTED || myPart.status === QuestParticipantStatus.REQUESTED) setJoinState('requested');
+                        else setJoinState('idle'); // DECLINED
                     } else {
-                        // Double check just in case parts hasn't updated yet or if host
                         if (data.host_id === user.id) setJoinState('joined');
                         else setJoinState('idle');
                     }
@@ -82,6 +95,63 @@ const QuestDetailScreen: React.FC = () => {
         loadQuest();
     }, [questId, user]);
 
+    useEffect(() => {
+        if (!user || !questId) return;
+
+        const { supabase } = supabaseService as any;
+        if (!supabase) return;
+
+        const subscription = supabase.channel(`uq-${questId}-${user.id}`)
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'user_quests',
+                filter: `user_id=eq.${user.id}`
+            }, (payload: any) => {
+                const newUserQuest = payload.new as any;
+                if (newUserQuest && newUserQuest.quest_id === questId) {
+                    if (newUserQuest.status === QuestParticipantStatus.ACCEPTED) setJoinState('joined');
+                    else if (newUserQuest.status === QuestParticipantStatus.REQUESTED) setJoinState('requested');
+                    else if (newUserQuest.status === QuestParticipantStatus.DECLINED) setJoinState('idle');
+                } else if (payload.eventType === 'DELETE') {
+                    setJoinState('idle');
+                }
+            })
+            .subscribe();
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [questId, user]);
+
+    useEffect(() => {
+        if (!questId) return;
+        const { supabase } = supabaseService as any;
+        if (!supabase) return;
+
+        const subscription = supabase.channel(`quest-state-${questId}`)
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'quests',
+                filter: `id=eq.${questId}`
+            }, (payload: any) => {
+                const updatedQuest = payload.new as Quest;
+                if (updatedQuest && updatedQuest.id === questId) {
+                    setQuest(prev => prev ? { ...prev, status: updatedQuest.status } : updatedQuest);
+                    if (updatedQuest.status === QuestStatus.CANCELLED) {
+                        showToast("Mission aborted by Lead.", "info");
+                        navigate('/app/quests');
+                    }
+                }
+            })
+            .subscribe();
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [questId, navigate, showToast]);
+
     const handleJoinAction = async () => {
         if (!quest || !questId) return;
 
@@ -101,20 +171,17 @@ const QuestDetailScreen: React.FC = () => {
                 return;
             }
 
-            const success = await supabaseService.quests.requestToJoin(questId, user.id, quest.approval_required);
+            // Every quest now requires approval
+            const success = await supabaseService.quests.requestToJoin(questId, user.id, true);
             if (success) {
-                if (quest.approval_required) {
-                    setJoinState('requested');
-                    showToast("Request sent! Waiting for host approval.", "info");
-                } else {
-                    setJoinState('joined');
-                    setParticipants(prev => [...prev, { ...user, participant_status: 'ACCEPTED' }]);
-                    showToast("Joined! Welcome to the squad.", "success");
-                    // Pre-fetch lobby to ensure it's ready
-                    await supabaseService.chat.getOrCreateQuestLobby(questId, quest.title, [user.id]);
-                }
+                setJoinState('requested');
+                showToast("Request sent! Waiting for host approval.", "info");
+
+                // Refresh participants list to show the pending request
+                const parts = await supabaseService.quests.getQuestParticipants(questId);
+                setParticipants(parts);
             } else {
-                showToast("Failed to join quest. Try again.", "error");
+                showToast("Failed to send request. Try again.", "error");
             }
         } else if (joinState === 'requested') {
             showToast("Your request is still pending approval.", "info");
@@ -159,6 +226,55 @@ const QuestDetailScreen: React.FC = () => {
         }
     };
 
+    const handleLeaveQuest = async () => {
+        if (!questId) return;
+        if (window.confirm("Abandon this hunt?")) {
+            const success = await supabaseService.quests.leaveQuest(questId);
+            if (success) {
+                setJoinState('idle');
+                showToast("You left the squad.", "info");
+                // Refresh participants
+                const parts = await supabaseService.quests.getQuestParticipants(questId);
+                setParticipants(parts);
+            } else {
+                showToast("Failed to leave.", "error");
+            }
+        }
+    };
+
+    const handleStatusAction = (uid: string, action: 'ACCEPT' | 'DECLINE') => {
+        const user = participants.find(p => p.id === uid);
+        setDecisionModal({
+            isOpen: true,
+            type: action,
+            userId: uid,
+            userName: user?.name || user?.username || 'Unknown Hunter'
+        });
+    };
+
+    const confirmStatusAction = async (reason: string) => {
+        if (!questId || !decisionModal.userId) return;
+
+        const { userId, type } = decisionModal;
+        const status = type === 'ACCEPT' ? QuestParticipantStatus.ACCEPTED : QuestParticipantStatus.DECLINED;
+
+        const success = await supabaseService.quests.updateParticipantStatus(questId, userId, status, reason);
+
+        if (success) {
+            if (type === 'ACCEPT') {
+                setParticipants(prev => prev.map(p => p.id === userId ? { ...p, participant_status: QuestParticipantStatus.ACCEPTED } : p));
+                showToast("Hunter accepted!", "success");
+            } else {
+                setParticipants(prev => prev.filter(p => p.id !== userId));
+                showToast("Request declined.", "info");
+            }
+        } else {
+            showToast("Failed to update status.", "error");
+        }
+
+        setDecisionModal(prev => ({ ...prev, isOpen: false }));
+    };
+
     const handleKickParticipant = async (uid: string) => {
         if (!questId) return;
         if (window.confirm("Remove this user from the squad?")) {
@@ -177,6 +293,9 @@ const QuestDetailScreen: React.FC = () => {
 
     const isHost = user?.id === quest.host?.id;
     const isLive = quest.status === QuestStatus.ACTIVE;
+
+    const squadMembers = participants.filter(p => p.participant_status === QuestParticipantStatus.ACCEPTED && p.id !== quest.host?.id);
+    const joinRequests = isHost ? participants.filter(p => p.participant_status === QuestParticipantStatus.REQUESTED) : [];
 
     return (
         <div className="min-h-screen bg-deep-black text-white relative overflow-x-hidden pb-40">
@@ -315,9 +434,9 @@ const QuestDetailScreen: React.FC = () => {
                                         <div className="flex items-center justify-between mb-10">
                                             <div className="space-y-1">
                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">CONFIRMED SQUAD</h3>
-                                                <p className="text-[9px] font-bold text-gray-700 uppercase tracking-widest">{participants.length} Active Participants</p>
+                                                <p className="text-[9px] font-bold text-gray-700 uppercase tracking-widest">{squadMembers.length + (quest.host ? 1 : 0)} Active Participants</p>
                                             </div>
-                                            {isHost && participants.length > 0 && (
+                                            {isHost && (squadMembers.length > 0) && (
                                                 <button
                                                     onClick={() => setManagingSquad(!managingSquad)}
                                                     className={`text-[9px] font-black uppercase tracking-widest px-5 py-2.5 rounded-2xl border transition-all ${managingSquad ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-white/5 text-gray-500 border-white/10 hover:text-white hover:bg-white/10'}`}
@@ -327,67 +446,116 @@ const QuestDetailScreen: React.FC = () => {
                                             )}
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
-                                            {/* Mission Lead Injection */}
-                                            {quest.host && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, scale: 0.98 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    className="flex items-center justify-between p-4 rounded-3xl bg-white/[0.02] border border-white/5 group hover:bg-white/[0.04] transition-all cursor-pointer"
-                                                    onClick={() => navigate(`/app/${quest.host?.id}`)}
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="shrink-0">
-                                                            <img
-                                                                src={quest.host.avatar_url || `https://ui-avatars.com/api/?name=${quest.host.username}`}
-                                                                className="w-10 h-10 rounded-full object-cover border border-white/10 group-hover:border-primary/30 transition-all"
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <div className="flex items-center gap-2">
-                                                                <p className="text-sm font-black uppercase tracking-tight text-white group-hover:text-primary transition-colors">{quest.host.name || quest.host.username}</p>
-                                                                <span className="text-[7px] bg-primary text-black px-1.5 py-0.5 rounded-md font-black tracking-widest uppercase">Lead</span>
+                                        <div className="space-y-8">
+                                            {/* Squad Members Section */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {/* Mission Lead Injection */}
+                                                {quest.host && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, scale: 0.98 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        className="flex items-center justify-between p-4 rounded-3xl bg-white/[0.02] border border-white/5 group hover:bg-white/[0.04] transition-all cursor-pointer"
+                                                        onClick={() => navigate(`/app/${quest.host?.id}`)}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="shrink-0">
+                                                                <img
+                                                                    src={quest.host.avatar_url || `https://ui-avatars.com/api/?name=${quest.host.username}`}
+                                                                    className="w-10 h-10 rounded-full object-cover border border-white/10 group-hover:border-primary/30 transition-all"
+                                                                />
                                                             </div>
-                                                            <p className="text-[10px] font-bold text-gray-500 tracking-tight normal-case">@{(quest.host.handle || quest.host.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                            <div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <p className="text-sm font-black uppercase tracking-tight text-white group-hover:text-primary transition-colors">{quest.host.name || quest.host.username}</p>
+                                                                    <span className="text-[7px] bg-primary text-black px-1.5 py-0.5 rounded-md font-black tracking-widest uppercase">Lead</span>
+                                                                </div>
+                                                                <p className="text-[10px] font-bold text-gray-500 tracking-tight normal-case">@{(quest.host.handle || quest.host.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                            </div>
                                                         </div>
+                                                    </motion.div>
+                                                )}
+
+                                                {squadMembers.map((p, pIdx) => (
+                                                    <motion.div
+                                                        key={p.id}
+                                                        initial={{ opacity: 0, x: -5 }}
+                                                        animate={{ opacity: 1, x: 0 }}
+                                                        transition={{ delay: pIdx * 0.05 }}
+                                                        className="flex items-center justify-between p-4 rounded-3xl bg-white/[0.02] border border-white/5 group hover:bg-white/[0.04] transition-all cursor-pointer"
+                                                        onClick={() => navigate(`/app/${p.id}`)}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="relative">
+                                                                <img src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`} className="w-10 h-10 rounded-full object-cover border border-white/10 group-hover:border-primary/30 transition-all" />
+                                                                <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-deep-black" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-black uppercase tracking-tight text-gray-400 group-hover:text-white transition-colors">{p.name || p.username}</p>
+                                                                <p className="text-[10px] font-bold text-gray-500 tracking-tight normal-case">@{(p.handle || p.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        {managingSquad && isHost && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleKickParticipant(p.id);
+                                                                }}
+                                                                className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/10 shadow-lg"
+                                                            >
+                                                                <Trash size={16} />
+                                                            </button>
+                                                        )}
+                                                    </motion.div>
+                                                ))}
+                                            </div>
+
+                                            {/* Join Requests Section (Host Only) */}
+                                            {isHost && joinRequests.length > 0 && (
+                                                <div className="space-y-4 pt-10 border-t border-white/5">
+                                                    <h3 className="text-xs font-black uppercase tracking-[0.4em] text-primary flex items-center gap-3">
+                                                        Incoming Signals
+                                                        <span className="bg-primary/10 text-primary px-2 py-1 rounded-lg text-[10px]">{joinRequests.length}</span>
+                                                    </h3>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {joinRequests.map((p) => (
+                                                            <motion.div
+                                                                key={p.id}
+                                                                initial={{ opacity: 0, y: 10 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                className="flex items-center justify-between p-5 rounded-[2.5rem] bg-emerald-500/[0.02] border border-white/5 group hover:border-emerald-500/20 transition-all"
+                                                            >
+                                                                <div className="flex items-center gap-3">
+                                                                    <img
+                                                                        src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`}
+                                                                        className="w-12 h-12 rounded-full border border-white/10"
+                                                                    />
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-sm font-black text-white uppercase tracking-tight">{p.name || p.username}</span>
+                                                                        <p className="text-[10px] font-bold text-gray-500">@{(p.handle || p.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        onClick={() => handleStatusAction(p.id, 'ACCEPT')}
+                                                                        className="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/10 shadow-lg"
+                                                                    >
+                                                                        <Check size={20} strokeWidth={3} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleStatusAction(p.id, 'DECLINE')}
+                                                                        className="w-11 h-11 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all border border-red-500/10 shadow-lg"
+                                                                    >
+                                                                        <X size={20} strokeWidth={3} />
+                                                                    </button>
+                                                                </div>
+                                                            </motion.div>
+                                                        ))}
                                                     </div>
-                                                </motion.div>
+                                                </div>
                                             )}
 
-                                            {participants.filter(p => p.id !== quest.host?.id).map((p, pIdx) => (
-                                                <motion.div
-                                                    key={p.id}
-                                                    initial={{ opacity: 0, x: -5 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ delay: pIdx * 0.05 }}
-                                                    className="flex items-center justify-between p-4 rounded-3xl bg-white/[0.02] border border-white/5 group hover:bg-white/[0.04] transition-all cursor-pointer"
-                                                    onClick={() => navigate(`/app/${p.id}`)}
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="relative">
-                                                            <img src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`} className="w-10 h-10 rounded-full object-cover border border-white/10 group-hover:border-primary/30 transition-all" />
-                                                            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-deep-black" />
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-sm font-black uppercase tracking-tight text-gray-400 group-hover:text-white transition-colors">{p.name || p.username}</p>
-                                                            <p className="text-[10px] font-bold text-gray-500 tracking-tight normal-case">@{(p.handle || p.username || '').toLowerCase().replace(/^@+/, '')}</p>
-                                                        </div>
-                                                    </div>
-
-                                                    {managingSquad && isHost && p.id !== quest.host?.id && (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleKickParticipant(p.id);
-                                                            }}
-                                                            className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/10 shadow-lg"
-                                                        >
-                                                            <Trash size={16} />
-                                                        </button>
-                                                    )}
-                                                </motion.div>
-                                            ))}
-                                            {participants.length === 0 && (
+                                            {squadMembers.length === 0 && !quest.host && joinRequests.length === 0 && (
                                                 <div className="col-span-full py-24 flex flex-col items-center justify-center bg-white/[0.02] rounded-[3rem] border border-white/5 border-dashed">
                                                     <Users className="text-gray-700 mb-4" size={48} />
                                                     <p className="text-xs uppercase font-black text-gray-600 tracking-widest">Waiting for signals</p>
@@ -408,7 +576,7 @@ const QuestDetailScreen: React.FC = () => {
                                 >
                                     <div className="space-y-2">
                                         <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">MISSION TIMELINE</h3>
-                                        <p className="text-sm text-gray-500 uppercase font-bold tracking-widest">Follow the sequence for maximum Aura rewards</p>
+                                        <p className="text-sm text-gray-500 uppercase font-bold tracking-widest">Follow the sequence for a successful mission</p>
                                     </div>
 
                                     {quest.itinerary && quest.itinerary.length > 0 ? (
@@ -517,7 +685,7 @@ const QuestDetailScreen: React.FC = () => {
                                                     exit={{ opacity: 0, y: -10 }}
                                                     className="flex items-center gap-3"
                                                 >
-                                                    Request to Join <ArrowRight size={16} />
+                                                    HUNT <ArrowRight size={16} />
                                                 </motion.div>
                                             )}
                                             {joinState === 'requested' && (
@@ -528,19 +696,30 @@ const QuestDetailScreen: React.FC = () => {
                                                     exit={{ opacity: 0, y: -10 }}
                                                     className="flex items-center gap-3"
                                                 >
-                                                    <EKGLoader size={16} /> WAITING FOR HOST
+                                                    <EKGLoader size={16} /> SIGNAL SENT
                                                 </motion.div>
                                             )}
                                             {joinState === 'joined' && (
-                                                <motion.div
-                                                    key="joined"
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: -10 }}
-                                                    className="flex items-center gap-3"
-                                                >
-                                                    <MessageCircle size={18} /> Open Comms
-                                                </motion.div>
+                                                <div className="flex items-center gap-4 w-full">
+                                                    <motion.div
+                                                        key="joined"
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        exit={{ opacity: 0, y: -10 }}
+                                                        className="flex-1 flex items-center justify-center gap-3"
+                                                        onClick={(e) => { e.stopPropagation(); navigate('/app/chat', { state: { openChatId: `lobby-${questId}`, openChatName: quest?.title } }); }}
+                                                    >
+                                                        <MessageCircle size={18} /> Open Chat
+                                                    </motion.div>
+                                                    <div className="w-[1px] h-6 bg-black/10" />
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleLeaveQuest(); }}
+                                                        className="px-6 py-4 hover:bg-black/5 rounded-3xl transition-all"
+                                                        title="Leave Squad"
+                                                    >
+                                                        <X size={18} />
+                                                    </button>
+                                                </div>
                                             )}
                                         </AnimatePresence>
                                     </button>
@@ -551,14 +730,14 @@ const QuestDetailScreen: React.FC = () => {
                                                 onClick={handleStartQuest}
                                                 className="w-full py-4 rounded-3xl bg-electric-teal text-black hover:bg-white shadow-xl shadow-electric-teal/10 transition-all font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-3"
                                             >
-                                                <Play size={18} fill="black" /> INITIATE MISSION
+                                                <Play size={18} fill="black" /> START QUEST
                                             </button>
                                         ) : (
                                             <button
                                                 onClick={handleFinishQuest}
                                                 className="w-full py-4 rounded-3xl border-2 border-primary bg-primary text-black hover:bg-white transition-all font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 shadow-xl shadow-primary/20"
                                             >
-                                                <Trophy size={18} /> EXTRACT & AWARD
+                                                <Trophy size={18} /> EXTRACT & COMPLETE
                                             </button>
                                         )}
 
@@ -566,7 +745,7 @@ const QuestDetailScreen: React.FC = () => {
                                             onClick={handleDeleteQuest}
                                             className="w-full py-3.5 rounded-3xl bg-white/5 text-gray-500 border border-white/5 hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-500 transition-all font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2"
                                         >
-                                            <Trash size={14} /> SCRUB MISSION
+                                            <Trash size={14} /> CANCEL QUEST
                                         </button>
                                     </div>
                                 )}
@@ -584,6 +763,13 @@ const QuestDetailScreen: React.FC = () => {
                     </div>
                 </div>
             </div>
+            <QuestReasonModal
+                isOpen={decisionModal.isOpen}
+                type={decisionModal.type}
+                userName={decisionModal.userName}
+                onClose={() => setDecisionModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmStatusAction}
+            />
         </div>
     );
 };

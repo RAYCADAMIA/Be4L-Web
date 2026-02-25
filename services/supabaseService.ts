@@ -132,6 +132,7 @@ const STATIC_DIB_ITEMS = [
 ];
 
 export const supabaseService = {
+  supabase,
   auth: {
     sendOtp: async (phone: string): Promise<{ success: boolean; error?: string }> => {
       const cleanPhone = phone.replace(/\D/g, '');
@@ -547,10 +548,6 @@ export const supabaseService = {
         participant_status: p.status
       }));
     },
-    removeQuestParticipant: async (qid: string, uid: string) => {
-      const { error } = await supabase.from('user_quests').delete().match({ quest_id: qid, user_id: uid });
-      return !error;
-    },
     getMyQuests: async (uid: string) => {
       const { data } = await supabase.from('quests').select(`*, host:profiles(*), user_quests(user_id, status)`).eq('host_id', uid);
       return (data || []).map((i: any) => ({
@@ -578,6 +575,7 @@ export const supabaseService = {
           ...i,
           mode: i.type,
           capacity: i.max_participants,
+          approval_required: i.requires_approval,
           participant_ids: i.user_quests?.map((uq: any) => uq.user_id) || [],
           current_participants: i.user_quests?.filter((uq: any) => uq.status === QuestParticipantStatus.ACCEPTED).length || 0
         }));
@@ -593,6 +591,7 @@ export const supabaseService = {
         ...i,
         mode: i.type,
         capacity: i.max_participants,
+        approval_required: i.requires_approval,
         participant_ids: i.user_quests?.map((uq: any) => uq.user_id) || [],
         current_participants: i.user_quests?.filter((uq: any) => uq.status === QuestParticipantStatus.ACCEPTED).length || 0
       })).filter((q: any) => {
@@ -605,6 +604,36 @@ export const supabaseService = {
           return following.includes(q.host_id);
         }
         return true;
+      });
+    },
+    getJoinedQuests: async (uid: string) => {
+      if (!isValidUUID(uid)) return [];
+      const { data } = await supabase.from('user_quests')
+        .select(`
+          status,
+          quest:quests (
+            *,
+            host:profiles!host_id(*),
+            user_quests (
+              user_id,
+              status
+            )
+          )
+        `)
+        .eq('user_id', uid)
+        .neq('status', QuestParticipantStatus.DECLINED); // Don't show declined ones
+
+      return (data || []).filter((d: any) => d.quest).map((d: any) => {
+        const q = d.quest;
+        return {
+          ...q,
+          participant_status: d.status,
+          mode: q.type,
+          capacity: q.max_participants,
+          approval_required: q.requires_approval,
+          participant_ids: q.user_quests?.map((uq: any) => uq.user_id) || [],
+          current_participants: q.user_quests?.filter((uq: any) => uq.status === QuestParticipantStatus.ACCEPTED).length || 0
+        };
       });
     },
     getQuestById: async (id: string) => {
@@ -645,13 +674,18 @@ export const supabaseService = {
       // 3. Real Database UUIDs
       if (!isValidUUID(id)) return { data: null };
       const { data, error } = await supabase.from('quests').select(`*, host:profiles!host_id(*), user_quests(user_id, status)`).eq('id', id).single();
+      const { data: lobby } = await supabase.from('echoes').select('id').match({ type: 'lobby', context_id: id }).single();
+
       if (data) {
         return {
           data: {
             ...data,
-            mode: data.mode || data.type,
+            mode: data.type,
             capacity: data.capacity || data.max_participants,
-            participant_ids: data.user_quests?.map((uq: any) => uq.user_id) || [],
+            approval_required: data.requires_approval,
+            lobby_id: lobby?.id,
+            participant_ids: data.user_quests?.filter((uq: any) => uq.status === QuestParticipantStatus.ACCEPTED).map((uq: any) => uq.user_id) || [],
+            requested_ids: data.user_quests?.filter((uq: any) => uq.status === QuestParticipantStatus.REQUESTED).map((uq: any) => uq.user_id) || [],
             current_participants: data.user_quests?.filter((uq: any) => uq.status === QuestParticipantStatus.ACCEPTED).length || 0
           }
         };
@@ -666,16 +700,102 @@ export const supabaseService = {
       const status = approval ? QuestParticipantStatus.REQUESTED : QuestParticipantStatus.ACCEPTED;
       const { error } = await supabase.from('user_quests').insert({ user_id: id, quest_id: qid, status });
 
+      if (!error && approval) {
+        // Notify host
+        const { data: q } = await supabase.from('quests').select('host_id, title').eq('id', qid).single();
+        if (q && q.host_id !== id) {
+          const chat = await supabaseService.chat.getOrCreatePersonalChat(id, q.host_id, q.title);
+          if (chat) {
+            await supabaseService.chat.sendMessage(chat.id, `🚨 QUEST SIGNAL: I've requested to join "${q.title}". Review my request in mission details.`, 'text');
+          }
+
+          await supabaseService.notifications.createNotification({
+            user_id: q.host_id,
+            type: 'QUEST_REQUEST',
+            title: 'New Quest Request',
+            content: `Someone wants to join your mission: ${q.title}`,
+            target_id: qid
+          });
+        }
+      }
+
       if (!error && !approval) {
         // Auto-join: Add to chat lobby immediately
-        const { data: lobby } = await supabase.from('echoes').select('id, participant_ids').match({ type: 'lobby', context_id: qid }).single();
-        if (lobby) {
-          const pids = new Set(lobby.participant_ids || []);
-          pids.add(id);
-          await supabase.from('echoes').update({ participant_ids: Array.from(pids) }).eq('id', lobby.id);
+        const { data: q } = await supabase.from('quests').select('title').eq('id', qid).single();
+        await supabaseService.chat.getOrCreateQuestLobby(qid, q?.title || 'Quest Lobby', [id]);
+      }
+      return !error;
+    },
+    updateParticipantStatus: async (qid: string, uid: string, status: QuestParticipantStatus, reasoning?: string) => {
+      const { data: { user: au } } = await supabase.auth.getUser();
+      if (!isValidUUID(qid) || !isValidUUID(uid) || !au) return false;
+
+      const { error } = await supabase.from('user_quests')
+        .update({ status })
+        .match({ quest_id: qid, user_id: uid });
+
+      if (!error) {
+        const { data: quest } = await supabase.from('quests').select('title').eq('id', qid).single();
+        if (quest) {
+          if (status === QuestParticipantStatus.ACCEPTED) {
+            // If accepted, ensure they are in the lobby
+            await supabaseService.chat.getOrCreateQuestLobby(qid, quest.title, [uid]);
+
+            // Notify user via chat
+            const chat = await supabaseService.chat.getOrCreatePersonalChat(au.id, uid, quest.title);
+            if (chat) {
+              await supabaseService.chat.sendMessage(chat.id, `✅ MISSION ACCEPTED: You've been cleared for "${quest.title}". Note: ${reasoning || 'Prepare for deployment.'}`, 'text');
+            }
+
+            // Notify user via notifications
+            await supabaseService.notifications.createNotification({
+              user_id: uid,
+              type: 'QUEST_ACCEPTED',
+              title: 'Mission Accepted',
+              content: `You've been cleared for "${quest.title}". ${reasoning ? `Note: ${reasoning}` : ''}`,
+              target_id: qid,
+              metadata: { reasoning }
+            });
+          } else if (status === QuestParticipantStatus.DECLINED) {
+            // Notify user via chat
+            const chat = await supabaseService.chat.getOrCreatePersonalChat(au.id, uid, quest.title);
+            if (chat) {
+              await supabaseService.chat.sendMessage(chat.id, `❌ MISSION UPDATE: Your request for "${quest.title}" was declined. Reason: ${reasoning || 'No reason specified.'}`, 'text');
+            }
+
+            // Notify user via notifications
+            await supabaseService.notifications.createNotification({
+              user_id: uid,
+              type: 'QUEST_DECLINED',
+              title: 'Request Declined',
+              content: `Your request for "${quest.title}" was declined. ${reasoning ? `Reason: ${reasoning}` : ''}`,
+              target_id: qid,
+              metadata: { reasoning }
+            });
+          }
         }
       }
       return !error;
+    },
+    removeQuestParticipant: async (qid: string, uid: string) => {
+      if (!isValidUUID(qid) || !isValidUUID(uid)) return false;
+
+      // 1. Remove from user_quests record
+      const { error } = await supabase.from('user_quests').delete().match({ quest_id: qid, user_id: uid });
+
+      // 2. Remove from lobby participant_ids
+      const { data: lobby } = await supabase.from('echoes').select('id, participant_ids').match({ type: 'lobby', context_id: qid }).single();
+      if (lobby && lobby.participant_ids?.includes(uid)) {
+        const newPids = lobby.participant_ids.filter((p: string) => p !== uid);
+        await supabase.from('echoes').update({ participant_ids: newPids }).eq('id', lobby.id);
+      }
+
+      return !error;
+    },
+    leaveQuest: async (qid: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !isValidUUID(qid)) return false;
+      return supabaseService.quests.removeQuestParticipant(qid, user.id);
     },
     async getOrCreateSquadChat(qid: string, name: string, pids: string[]) {
       return supabaseService.chat.getOrCreateQuestLobby(qid, name, pids);
@@ -734,13 +854,7 @@ export const supabaseService = {
         });
 
         // Add to chat lobby
-        await supabase.from('echoes').insert({
-          type: 'lobby',
-          context_type: 'QUEST',
-          context_id: nq.id,
-          name: nq.title,
-          participant_ids: [hid]
-        });
+        await supabaseService.chat.getOrCreateQuestLobby(nq.id, nq.title, [hid]);
       }
       return error ? { success: false, error: error.message } : { success: true, questId: nq.id };
     },
@@ -770,7 +884,8 @@ export const supabaseService = {
     },
     cancelQuest: async (qid: string) => {
       if (!isValidUUID(qid)) return { success: true };
-      const { error } = await supabase.from('quests').delete().eq('id', qid);
+      // Instead of deleting, mark as cancelled so it shows in history
+      const { error } = await supabase.from('quests').update({ status: QuestStatus.CANCELLED }).eq('id', qid);
       return !error;
     },
     searchQuests: async (query: string): Promise<Quest[]> => {
@@ -831,6 +946,8 @@ export const supabaseService = {
       return (data || []).map((e: any) => ({
         id: e.id,
         type: e.type,
+        context_type: e.context_type,
+        context_id: e.context_id,
         name: e.name || 'Chat',
         lastMsg: 'Tap to view',
         time: new Date(e.last_message_at || e.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -858,7 +975,15 @@ export const supabaseService = {
     async getOrCreateQuestLobby(qid: string, name: string, pids: string[]) {
       if (!isValidUUID(qid)) return { id: `lobby-${qid}`, name: `LOBBY: ${name}` };
       const { data } = await supabase.from('echoes').select('*').match({ type: 'lobby', context_id: qid }).single();
-      if (data) return { id: data.id, name: data.name };
+      if (data) {
+        // Merge participants
+        const existingPids = data.participant_ids || [];
+        const newPids = Array.from(new Set([...existingPids, ...pids]));
+        if (newPids.length > existingPids.length) {
+          await supabase.from('echoes').update({ participant_ids: newPids }).eq('id', data.id);
+        }
+        return { id: data.id, name: data.name };
+      }
       const { data: ne } = await supabase.from('echoes').insert({ type: 'lobby', context_id: qid, context_type: 'QUEST', participant_ids: pids, name }).select().single();
       return ne ? { id: ne.id, name: ne.name } : null;
     },
@@ -1230,6 +1355,39 @@ export const supabaseService = {
     likePost: async (postId: string): Promise<boolean> => {
       // Mock like for now
       return true;
+    }
+  },
+  notifications: {
+    getNotifications: async (): Promise<any[]> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from('notifications')
+        .select(`
+          *,
+          actor:profiles!notifications_actor_id_fkey(name, avatar_url)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      return error ? [] : data;
+    },
+    createNotification: async (notif: { user_id: string; type: string; title: string; content: string; target_id?: string; metadata?: any }): Promise<boolean> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase.from('notifications').insert({
+        ...notif,
+        actor_id: user?.id
+      });
+      return !error;
+    },
+    markAsRead: async (id: string): Promise<boolean> => {
+      const { error } = await supabase.from('notifications').update({ read: true }).eq('id', id);
+      return !error;
+    },
+    markAllAsRead: async (): Promise<boolean> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+      const { error } = await supabase.from('notifications').update({ read: true }).eq('user_id', user.id);
+      return !error;
     }
   },
   search: {

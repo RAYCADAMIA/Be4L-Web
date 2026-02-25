@@ -5,6 +5,7 @@ import { ThemeMode, useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { dailyService } from '../../services/dailyService';
+import { supabaseService } from '../../services/supabaseService';
 import { DailyTask } from '../../types';
 
 // --- TASK WINDOW ---
@@ -109,6 +110,50 @@ const MOCK_NOTIFICATIONS = [
 ];
 
 export const NotificationWindow: React.FC = () => {
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchNotifs = async () => {
+            const data = await supabaseService.notifications.getNotifications();
+            setNotifications(data.slice(0, 5));
+            setLoading(false);
+        };
+        fetchNotifs();
+
+        // Optional: Real-time subscription
+        const { supabase } = supabaseService as any;
+        if (supabase) {
+            const channel = supabase.channel('realtime-notifs-dropdown')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, () => {
+                    fetchNotifs();
+                })
+                .subscribe();
+            return () => { channel.unsubscribe(); };
+        }
+    }, []);
+
+    const getTimeAgo = (date: string) => {
+        const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
+        if (seconds < 60) return 'Just now';
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes}m`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h`;
+        return `${Math.floor(hours / 24)}d`;
+    };
+
+    const handleNotifClick = (n: any) => {
+        if (n.target_id) {
+            if (n.type.startsWith('QUEST')) {
+                navigate(`/app/quests?quest=${n.target_id}`);
+            } else {
+                // Handle posts etc
+            }
+        }
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -118,47 +163,63 @@ export const NotificationWindow: React.FC = () => {
         >
             <div className="px-3 py-2 mb-1 border-b border-white/5 flex items-center justify-between">
                 <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest">Notifs</span>
-                <button className="text-[8px] font-black text-white/20 uppercase tracking-widest hover:text-white transition-colors">Clear</button>
+                <button
+                    onClick={() => supabaseService.notifications.markAllAsRead()}
+                    className="text-[8px] font-black text-white/20 uppercase tracking-widest hover:text-white transition-colors"
+                >Clear</button>
             </div>
 
             <div className="flex-1 overflow-y-auto no-scrollbar p-1.5 space-y-1">
-                {MOCK_NOTIFICATIONS.map(n => (
-                    <div
-                        key={n.id}
-                        className={`p-3 flex gap-3 items-start transition-all rounded-xl cursor-pointer hover:bg-white/10 ${n.read ? 'opacity-40' : ''}`}
-                    >
-                        <div className="shrink-0 relative">
-                            {n.user ? (
-                                <img src={n.user.avatar} className="w-7 h-7 rounded-full border border-white/10 object-cover" />
-                            ) : (
-                                <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
-                                    <Star size={10} className="text-white" />
+                {loading ? (
+                    <div className="py-8 flex justify-center">
+                        <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                    </div>
+                ) : notifications.length === 0 ? (
+                    <div className="py-8 text-center">
+                        <p className="text-[9px] font-black text-white/10 uppercase tracking-widest">Quiet for now</p>
+                    </div>
+                ) : (
+                    notifications.map(n => (
+                        <div
+                            key={n.id}
+                            onClick={() => handleNotifClick(n)}
+                            className={`p-3 flex gap-3 items-start transition-all rounded-xl cursor-pointer hover:bg-white/10 ${n.read ? 'opacity-40' : ''}`}
+                        >
+                            <div className="shrink-0 relative">
+                                {n.actor ? (
+                                    <img src={n.actor.avatar_url || `https://ui-avatars.com/api/?name=${n.actor.name}`} className="w-7 h-7 rounded-full border border-white/10 object-cover" />
+                                ) : (
+                                    <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
+                                        <Star size={10} className="text-white" />
+                                    </div>
+                                )}
+                                <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center border border-black text-[7px] ${n.type === 'QUEST_ACCEPTED' ? 'bg-emerald-500' :
+                                    n.type === 'QUEST_DECLINED' ? 'bg-red-500' :
+                                        n.type === 'QUEST_REQUEST' ? 'bg-purple-500' : 'bg-white/20'
+                                    }`}>
+                                    {n.type === 'QUEST_ACCEPTED' && <Check size={6} strokeWidth={4} className="text-black" />}
+                                    {n.type === 'QUEST_DECLINED' && <X size={6} strokeWidth={4} className="text-white" />}
+                                    {n.type === 'QUEST_REQUEST' && <Calendar size={6} className="text-white" />}
+                                    {!n.type.startsWith('QUEST') && <Star size={6} />}
                                 </div>
-                            )}
-                            <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center border border-black text-[7px] ${n.type === 'LIKE' ? 'bg-red-500' :
-                                n.type === 'COMMENT' ? 'bg-blue-500' :
-                                    n.type === 'INVITE' ? 'bg-purple-500' : 'bg-white/20'
-                                }`}>
-                                {n.type === 'LIKE' && <Heart size={6} fill="white" />}
-                                {n.type === 'COMMENT' && <MessageCircle size={6} />}
-                                {n.type === 'INVITE' && <Calendar size={6} />}
-                                {n.type === 'SYSTEM' && <Star size={6} />}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[9px] font-bold text-[var(--text-primary)] leading-tight">
+                                    {n.content}
+                                </p>
+                                <span className="text-[7px] text-white/30 font-black uppercase tracking-widest mt-1 block">{getTimeAgo(n.created_at)}</span>
                             </div>
                         </div>
-
-                        <div className="flex-1 min-w-0">
-                            <p className="text-[9px] font-bold text-[var(--text-primary)] leading-tight">
-                                {n.user && <span className="text-[10px] font-black text-[var(--text-primary)] mr-1 uppercase">{n.user.name}</span>}
-                                {n.text}
-                            </p>
-                            <span className="text-[7px] text-white/30 font-black uppercase tracking-widest mt-1 block">{n.time}</span>
-                        </div>
-                    </div>
-                ))}
+                    ))
+                )}
             </div>
 
             <div className="p-2 border-t border-white/5">
-                <button className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] transition-all text-white/30 hover:text-white">
+                <button
+                    onClick={() => navigate('/app/notifications')}
+                    className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] transition-all text-white/30 hover:text-white"
+                >
                     View All Activity
                 </button>
             </div>
@@ -188,8 +249,8 @@ export const VibeWindow: React.FC<{ isInsideProfile?: boolean }> = ({ isInsidePr
                             key={mode.id}
                             onClick={() => setTheme(mode.id as ThemeMode)}
                             className={`py-2 rounded-lg flex flex-col items-center justify-center gap-1 transition-all relative group/vibe ${isActive
-                                    ? 'bg-white/10 text-[var(--text-primary)] shadow-sm'
-                                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5'
+                                ? 'bg-white/10 text-[var(--text-primary)] shadow-sm'
+                                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5'
                                 }`}
                         >
                             {isActive && (

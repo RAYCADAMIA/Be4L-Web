@@ -82,6 +82,16 @@ const QuestCard: React.FC<Props> = ({ quest, currentUser, onOpenDetail }) => {
                             <span className="w-1 h-1 rounded-full bg-red-500" /> LIVE
                         </div>
                     )}
+                    {quest.status === QuestStatus.COMPLETED && (
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 rounded-md text-[7px] font-black uppercase tracking-widest text-emerald-500 ml-1">
+                            COMPLETED
+                        </div>
+                    )}
+                    {quest.status === QuestStatus.CANCELLED && (
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 rounded-md text-[7px] font-black uppercase tracking-widest text-gray-500 ml-1">
+                            CANCELLED
+                        </div>
+                    )}
                 </div>
 
                 <div className="w-8 h-8 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white/40 group-hover:text-primary group-hover:bg-primary/10 group-hover:border-primary/20 transition-all duration-300 shrink-0">

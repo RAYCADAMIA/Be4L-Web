@@ -39,10 +39,14 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ onClose, onOpenQuest, onOpe
                 const realUsers = await supabaseService.profiles.searchUsers(searchText);
 
                 // 2. Filter Mocks for Quests/Posts (as placeholder until real search is implemented for them)
-                const filteredQuests = MOCK_QUESTS.filter(q =>
-                    q.title.toLowerCase().includes(searchText.toLowerCase()) ||
-                    q.category.toLowerCase().includes(searchText.toLowerCase())
-                );
+                const filteredQuests = MOCK_QUESTS.filter(q => {
+                    const matchesText = q.title.toLowerCase().includes(searchText.toLowerCase()) ||
+                        q.category.toLowerCase().includes(searchText.toLowerCase());
+                    const isDiscoverable = q.status === QuestStatus.DISCOVERABLE || !q.status;
+                    const hasNotStarted = new Date() < new Date(q.start_time);
+
+                    return matchesText && isDiscoverable && hasNotStarted;
+                });
                 const filteredPosts = MOCK_CAPTURES.filter(c =>
                     c.user?.username?.toLowerCase().includes(searchText.toLowerCase()) ||
                     c.caption?.toLowerCase().includes(searchText.toLowerCase())
@@ -217,7 +221,7 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ onClose, onOpenQuest, onOpe
                         <section>
                             <h3 className="text-white font-bold text-lg mb-4 uppercase tracking-tighter">You might like it</h3>
                             <div className="grid grid-cols-2 gap-4">
-                                {MOCK_QUESTS.slice(0, 2).map(q => (
+                                {MOCK_QUESTS.filter(q => (q.status === QuestStatus.DISCOVERABLE || !q.status) && new Date() < new Date(q.start_time)).slice(0, 2).map(q => (
                                     <div key={q.id} onClick={() => onOpenQuest(q)} className="aspect-[3/4] rounded-2xl bg-white/[0.03] relative overflow-hidden group cursor-pointer border border-white/[0.02]">
                                         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
                                         <div className="absolute bottom-3 left-3 right-3 text-left z-10">

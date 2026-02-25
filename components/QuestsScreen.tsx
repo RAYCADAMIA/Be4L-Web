@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Zap, ChevronLeft, MapPin, Search, X, Compass, Plus, Sparkles } from 'lucide-react';
+import { Zap, ChevronLeft, MapPin, Search, X, Compass, Plus, Sparkles, MessageCircle, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
 
 import { supabaseService } from '../services/supabaseService';
@@ -45,8 +45,9 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
     hasUserPostedToday,
     onTimerZero
 }) => {
-    const { setTabs, activeTab, setActiveTab } = useNavigation();
+    const { setTabs, setActiveTab: setGlobalActiveTab } = useNavigation();
     const [activeCat, setActiveCat] = useState('All');
+    const [questMode, setQuestMode] = useState<'CANON' | 'SPONTY'>('CANON');
     const [quests, setQuests] = useState<Quest[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -57,8 +58,10 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
     const [isMapFull, setIsMapFull] = useState(false);
     const [isHeaderVisible, setIsHeaderVisible] = useState(true);
     const [localRefresh, setLocalRefresh] = useState(0);
+    const [questChats, setQuestChats] = useState<any[]>([]);
+    const [chatsLoading, setChatsLoading] = useState(false);
     const lastScrollY = useRef(0);
-    const lastTab = useRef(activeTab);
+    const lastTab = useRef(questMode);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -121,7 +124,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
     // Register Tabs
     useEffect(() => {
         // Force default tab to CANON when landing on Quests page
-        setActiveTab('CANON');
+        setGlobalActiveTab('CANON');
         // Clear global tabs to hide the floating side pill
         setTabs([]);
         return () => setTabs([]);
@@ -129,22 +132,24 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
 
     useEffect(() => {
         setActiveCat('All');
-    }, [activeTab]);
+    }, [questMode]);
 
     // Optimized effect dependencies to prevent full-screen loader on subtle filter changes
     useEffect(() => {
-        // Only trigger full loading state for major context switches (Tab change or initial load)
-        const isTabSwitch = quests.length === 0 || lastTab.current !== activeTab;
-        if (isTabSwitch) setLoading(true);
-        lastTab.current = activeTab;
 
-        const type = activeTab === 'CANON' ? QuestType.CANON : QuestType.SPONTY;
+
+        // Only trigger full loading state for major context switches (Tab change or initial load)
+        const isTabSwitch = quests.length === 0 || lastTab.current !== questMode;
+        if (isTabSwitch) setLoading(true);
+        lastTab.current = questMode;
+
+        const type = questMode === 'CANON' ? QuestType.CANON : QuestType.SPONTY;
         const randomQuests = generateRandomQuests(activeCat, selectedDate, 25, type);
 
         supabaseService.quests.getQuests(activeCat).then(existingQuests => {
-            // Feature: Specific Quests In Order on every date (for Canon)
+            // ... (rest of the quest fetching logic)
             let featured: Quest[] = [];
-            if (activeTab === 'CANON') {
+            if (questMode === 'CANON') {
                 const FEATURED_IDS = ['q-psy-1', 'q-sec-1', 'q-trv-1', 'q-trv-2', 'q-sp-1', 'q-and-1', 'q-golf-1', 'q-train-1', 'q-trv-3', 'q-job-1', 'q-soc-2'];
                 featured = FEATURED_IDS.map(id => {
                     const q = [...existingQuests, ...randomQuests].find(quest => quest.id === id);
@@ -159,11 +164,13 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                 }).filter(Boolean) as Quest[];
             }
 
-            const allQuests = [...featured, ...existingQuests, ...randomQuests].filter(q =>
-                q.status === QuestStatus.DISCOVERABLE ||
-                !q.status ||
-                (q.status === QuestStatus.ACTIVE && q.mode === QuestType.SPONTY)
-            );
+            const allQuests = [...featured, ...existingQuests, ...randomQuests].filter(q => {
+                const isDiscoverable = q.status === QuestStatus.DISCOVERABLE || !q.status;
+                const hasNotStarted = new Date() < new Date(q.start_time);
+
+                // Remove if started, cancelled, or time elapsed
+                return isDiscoverable && hasNotStarted;
+            });
 
             // De-duplicate by ID, keeping featured first
             const uniqueQuests = allQuests.filter((q, index, self) =>
@@ -173,34 +180,55 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
             setQuests(uniqueQuests);
             setLoading(false);
         });
-    }, [activeTab, activeCat, selectedDate, refreshTrigger, localRefresh]);
+    }, [questMode, activeCat, selectedDate, refreshTrigger, localRefresh]);
+
+    useEffect(() => {
+        const { supabase } = supabaseService as any;
+        if (!supabase) return;
+
+        const channel = supabase.channel('quests-discovery')
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'quests'
+            }, () => {
+                // Real-time update - trigger a local refresh
+                setLocalRefresh(prev => prev + 1);
+            })
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+        };
+    }, []);
 
     // Reset scroll to top when major filters change to prevent "falling" to footer
     useEffect(() => {
         if (scrollContainerRef.current) {
             scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         }
-    }, [activeTab, activeCat]);
+    }, [questMode, activeCat]);
 
-    // Handle incoming questId from URL (Direct to quest card)
+    // Handle incoming quest from URL (Direct to quest card + Open Overlay)
     const [searchParams, setSearchParams] = useSearchParams();
-    const incomingQuestId = searchParams.get('questId');
+    const incomingQuestId = searchParams.get('quest');
+    const hasAutoScrolled = useRef<string | null>(null);
 
     useEffect(() => {
-        if (incomingQuestId && quests.length > 0) {
+        if (incomingQuestId && quests.length > 0 && hasAutoScrolled.current !== incomingQuestId) {
             const targetQuest = quests.find(q => q.id === incomingQuestId);
             if (targetQuest) {
+                hasAutoScrolled.current = incomingQuestId;
+
                 // Auto-switch date and tab to ensure quest is visible in the filtered list
                 if (targetQuest.start_time) {
                     setSelectedDate(new Date(targetQuest.start_time));
                 }
                 if (targetQuest.mode === QuestType.SPONTY) {
-                    setActiveTab('SPONTY');
+                    setQuestMode('SPONTY');
                 } else {
-                    setActiveTab('CANON');
+                    setQuestMode('CANON');
                 }
-
-                onOpenQuest(targetQuest);
 
                 // Direct to card visually (Scroll into view)
                 setTimeout(() => {
@@ -208,15 +236,17 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                     if (el) {
                         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
-                }, 800); // Increased delay to account for tab/date switch re-render
-
-                // Clear the param so it doesn't re-open on every render/refresh
-                const newParams = new URLSearchParams(searchParams);
-                newParams.delete('questId');
-                setSearchParams(newParams, { replace: true });
+                }, 800);
             }
         }
-    }, [incomingQuestId, quests, onOpenQuest, searchParams, setSearchParams]);
+    }, [incomingQuestId, quests]);
+
+    // Reset scroll to top when major filters change to prevent "falling" to footer
+    useEffect(() => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [questMode, activeCat]);
 
     const filteredQuests = useMemo(() => {
         return quests.filter(q => {
@@ -236,13 +266,16 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                 if (!locStr.toLowerCase().includes(filter)) return false;
             }
 
-            // Date filter
+            // Discovery filter: only show DISCOVERABLE quests that haven't started
+            const isDiscoverable = q.status === QuestStatus.DISCOVERABLE || !q.status;
+            const now = new Date();
             const qDate = new Date(q.start_time);
-            return qDate.getFullYear() === selectedDate.getFullYear() &&
-                qDate.getMonth() === selectedDate.getMonth() &&
-                qDate.getDate() === selectedDate.getDate();
+
+            if (!isDiscoverable || now > qDate) return false;
+
+            return qDate.toDateString() === selectedDate.toDateString();
         });
-    }, [quests, activeTab, activeCat, viewingLocation, selectedDate]);
+    }, [quests, questMode, activeCat, viewingLocation, selectedDate]);
 
     return (
         <div className="flex-1 flex flex-col relative">
@@ -264,8 +297,8 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                             // Avoid full screen loader for date/category changes to prevent "Seizure" effect
                         }}
                         onOpenCalendar={() => setShowCalendar(true)}
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
+                        activeTab={questMode}
+                        setActiveTab={setQuestMode}
                         activeCat={activeCat}
                         setActiveCat={setActiveCat}
                         viewingLocation={viewingLocation}
@@ -297,15 +330,15 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                                 onOpenCalendar={() => setShowCalendar(true)}
                                 activeCat={activeCat}
                                 setActiveCat={setActiveCat}
-                                activeTab={activeTab}
-                                setActiveTab={setActiveTab}
+                                activeTab={questMode}
+                                setActiveTab={setQuestMode}
                                 viewingLocation={viewingLocation}
                                 setViewingLocation={setViewingLocation}
                             />
                         </div>
                     </motion.div>
 
-                    {activeTab === 'CANON' && (
+                    {questMode === 'CANON' && (
                         <div className="px-4 md:px-8 pt-4 md:pt-8 animate-in fade-in duration-500">
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-20">
                                 {loading ? (
@@ -331,7 +364,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                         </div>
                     )}
 
-                    {activeTab === 'SPONTY' && (
+                    {questMode === 'SPONTY' && (
                         <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-10 space-y-12 min-h-[70vh] animate-in fade-in duration-700 max-w-6xl mx-auto w-full">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full items-start">
                                 {/* Left Side: Random Generator */}
@@ -377,6 +410,8 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                             </div>
                         </div>
                     )}
+
+
                 </div>
             </div>
 

@@ -17,7 +17,7 @@ export const CreateQuestPage: React.FC = () => {
         <CreateQuestScreen
             currentUser={user}
             onClose={() => navigate(-1)}
-            onQuestCreated={(id) => navigate(`/app/quests?questId=${id}`)}
+            onQuestCreated={(id) => navigate(`/app/quests?quest=${id}`)}
         />
     );
 };

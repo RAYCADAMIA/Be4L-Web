@@ -8,6 +8,7 @@ import { EKGLoader } from '../ui/AestheticComponents';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../Toast';
 import SmartMap from '../ui/SmartMap';
+import QuestReasonModal from './QuestReasonModal';
 
 interface QuestOverlayProps {
     questId: string | null;
@@ -27,6 +28,19 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
     const [managingSquad, setManagingSquad] = useState(false);
     const [showGuestPrompt, setShowGuestPrompt] = useState(false);
 
+    // Decision Modal State
+    const [decisionModal, setDecisionModal] = useState<{
+        isOpen: boolean;
+        type: 'ACCEPT' | 'DECLINE';
+        userId: string;
+        userName: string;
+    }>({
+        isOpen: false,
+        type: 'ACCEPT',
+        userId: '',
+        userName: ''
+    });
+
     useEffect(() => {
         if (!questId) {
             setQuest(null);
@@ -36,12 +50,16 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
 
         const loadQuest = async () => {
             setLoading(true);
+            setJoinState('idle');
+            setActiveTab('details');
             try {
                 const { data } = await supabaseService.quests.getQuestById(questId);
                 if (data) {
                     setQuest(data);
                     if (user && data.participant_ids?.includes(user.id)) {
                         setJoinState('joined');
+                    } else if (user && (data as any).requested_ids?.includes(user.id)) {
+                        setJoinState('requested');
                     }
                     const parts = await supabaseService.quests.getQuestParticipants(questId);
                     setParticipants(parts);
@@ -58,6 +76,66 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
     const isHost = user?.id === quest?.host?.id;
     const isLive = quest?.status === QuestStatus.ACTIVE;
 
+    useEffect(() => {
+        if (!user || !questId) return;
+
+        const { supabase } = supabaseService as any;
+        if (!supabase) return;
+
+        const subscription = supabase.channel(`uq-overlay-${questId}-${user.id}`)
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'user_quests',
+                filter: `user_id=eq.${user.id}`
+            }, (payload: any) => {
+                const newUserQuest = payload.new as any;
+                if (newUserQuest && newUserQuest.quest_id === questId) {
+                    if (newUserQuest.status === 'ACCEPTED') setJoinState('joined');
+                    else if (newUserQuest.status === 'REQUESTED') setJoinState('requested');
+                    else if (newUserQuest.status === 'DECLINED') setJoinState('idle');
+                } else if (payload.eventType === 'DELETE') {
+                    setJoinState('idle');
+                }
+            })
+            .subscribe();
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [questId, user]);
+
+    useEffect(() => {
+        if (!questId) return;
+        const { supabase } = supabaseService as any;
+        if (!supabase) return;
+
+        const subscription = supabase.channel(`quest-state-overlay-${questId}`)
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'quests',
+                filter: `id=eq.${questId}`
+            }, (payload: any) => {
+                const updatedQuest = payload.new as Quest;
+                if (updatedQuest && updatedQuest.id === questId) {
+                    setQuest(prev => prev ? { ...prev, status: updatedQuest.status } : updatedQuest);
+                    if (updatedQuest.status === QuestStatus.CANCELLED) {
+                        showToast("Mission aborted.", "info");
+                        onClose();
+                    }
+                }
+            })
+            .subscribe();
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [questId, onClose, showToast]);
+
+    const squadMembers = participants.filter(p => p.participant_status === 'ACCEPTED' && p.id !== quest?.host?.id);
+    const joinRequests = isHost ? participants.filter(p => p.participant_status === 'REQUESTED') : [];
+
     const handleJoinAction = () => {
         // Guest Check
         if (!user) {
@@ -69,22 +147,25 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
             onClose();
             navigate('/app/chat', {
                 state: {
-                    openChatId: `lobby-${questId}`,
+                    openChatId: (quest as any)?.lobby_id || `lobby-${questId}`,
                     openChatName: quest?.title || 'Group Chat'
                 }
             });
         } else if (joinState === 'idle') {
-            if (quest?.approval_required) {
-                setJoinState('requested');
-                showToast("Join request sent!", "info");
-                setTimeout(() => {
-                    setJoinState('joined');
-                    showToast("Approved!", "success");
-                }, 2000);
-            } else {
-                setJoinState('joined');
-                showToast("Joined squad!", "success");
-            }
+            if (!questId) return;
+            supabaseService.quests.requestToJoin(questId, user.id, !!quest?.approval_required).then(success => {
+                if (success) {
+                    if (quest?.approval_required) {
+                        setJoinState('requested');
+                        showToast("Join request sent!", "info");
+                    } else {
+                        setJoinState('joined');
+                        showToast("Joined squad!", "success");
+                    }
+                } else {
+                    showToast("Failed to join.", "error");
+                }
+            });
         }
     };
 
@@ -119,13 +200,64 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
         }
     };
 
+    const handleStatusAction = (uid: string, action: 'ACCEPT' | 'DECLINE') => {
+        const user = participants.find(p => p.id === uid);
+        setDecisionModal({
+            isOpen: true,
+            type: action,
+            userId: uid,
+            userName: user?.name || user?.username || 'Unknown Hunter'
+        });
+    };
+
+    const confirmStatusAction = async (reason: string) => {
+        if (!questId || !decisionModal.userId) return;
+
+        const { userId, type } = decisionModal;
+        const { QuestParticipantStatus } = await import('../../types');
+        const status = type === 'ACCEPT' ? QuestParticipantStatus.ACCEPTED : QuestParticipantStatus.DECLINED;
+
+        const success = await supabaseService.quests.updateParticipantStatus(questId, userId, status, reason);
+
+        if (success) {
+            if (type === 'ACCEPT') {
+                setParticipants(prev => prev.map(p => p.id === userId ? { ...p, participant_status: QuestParticipantStatus.ACCEPTED } : p));
+                showToast("Hunter accepted!", "success");
+            } else {
+                setParticipants(prev => prev.filter(p => p.id !== userId));
+                showToast("Request declined.", "info");
+            }
+        } else {
+            showToast("Failed to update status.", "error");
+        }
+
+        setDecisionModal(prev => ({ ...prev, isOpen: false }));
+    };
+
     const handleKickParticipant = async (uid: string) => {
         if (!questId) return;
-        if (window.confirm("Remove user?")) {
+        if (window.confirm("Remove this user from the squad?")) {
             const success = await supabaseService.quests.removeQuestParticipant(questId, uid);
             if (success) {
                 setParticipants(prev => prev.filter(p => p.id !== uid));
                 showToast("User removed", "info");
+            } else {
+                showToast("Failed to remove user.", "error");
+            }
+        }
+    };
+
+    const handleLeaveQuest = async () => {
+        if (!questId) return;
+        if (window.confirm("Abandon this hunt?")) {
+            const success = await supabaseService.quests.leaveQuest(questId);
+            if (success) {
+                setJoinState('idle');
+                showToast("You left the squad.", "info");
+                const parts = await supabaseService.quests.getQuestParticipants(questId);
+                setParticipants(parts);
+            } else {
+                showToast("Failed to leave.", "error");
             }
         }
     };
@@ -286,12 +418,27 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                     initial={{ opacity: 0, x: 20 }}
                                                     animate={{ opacity: 1, x: 0 }}
                                                     exit={{ opacity: 0, x: -20 }}
-                                                    className="space-y-4 md:hidden"
+                                                    className="space-y-6 md:hidden"
                                                 >
-                                                    <div className="space-y-2">
-                                                        {/* Inject Mission Lead */}
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="space-y-0.5">
+                                                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Squad Members</h3>
+                                                                <p className="text-[8px] text-primary/60 font-black uppercase tracking-widest">{squadMembers.length + (quest.host ? 1 : 0)} Active</p>
+                                                            </div>
+                                                            {isHost && squadMembers.length > 0 && (
+                                                                <button
+                                                                    onClick={() => setManagingSquad(!managingSquad)}
+                                                                    className={`text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-all ${managingSquad ? 'text-red-500 border-red-500/20 bg-red-500/10' : 'text-gray-400 border-white/5 hover:text-white hover:border-white/10'}`}
+                                                                >
+                                                                    {managingSquad ? 'Finish' : 'Edit'}
+                                                                </button>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Mission Lead */}
                                                         {quest.host && (
-                                                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02]">
+                                                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
                                                                 <button
                                                                     onClick={() => navigate(`/app/${quest.host?.id}`)}
                                                                     className="flex items-center gap-3"
@@ -314,30 +461,80 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                         )}
 
                                                         <div className="grid grid-cols-2 gap-2 mt-2">
-                                                            {participants
-                                                                .filter(p => (isHost ? true : p.participant_status === 'ACCEPTED') && p.id !== quest.host?.id)
-                                                                .map((p) => (
-                                                                    <div key={p.id} className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                                                            {squadMembers.map((p) => (
+                                                                <div key={p.id} className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5 group relative overflow-hidden">
+                                                                    <button
+                                                                        onClick={() => navigate(`/app/${p.id}`)}
+                                                                        className="flex items-center gap-2.5 min-w-0"
+                                                                    >
+                                                                        <div className="relative shrink-0">
+                                                                            <img
+                                                                                src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`}
+                                                                                className="w-7 h-7 rounded-full object-cover border border-white/10"
+                                                                            />
+                                                                            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-deep-black" />
+                                                                        </div>
+                                                                        <div className="flex flex-col text-left min-w-0">
+                                                                            <span className="text-[9px] font-black text-white uppercase tracking-tight truncate">{p.name || p.username}</span>
+                                                                            <p className="text-[7px] text-gray-500 font-bold tracking-tight normal-case truncate">@{(p.handle || p.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                                        </div>
+                                                                    </button>
+
+                                                                    {isHost && managingSquad && (
                                                                         <button
-                                                                            onClick={() => navigate(`/app/${p.id}`)}
-                                                                            className="flex items-center gap-2.5 min-w-0"
+                                                                            onClick={(e) => { e.stopPropagation(); handleKickParticipant(p.id); }}
+                                                                            className="w-6 h-6 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-lg ml-auto z-10"
                                                                         >
-                                                                            <div className="relative shrink-0">
+                                                                            <Trash size={10} />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        {isHost && joinRequests.length > 0 && (
+                                                            <div className="space-y-4 pt-4 border-t border-white/5">
+                                                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
+                                                                    Join Requests
+                                                                    <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[8px]">{joinRequests.length}</span>
+                                                                </h3>
+                                                                <div className="space-y-2">
+                                                                    {joinRequests.map((p) => (
+                                                                        <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/10">
+                                                                            <button
+                                                                                onClick={() => navigate(`/app/${p.id}`)}
+                                                                                className="flex items-center gap-2.5"
+                                                                            >
                                                                                 <img
                                                                                     src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`}
-                                                                                    className="w-7 h-7 rounded-full object-cover border border-white/10"
+                                                                                    className="w-8 h-8 rounded-full border border-white/10"
                                                                                 />
-                                                                                <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-deep-black" />
+                                                                                <div className="flex flex-col text-left">
+                                                                                    <span className="text-[9px] font-black text-white uppercase tracking-tight">{p.name || p.username}</span>
+                                                                                    <p className="text-[7px] text-gray-500 font-bold tracking-tight">@{(p.handle || p.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                                                </div>
+                                                                            </button>
+                                                                            <div className="flex gap-1">
+                                                                                <button
+                                                                                    onClick={() => handleStatusAction(p.id, 'ACCEPT')}
+                                                                                    className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all"
+                                                                                >
+                                                                                    <Check size={12} strokeWidth={3} />
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={() => handleStatusAction(p.id, 'DECLINE')}
+                                                                                    className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"
+                                                                                >
+                                                                                    <X size={12} strokeWidth={3} />
+                                                                                </button>
                                                                             </div>
-                                                                            <div className="flex flex-col text-left min-w-0">
-                                                                                <span className="text-[9px] font-black text-white uppercase tracking-tight truncate">{p.name || p.username}</span>
-                                                                                <p className="text-[7px] text-gray-500 font-bold tracking-tight normal-case truncate">@{(p.handle || p.username || '').toLowerCase().replace(/^@+/, '')}</p>
-                                                                            </div>
-                                                                        </button>
-                                                                    </div>
-                                                                ))}
-                                                        </div>
-                                                        {participants.filter(p => (isHost ? true : p.participant_status === 'ACCEPTED') && p.id !== quest.host?.id).length === 0 && !quest.host && (
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {squadMembers.length === 0 && !quest.host && joinRequests.length === 0 && (
                                                             <div className="py-12 text-center border border-white/5 border-dashed rounded-3xl">
                                                                 <Users className="mx-auto text-gray-800 mb-2 opacity-30" size={32} />
                                                                 <p className="text-[10px] text-gray-600 font-black uppercase tracking-widest">Waiting for signals</p>
@@ -417,9 +614,9 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="space-y-0.5">
                                                 <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">Participants</h3>
-                                                <p className="text-[7px] text-primary/60 font-black uppercase tracking-widest">{participants.filter(p => p.participant_status === 'ACCEPTED').length} Active</p>
+                                                <p className="text-[7px] text-primary/60 font-black uppercase tracking-widest">{squadMembers.length + (quest.host ? 1 : 0)} Active</p>
                                             </div>
-                                            {isHost && participants.length > 0 && (
+                                            {isHost && squadMembers.length > 0 && (
                                                 <button
                                                     onClick={() => setManagingSquad(!managingSquad)}
                                                     className={`text-[7px] font-black uppercase tracking-widest px-2 py-1.5 rounded-lg border transition-all ${managingSquad ? 'text-red-500 border-red-500/20 bg-red-500/10' : 'text-gray-400 border-white/5 hover:text-white hover:border-white/10'}`}
@@ -429,75 +626,110 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                             )}
                                         </div>
 
-                                        <div className="flex-1 overflow-y-auto no-scrollbar grid grid-cols-2 gap-2 pr-1 content-start">
-                                            {/* Inject Mission Lead */}
-                                            {quest.host && (
-                                                <div className="col-span-2 flex items-center justify-between p-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all group/member">
-                                                    <button
-                                                        onClick={() => navigate(`/app/${quest.host?.id}`)}
-                                                        className="flex items-center gap-2.5 hover:opacity-80 transition-opacity text-left cursor-pointer"
-                                                    >
-                                                        <div className="shrink-0">
-                                                            <img
-                                                                src={quest.host.avatar_url || `https://ui-avatars.com/api/?name=${quest.host.username}`}
-                                                                className="w-7 h-7 rounded-full object-cover border border-white/5"
-                                                            />
+                                        <div className="flex-1 overflow-y-auto no-scrollbar pr-1 content-start space-y-6">
+                                            {/* Squad Members Section */}
+                                            <div className="space-y-2">
+                                                <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-600 px-2">Squad</h4>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {/* Inject Mission Lead */}
+                                                    {quest.host && (
+                                                        <div className="col-span-2 flex items-center justify-between p-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all group/member border border-white/5">
+                                                            <button
+                                                                onClick={() => navigate(`/app/${quest.host?.id}`)}
+                                                                className="flex items-center gap-2.5 hover:opacity-80 transition-opacity text-left cursor-pointer"
+                                                            >
+                                                                <div className="shrink-0">
+                                                                    <img
+                                                                        src={quest.host.avatar_url || `https://ui-avatars.com/api/?name=${quest.host.username}`}
+                                                                        className="w-7 h-7 rounded-full object-cover border border-white/5"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="text-[10px] font-black text-white uppercase tracking-tight group-hover/member:text-primary transition-colors">{quest.host.name || quest.host.username}</span>
+                                                                        <span className="text-[6px] bg-primary text-black px-1 py-0.5 rounded font-black">LEAD</span>
+                                                                    </div>
+                                                                    <p className="text-[7px] text-gray-500 font-bold tracking-tight normal-case">@{(quest.host.handle || quest.host.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                                </div>
+                                                            </button>
                                                         </div>
-                                                        <div className="flex flex-col">
-                                                            <div className="flex items-center gap-1.5">
-                                                                <span className="text-[10px] font-black text-white uppercase tracking-tight group-hover/member:text-primary transition-colors">{quest.host.name || quest.host.username}</span>
-                                                                <span className="text-[6px] bg-primary text-black px-1 py-0.5 rounded font-black">LEAD</span>
+                                                    )}
+
+                                                    {squadMembers.map((p) => (
+                                                        <div key={p.id} className="flex items-center justify-between p-2 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all group/member">
+                                                            <button
+                                                                onClick={() => navigate(`/app/${p.id}`)}
+                                                                className="flex items-center gap-2.5 hover:opacity-80 transition-opacity text-left cursor-pointer"
+                                                            >
+                                                                <div className="relative shrink-0">
+                                                                    <img
+                                                                        src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`}
+                                                                        className="w-7 h-7 rounded-full object-cover border border-white/5"
+                                                                    />
+                                                                    <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-deep-black" />
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-[10px] font-black text-white uppercase tracking-tight group-hover/member:text-primary transition-colors line-clamp-1">{p.name || p.username}</span>
+                                                                    <p className="text-[7px] text-gray-500 font-bold tracking-tight normal-case">@{(p.handle || p.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                                </div>
+                                                            </button>
+                                                            {isHost && managingSquad && (
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); handleKickParticipant(p.id); }}
+                                                                    className="w-6 h-6 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center border border-red-500/20 shadow-lg ml-1 shrink-0"
+                                                                >
+                                                                    <Trash size={10} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Join Requests Section (Host Only) */}
+                                            {isHost && joinRequests.length > 0 && (
+                                                <div className="space-y-2 pt-2 border-t border-white/5">
+                                                    <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-primary px-2 flex items-center justify-between">
+                                                        Incoming Signals
+                                                        <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[8px]">{joinRequests.length}</span>
+                                                    </h4>
+                                                    <div className="space-y-1.5">
+                                                        {joinRequests.map((p) => (
+                                                            <div key={p.id} className="flex items-center justify-between p-2 rounded-xl bg-emerald-500/[0.02] border border-white/5 hover:border-emerald-500/20 transition-all group/request">
+                                                                <button
+                                                                    onClick={() => navigate(`/app/${p.id}`)}
+                                                                    className="flex items-center gap-2.5 truncate"
+                                                                >
+                                                                    <img
+                                                                        src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`}
+                                                                        className="w-7 h-7 rounded-full border border-white/10"
+                                                                    />
+                                                                    <div className="flex flex-col text-left">
+                                                                        <span className="text-[9px] font-black text-white uppercase tracking-tight group-hover/request:text-emerald-500 transition-colors">{p.name || p.username}</span>
+                                                                        <p className="text-[7px] text-gray-500 font-bold tracking-tight">@{(p.handle || p.username || '').toLowerCase().replace(/^@+/, '')}</p>
+                                                                    </div>
+                                                                </button>
+                                                                <div className="flex gap-1 shrink-0 ml-2">
+                                                                    <button
+                                                                        onClick={() => handleStatusAction(p.id, 'ACCEPT')}
+                                                                        className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/20 shadow-lg"
+                                                                    >
+                                                                        <Check size={11} strokeWidth={3} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleStatusAction(p.id, 'DECLINE')}
+                                                                        className="w-7 h-7 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all border border-red-500/20 shadow-lg"
+                                                                    >
+                                                                        <X size={11} strokeWidth={3} />
+                                                                    </button>
+                                                                </div>
                                                             </div>
-                                                            <p className="text-[7px] text-gray-500 font-bold tracking-tight normal-case">@{(quest.host.handle || quest.host.username || '').toLowerCase().replace(/^@+/, '')}</p>
-                                                        </div>
-                                                    </button>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             )}
 
-                                            {participants
-                                                .filter(p => (isHost ? true : p.participant_status === 'ACCEPTED') && p.id !== quest.host?.id)
-                                                .map((p) => (
-                                                    <div key={p.id} className="flex items-center justify-between p-2 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all group/member">
-                                                        <button
-                                                            onClick={() => navigate(`/app/${p.id}`)}
-                                                            className="flex items-center gap-2.5 hover:opacity-80 transition-opacity text-left cursor-pointer"
-                                                        >
-                                                            <div className="relative shrink-0">
-                                                                <img
-                                                                    src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.username}`}
-                                                                    className="w-7 h-7 rounded-full object-cover border border-white/5"
-                                                                />
-                                                                <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-deep-black" />
-                                                            </div>
-                                                            <div className="flex flex-col">
-                                                                <span className="text-[10px] font-black text-white uppercase tracking-tight group-hover/member:text-primary transition-colors line-clamp-1">{p.name || p.username}</span>
-                                                                <p className="text-[7px] text-gray-500 font-bold tracking-tight normal-case">@{(p.handle || p.username || '').toLowerCase().replace(/^@+/, '')}</p>
-                                                            </div>
-                                                        </button>
-                                                        {isHost && (
-                                                            <div className="flex items-center gap-1">
-                                                                {p.participant_status === 'REQUESTED' && (
-                                                                    <button
-                                                                        onClick={() => {/* Accept logic would go here if implemented in service */ }}
-                                                                        className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center border border-emerald-500/20 shadow-lg"
-                                                                    >
-                                                                        <Check size={12} />
-                                                                    </button>
-                                                                )}
-                                                                {managingSquad && (
-                                                                    <button
-                                                                        onClick={() => handleKickParticipant(p.id)}
-                                                                        className="w-7 h-7 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center border border-red-500/20 shadow-lg"
-                                                                    >
-                                                                        <Trash size={12} />
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ))}
-
-                                            {participants.filter(p => (isHost ? true : p.participant_status === 'ACCEPTED') && p.id !== quest.host?.id).length === 0 && !quest.host && (
+                                            {squadMembers.length === 0 && !quest.host && joinRequests.length === 0 && (
                                                 <div className="py-8 text-center border border-white/5 border-dashed rounded-2xl">
                                                     <Users className="mx-auto text-gray-800 mb-2 opacity-30" size={24} />
                                                     <p className="text-[8px] text-gray-600 font-black uppercase tracking-widest">No signals</p>
@@ -510,6 +742,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                         {!isHost ? (
                                             <button
                                                 onClick={handleJoinAction}
+                                                disabled={joinState === 'requested'}
                                                 className={`
                                                     w-full py-4 rounded-2xl flex items-center justify-center gap-3 transition-all font-black uppercase text-[10px] tracking-[0.2em] shadow-xl
                                                     ${joinState === 'idle' ? 'bg-white text-black hover:bg-primary shadow-white/5' : ''}
@@ -519,13 +752,26 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                             >
                                                 {joinState === 'idle' && <>Hunt <ArrowRight size={14} /></>}
                                                 {joinState === 'requested' && <>Pending...</>}
-                                                {joinState === 'joined' && <><MessageCircle size={14} /> Open Comms</>}
+                                                {joinState === 'joined' && (
+                                                    <div className="flex items-center gap-4 w-full">
+                                                        <div className="flex-1 flex items-center justify-center gap-2">
+                                                            <MessageCircle size={14} /> Open Comms
+                                                        </div>
+                                                        <div className="w-[1px] h-4 bg-black/10" />
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleLeaveQuest(); }}
+                                                            className="px-4 py-2 hover:bg-black/5 rounded-xl transition-all"
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </button>
                                         ) : (
                                             <div className="grid grid-cols-2 gap-3">
                                                 {!isLive ? (
                                                     <button onClick={handleStartQuest} className="col-span-2 py-3.5 rounded-xl bg-electric-teal text-black font-black uppercase text-[8px] tracking-[0.2em] hover:bg-white transition-all flex items-center justify-center gap-2">
-                                                        <Play size={12} fill="black" /> Initiate
+                                                        <Play size={12} fill="black" /> Start Quest
                                                     </button>
                                                 ) : (
                                                     <button onClick={handleFinishQuest} className="col-span-2 py-3.5 rounded-xl bg-primary text-black font-black uppercase text-[8px] tracking-[0.2em] hover:bg-white transition-all flex items-center justify-center gap-2">
@@ -533,7 +779,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                     </button>
                                                 )}
                                                 <button onClick={handleDeleteQuest} className="col-span-2 py-2.5 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 font-black uppercase text-[8px] tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all">
-                                                    Scrub Mission
+                                                    Cancel Quest
                                                 </button>
                                             </div>
                                         )}
@@ -586,6 +832,13 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                 </div>
             )
             }
+            <QuestReasonModal
+                isOpen={decisionModal.isOpen}
+                type={decisionModal.type}
+                userName={decisionModal.userName}
+                onClose={() => setDecisionModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmStatusAction}
+            />
         </AnimatePresence >
     );
 };

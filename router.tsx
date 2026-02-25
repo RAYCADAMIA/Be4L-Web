@@ -18,7 +18,7 @@ const ChatPage = lazy(() => import('./pages/ChatPage').then(module => ({ default
 const BookPage = lazy(() => import('./pages/BookPage').then(module => ({ default: module.BookPage })));
 const OperatorProfileScreen = lazy(() => import('./components/Dibs/OperatorProfileScreen'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
-const QuestDetailScreen = lazy(() => import('./components/Quest/QuestDetailScreen'));
+
 const LorePage = lazy(() => import('./pages/LorePage').then(module => ({ default: module.LorePage })));
 const OperatorDashboard = lazy(() => import('./components/Dibs/OperatorDashboard'));
 const AdminDashboard = lazy(() => import('./components/Dibs/AdminDashboard'));
@@ -126,10 +126,7 @@ export const router = createBrowserRouter([
                 path: 'quests/create',
                 element: <Suspense fallback={<HeartbeatLoader />}><CreateQuestPage /></Suspense>
             },
-            {
-                path: 'quest/:questId',
-                element: <Suspense fallback={<HeartbeatLoader />}><QuestDetailScreen /></Suspense>
-            },
+
             {
                 path: 'lore',
                 element: <Suspense fallback={<HeartbeatLoader />}><LorePage /></Suspense>

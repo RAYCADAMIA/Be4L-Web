@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, Compass, Zap, MapPin } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, Compass, Zap, MapPin, MessageCircle } from 'lucide-react';
 import { UNIVERSAL_CATEGORIES } from '../../constants';
 import { useOnClickOutside } from '../../hooks/useOnClickOutside';
 
@@ -210,6 +210,8 @@ export const QuestSidebar: React.FC<QuestFiltersProps> = ({
                             />
                         )}
                     </button>
+
+
                 </div>
             </div>
 
@@ -374,6 +376,7 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
                             />
                         )}
                     </button>
+
                 </div>
             </div>
 

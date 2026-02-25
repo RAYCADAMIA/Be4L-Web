@@ -126,7 +126,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
     const [locationName, setLocationName] = useState('');
     const [locationCoords, setLocationCoords] = useState<{ latitude: number; longitude: number } | null>(null);
     const [capacity, setCapacity] = useState(10);
-    const [requiresApproval, setRequiresApproval] = useState(false);
+    const [requiresApproval, setRequiresApproval] = useState(true);
 
     const [visibility, setVisibility] = useState<QuestVisibilityScope>(QuestVisibilityScope.PUBLIC);
     const [timingIntent, setTimingIntent] = useState<QuestTimingIntent>(QuestTimingIntent.SCHEDULED);
@@ -294,8 +294,8 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                 visibility_scope: visibility,
                 host_id: currentUser.id,
                 status: QuestStatus.DISCOVERABLE,
-                aura_reward: 100,
-                exp_reward: 120,
+                // aura_reward: 100,
+                // exp_reward: 120,
 
                 // v1.3 Enhanced Details
                 vibe_signals: vibeSignals,
@@ -841,15 +841,6 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
 
                                     <div className="space-y-3 pt-2">
                                         <div className="flex justify-between items-center">
-                                            <div>
-                                                <p className="text-[var(--text-primary)] text-xs font-black uppercase tracking-widest">Approval</p>
-                                                <p className="text-[8px] text-[var(--text-secondary)] font-bold uppercase tracking-[0.2em] mt-0.5">Manually review joiners</p>
-                                            </div>
-                                            <button onClick={() => setRequiresApproval(!requiresApproval)} className={`w-10 h-6 rounded-full transition-all relative ${requiresApproval ? 'bg-primary shadow-[0_0_15px_rgba(255,140,0,0.5)]' : 'bg-[var(--border-tech)]'}`}>
-                                                <div className={`absolute top-1 left-1 w-4 h-4 bg-[var(--bg-card)] rounded-full transition-all ${requiresApproval ? 'translate-x-4' : 'translate-x-0'}`} />
-                                            </button>
-                                        </div>
-                                        <div className="flex justify-between items-center pt-4 border-t border-white/5">
                                             <div>
                                                 <p className="text-[var(--text-primary)] text-xs font-black uppercase tracking-widest">Squad Size</p>
                                                 <p className="text-[8px] text-[var(--text-secondary)] font-bold uppercase tracking-[0.2em] mt-0.5">Max participants</p>
