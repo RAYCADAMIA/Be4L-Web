@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from '../Toast';
 import { User, AuraTransaction } from '../../types';
 import { supabaseService } from '../../services/supabaseService';
 import { X, Zap, ThumbsDown, Check, AlertCircle } from 'lucide-react';
@@ -20,6 +21,8 @@ interface ReviewState {
 }
 
 const SquadReviewModal: React.FC<SquadReviewModalProps> = ({ participants, currentUser, questId, onClose, onSubmit }) => {
+    const { showToast } = useToast();
+    // Filter out self
     // Filter out self
     const squad = participants.filter(p => p.id !== currentUser.id);
 
@@ -57,7 +60,7 @@ const SquadReviewModal: React.FC<SquadReviewModalProps> = ({ participants, curre
 
         const invalidDownVotes = (Object.entries(reviews) as [string, ReviewState[string]][]).filter(([userId, review]) => review.amount < 0 && !review.reason);
         if (invalidDownVotes.length > 0) {
-            alert("Please provide a reason for the bad vibes.");
+            showToast("Please provide a reason for the bad vibes.", "error");
             return;
         }
 
@@ -73,7 +76,7 @@ const SquadReviewModal: React.FC<SquadReviewModalProps> = ({ participants, curre
         if (success) {
             onSubmit();
         } else {
-            alert("Failed to submit vibes. Try again.");
+            showToast("Failed to submit vibes. Try again.", "error");
         }
     };
 

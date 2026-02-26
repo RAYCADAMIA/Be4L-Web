@@ -6,6 +6,7 @@ import { supabaseService } from '../../services/supabaseService';
 import { EKGLoader } from '../ui/AestheticComponents';
 import { useToast } from '../Toast';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface ProfileOverlayProps {
     userId: string | null;
@@ -15,6 +16,7 @@ interface ProfileOverlayProps {
 const ProfileOverlay: React.FC<ProfileOverlayProps> = ({ userId, onClose }) => {
     const { user: currentUser } = useAuth();
     const { showToast } = useToast();
+    const navigate = useNavigate();
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [isFollowing, setIsFollowing] = useState(false);
@@ -50,8 +52,23 @@ const ProfileOverlay: React.FC<ProfileOverlayProps> = ({ userId, onClose }) => {
         showToast(isFollowing ? "Unfollowed" : "Following", "success");
     };
 
-    const handleMessage = () => {
-        showToast("Messaging not available in preview", "info");
+    const handleMessage = async () => {
+        if (!currentUser) {
+            window.dispatchEvent(new Event('trigger-auth-modal'));
+            return;
+        }
+        if (!user) return;
+
+        const chat = await supabaseService.chat.getOrCreatePersonalChat(
+            currentUser.id,
+            user.id,
+            user.username || user.name || 'User'
+        );
+
+        if (chat) {
+            onClose();
+            navigate('/app/chat', { state: { openChatId: chat.id, openChatName: chat.name } });
+        }
     };
 
     if (!userId) return null;
@@ -163,7 +180,7 @@ const ProfileOverlay: React.FC<ProfileOverlayProps> = ({ userId, onClose }) => {
                                             <div key={i} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/[0.02] transition-all group cursor-pointer">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-primary/40 group-hover:bg-primary transition-colors" />
                                                 <div className="flex-1">
-                                                    <p className="text-xs font-bold text-gray-300 uppercase">Completed Local Hunt</p>
+                                                    <p className="text-xs font-bold text-gray-300 uppercase">Completed Local Quest</p>
                                                     <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">2 DAYS AGO</p>
                                                 </div>
                                                 <ChevronRight size={14} className="text-gray-800" />

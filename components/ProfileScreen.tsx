@@ -21,6 +21,8 @@ import { COLORS, MOCK_USER, OTHER_USERS } from '../constants';
 import { dailyService } from '../services/dailyService';
 import { HeroPhoneShowcase } from './Landing/HeroPhoneShowcase';
 
+import { useNavigate } from 'react-router-dom';
+
 // Lazy load Operator components to prevent circular dependencies
 const OperatorProfileScreen = React.lazy(() => import('./Dibs/OperatorProfileScreen'));
 const OperatorOnboarding = React.lazy(() => import('./Dibs/OperatorOnboarding'));
@@ -50,6 +52,7 @@ interface ProfileScreenProps {
 type ProfileView = 'MAIN' | 'ACCOUNT' | 'SETTINGS' | 'ABOUT' | 'ADD_FRIENDS' | 'FRIENDS_LIST' | 'FOLLOWING_LIST' | 'DIBS_ONBOARD' | 'OPERATOR_PORTAL';
 
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, onOpenPostDetail, onOpenQuest, onOpenUser, onProfileUpdate, currentUserId, theme = 'dark', onToggleTheme, onOpenChat, onNavigate }) => {
+    const navigate = useNavigate();
     const isMe = user.id === currentUserId;
     const { user: currentUser } = useAuth();
     const [localTab, setLocalTab] = useState<'DIBS' | 'LORE' | 'QUESTS' | 'ABOUT' | 'TAGGED'>('DIBS');
@@ -246,10 +249,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                     const chat = await supabaseService.chat.getOrCreatePersonalChat(
                         currentUser?.id || '',
                         user.id,
-                        user.name
+                        user.name || user.username
                     );
-                    if (chat && onNavigate) {
-                        onNavigate('CHATS');
+                    if (chat) {
+                        navigate('/app/chat', { state: { openChatId: chat.id, openChatName: chat.name } });
                     }
                 }}
                 isFollowing={isFollowing}
@@ -554,11 +557,30 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onBack, onLogout, o
                                 <div className="col-span-full py-20 flex justify-center"><EKGLoader /></div>
                             ) : (() => {
                                 const filteredQuests = userQuests.filter(q => {
-                                    if (questFilter === 'CREATED') return q.host_id === user.id;
-                                    if (questFilter === 'JOINED') return q.host_id !== user.id && (q as any).participant_status === 'ACCEPTED';
-                                    if (questFilter === 'REQUESTED') return (q as any).participant_status === 'REQUESTED';
-                                    if (questFilter === 'ACTIVE') return q.status === QuestStatus.DISCOVERABLE || q.status === QuestStatus.ACTIVE;
-                                    if (questFilter === 'HISTORY') return q.status === QuestStatus.COMPLETED || q.status === QuestStatus.CANCELLED;
+                                    const isHost = q.host_id === user.id;
+                                    const participantStatus = (q as any).participant_status;
+                                    const questStatus = q.status;
+
+                                    if (questFilter === 'CREATED') {
+                                        // Hosted & Upcoming
+                                        return isHost && (questStatus === QuestStatus.DISCOVERABLE || questStatus === QuestStatus.LOBBY || questStatus === QuestStatus.DRAFT);
+                                    }
+                                    if (questFilter === 'REQUESTED') {
+                                        // Pending approval
+                                        return !isHost && participantStatus === 'REQUESTED' && (questStatus === QuestStatus.DISCOVERABLE || questStatus === QuestStatus.LOBBY);
+                                    }
+                                    if (questFilter === 'JOINED') {
+                                        // Accepted but quest hasn't started yet
+                                        return !isHost && participantStatus === 'ACCEPTED' && (questStatus === QuestStatus.DISCOVERABLE || questStatus === QuestStatus.LOBBY);
+                                    }
+                                    if (questFilter === 'ACTIVE') {
+                                        // Live/Active missions I am part of
+                                        return questStatus === QuestStatus.ACTIVE && (isHost || participantStatus === 'ACCEPTED');
+                                    }
+                                    if (questFilter === 'HISTORY') {
+                                        // Past missions
+                                        return (questStatus === QuestStatus.COMPLETED || questStatus === QuestStatus.CANCELLED) && (isHost || participantStatus === 'ACCEPTED');
+                                    }
                                     return true;
                                 });
 

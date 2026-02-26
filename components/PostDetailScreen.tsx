@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useToast } from './Toast';
 import { ChevronLeft, Trash2, Flag, Edit2, Pause, Play, MapPin, Plus, Reply, ArrowRight, X, Smile } from 'lucide-react';
 import MapPopup from './MapPopup';
 import { Capture, Reaction, User } from '../types';
@@ -15,6 +16,7 @@ const PostDetailScreen: React.FC<{
     isLocked?: boolean,
     onUnlock?: () => void
 }> = ({ capture: initialCapture, onClose, onDelete, onUpdate, currentUser, isLocked, onUnlock }) => {
+    const { showToast } = useToast();
     const [capture, setCapture] = useState(initialCapture);
 
     // Comments
@@ -75,7 +77,7 @@ const PostDetailScreen: React.FC<{
             }
         } catch (e) {
             console.error("Failed to start reaction camera", e);
-            alert("Camera access denied");
+            showToast("Camera access denied", "error");
             setShowReactionCam(false);
         }
     };

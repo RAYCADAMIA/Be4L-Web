@@ -126,7 +126,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
     const [locationName, setLocationName] = useState('');
     const [locationCoords, setLocationCoords] = useState<{ latitude: number; longitude: number } | null>(null);
     const [capacity, setCapacity] = useState(10);
-    const [requiresApproval, setRequiresApproval] = useState(true);
+    // Approval is always required — every quest needs host review
 
     const [visibility, setVisibility] = useState<QuestVisibilityScope>(QuestVisibilityScope.PUBLIC);
     const [timingIntent, setTimingIntent] = useState<QuestTimingIntent>(QuestTimingIntent.SCHEDULED);
@@ -187,8 +187,8 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
 
     const categories = [
         { name: 'Sports', icon: Trophy },
-        { name: 'Social', icon: MessageSquare },
-        { name: 'Adventure', icon: Compass },
+        { name: 'Socials', icon: MessageSquare },
+        { name: 'Adventures', icon: Compass },
         { name: 'Travel', icon: Plane },
         { name: 'Train', icon: Dumbbell },
         { name: 'Jobs', icon: Briefcase },
@@ -197,8 +197,8 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
 
     const activities: Record<string, string[]> = {
         Sports: ['Pickleball', 'Golf', 'Tennis', 'Padel', 'Badminton', 'Basketball', 'Volleyball', 'Football', 'Surfing', 'Skating', 'Table Tennis', 'Custom'],
-        Social: ['House Party', 'Flea Market', 'Cafe', 'Study', 'Gallery Opening', 'Pop-up Shop', 'Vintage Hunting', 'Book Club', 'Pottery Class', 'Silent Disco', 'Custom'],
-        Adventure: ['Hiking', 'Road Trip', 'Exploration', 'Camping', 'Rock Climbing', 'Surfing', 'Diving', 'Skydiving', 'Biking', 'Urban Exploration', 'Custom'],
+        Socials: ['House Party', 'Flea Market', 'Cafe', 'Study', 'Gallery Opening', 'Pop-up Shop', 'Vintage Hunting', 'Book Club', 'Pottery Class', 'Silent Disco', 'Custom'],
+        Adventures: ['Hiking', 'Road Trip', 'Exploration', 'Camping', 'Rock Climbing', 'Surfing', 'Diving', 'Skydiving', 'Biking', 'Urban Exploration', 'Custom'],
         Travel: ['Sightseeing', 'Food Crawl', 'Resort', 'Backpacking', 'Photography', 'Museum Visit', 'Beach Day', 'Local Market', 'Souvenir Hunting', 'City Tour', 'Custom'],
         Train: ['Gym', 'Pilates', 'Yoga', 'Marathon Training', 'HIIT', 'CrossFit', 'Boxing', 'Cycling', 'Swim Training', 'Calisthenics', 'Custom'],
         Jobs: ['Commissions', 'Freelance', 'Networking', 'Co-working', 'Portfolio Review', 'Interview Prep', 'Skill Swap', 'Mentoring', 'Creative Collab', 'Custom'],
@@ -262,7 +262,10 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                 const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
                 const day = String(selectedDate.getDate()).padStart(2, '0');
                 const dateStr = `${year}-${month}-${day}`;
-                const sTime = startTime || '00:00';
+                // Default to 23:59 (11:59 PM) for "TBD" time state.
+                // This keeps the quest technically in the future all day so it won't auto-remove
+                // from the feed, but we will catch 23:59 in the UI and render "TBD" instead.
+                const sTime = startTime || '23:59';
                 const eTime = endTime || '23:59';
                 startDateTime = new Date(`${dateStr}T${sTime}`);
                 endDateTime = new Date(`${dateStr}T${eTime}`);
@@ -290,7 +293,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                 location_coords: { latitude: finalCoords.latitude, longitude: finalCoords.longitude }, // Legacy coords
 
                 max_participants: capacity,
-                requires_approval: requiresApproval,
+                requires_approval: true, // Always require host approval
                 visibility_scope: visibility,
                 host_id: currentUser.id,
                 status: QuestStatus.DISCOVERABLE,
@@ -678,8 +681,8 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                             className="w-full bg-[var(--bg-glass)] border border-[var(--border-tech)] rounded-2xl px-4 py-4 text-sm text-[var(--text-primary)] outline-none focus:border-primary/50 focus:bg-white/[0.05] placeholder:text-white/20 font-bold uppercase tracking-wide transition-all"
                                             autoFocus
                                         />
-                                        <p className="text-primary/60 font-bold uppercase tracking-widest mt-2 ml-1 animate-pulse">
-                                            Integrating interactive map coming soon. Enter location manually for now.
+                                        <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mt-3 ml-1">
+                                            Interactive map coming soon. Enter location manually for now.
                                         </p>
 
                                         <div className="space-y-2">

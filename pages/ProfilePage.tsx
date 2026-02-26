@@ -57,6 +57,8 @@ export const ProfilePage: React.FC = () => {
         if (tab === 'HOME') navigate('/app/home');
     };
 
+    const [searchParams, setSearchParams] = useSearchParams();
+
     if (loading || !targetUser) return (
         <div className="flex-1 flex items-center justify-center bg-transparent min-h-screen">
             <div className="flex flex-col items-center gap-4">
@@ -65,8 +67,6 @@ export const ProfilePage: React.FC = () => {
             </div>
         </div>
     );
-
-    const [searchParams, setSearchParams] = useSearchParams();
 
     return (
         <ProfileScreen

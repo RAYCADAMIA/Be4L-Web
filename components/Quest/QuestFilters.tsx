@@ -200,8 +200,9 @@ export const QuestSidebar: React.FC<QuestFiltersProps> = ({
                             ${activeTab === 'SPONTY' ? 'text-electric-teal font-black' : 'text-white/40 hover:bg-white/5 hover:text-white'}
                         `}
                     >
-                        <Zap size={20} className="relative z-10" />
+                        <Zap size={20} strokeWidth={activeTab === 'SPONTY' ? 2.5 : 2} className="relative z-10" />
                         <span className="text-[9px] uppercase tracking-[0.2em] relative z-10">Sponty</span>
+                        <span className="text-[6px] font-black uppercase tracking-widest text-orange-500 mt-0.5 relative z-10">Coming Soon</span>
                         {activeTab === 'SPONTY' && (
                             <motion.div
                                 layoutId="questTabActive"
@@ -210,8 +211,6 @@ export const QuestSidebar: React.FC<QuestFiltersProps> = ({
                             />
                         )}
                     </button>
-
-
                 </div>
             </div>
 
@@ -363,12 +362,15 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
                     <button
                         onClick={() => setActiveTab('SPONTY')}
                         className={`
-                            flex-1 flex items-center justify-center gap-2 py-2 rounded-full transition-all duration-500 relative
+                            flex-1 flex flex-col items-center justify-center py-1.5 rounded-full relative transition-all duration-300 active:scale-95
                             ${activeTab === 'SPONTY' ? 'text-electric-teal' : 'text-gray-500 hover:text-white'}
                         `}
                     >
-                        <Zap size={13} strokeWidth={activeTab === 'SPONTY' ? 2.5 : 2} className="relative z-10" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] relative z-10">Sponty</span>
+                        <div className="flex items-center gap-1.5">
+                            <Zap size={11} strokeWidth={activeTab === 'SPONTY' ? 2.5 : 2} className="relative z-10" />
+                            <span className="text-[8px] font-black uppercase tracking-[0.2em] relative z-10">Sponty</span>
+                        </div>
+                        <span className="text-[5px] font-black uppercase tracking-widest text-orange-500 mt-0.5 relative z-10">Coming Soon</span>
                         {activeTab === 'SPONTY' && (
                             <motion.div
                                 layoutId="questTabActiveMobile"

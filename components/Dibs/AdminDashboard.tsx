@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, Building, Mail, Phone, Instagram, Globe, FileText, Zap } from 'lucide-react';
 import { EKGLoader } from '../ui/AestheticComponents';
+import { useToast } from '../Toast';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { supabase } from '../../utils/supabaseClient';
 
@@ -19,6 +20,7 @@ interface PendingOperator {
 }
 
 const AdminDashboard: React.FC = () => {
+    const { showToast } = useToast();
     useDocumentTitle('Admin Command');
     const [loading, setLoading] = useState(true);
     const [requests, setRequests] = useState<PendingOperator[]>([]);
@@ -50,7 +52,7 @@ const AdminDashboard: React.FC = () => {
         if (!error) {
             setRequests(prev => prev.filter(r => r.id !== id));
         } else {
-            alert('Error updating status: ' + error.message);
+            showToast('Error updating status: ' + error.message, 'error');
         }
     };
 

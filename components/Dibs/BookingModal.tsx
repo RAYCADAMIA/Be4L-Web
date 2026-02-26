@@ -10,6 +10,7 @@ import { supabaseService } from '../../services/supabaseService';
 import MapPicker from '../MapPicker';
 import { MapPin, Navigation } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../Toast';
 
 interface BookingModalProps {
     isOpen: boolean;
@@ -59,6 +60,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
     if (!operator || !item) return null;
 
     const { user } = useAuth();
+    const { showToast } = useToast();
     const navigate = useNavigate();
     const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
     const [isViewingPoster, setIsViewingPoster] = useState(false);
@@ -243,11 +245,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                 });
             } catch (err) {
                 handleCopy(shareUrl);
-                alert('Link copied to clipboard!');
+                showToast('Link copied to clipboard!', 'success');
             }
         } else {
             handleCopy(shareUrl);
-            alert('Link copied to clipboard!');
+            showToast('Link copied to clipboard!', 'success');
         }
     };
 
@@ -266,7 +268,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
             // link.download = `Be4LTICKET_${secureId || bookingCode}.png`;
             // link.href = dataUrl; // was dataUrl
             // link.click();
-            alert('Download disabled temporarily');
+            showToast('Download disabled temporarily', 'info');
         } catch (err) {
             console.error('Download failed', err);
         }
@@ -290,7 +292,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
             //     alert('Sharing not supported on this browser. Booking code copied to clipboard!');
             // }
             handleCopy(bookingCode);
-            alert('Booking code copied: ' + bookingCode);
+            showToast('Booking code copied: ' + bookingCode, 'success');
         } catch (err) {
             console.error('Share failed', err);
         }
@@ -345,7 +347,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
             if (result.success) {
                 setStep(3);
             } else {
-                alert('Booking failed. Please try again.');
+                showToast('Booking failed. Please try again.', 'error');
             }
         } catch (error) {
             console.error(error);

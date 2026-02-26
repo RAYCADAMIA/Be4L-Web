@@ -56,8 +56,8 @@ export const GradientButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonEleme
     return (
         <button
             className={`
-                relative px-6 py-3 rounded-xl font-black uppercase tracking-wider text-xs text-black
-                animate-liquid-bg
+                relative px-6 py-3 rounded-xl font-black uppercase tracking-wider text-xs text-[#0a0a0a]
+                bg-primary
                 shadow-[0_0_20px_rgba(255,140,0,0.3)]
                 transition-all duration-300
                 hover:shadow-[0_0_40px_rgba(255,140,0,0.5)] hover:bg-white hover:text-black hover:scale-[1.02] active:scale-[0.98]

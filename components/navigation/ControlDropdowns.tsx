@@ -552,7 +552,7 @@ export const SearchWindow: React.FC<{
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="text-[9px] font-black text-white truncate leading-tight">{q.title}</h4>
-                                                <p className="text-[7px] text-white/30 font-bold uppercase truncate mt-0.5">{q.aura_reward} Aura</p>
+                                                <p className="text-[7px] text-white/30 font-bold uppercase truncate mt-0.5">{q.start_time ? new Date(q.start_time).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }) : 'TBD'}</p>
                                             </div>
                                         </button>
                                     ))}
@@ -725,7 +725,7 @@ export const SearchWindow: React.FC<{
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className="text-[11px] font-black text-white truncate">{q.title}</h4>
                                                         <p className="text-[8px] text-white/40 font-black uppercase truncate mt-0.5">
-                                                            {q.location?.place_name || 'Global'} • {q.aura_reward} Aura
+                                                            {q.location?.place_name || 'Global'} • {q.start_time ? new Date(q.start_time).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }) : 'TBD'}
                                                         </p>
                                                     </div>
                                                     <ArrowRight size={12} className="text-white/0 group-hover:text-white/40 group-hover:translate-x-1 transition-all" />

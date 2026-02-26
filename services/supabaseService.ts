@@ -65,7 +65,24 @@ export const MOCK_CHATS = [
   { id: 'u10', type: 'personal', name: 'Barry', lastMsg: 'Money first.', time: 'Fri', unread: 0, avatar: OTHER_USERS[8].avatar_url }
 ];
 
-const localMockMessages: Record<string, Message[]> = {
+// Helper for local persistence in mock mode
+const loadFromStorage = (key: string, defaultValue: any) => {
+  if (typeof window === 'undefined') return defaultValue;
+  const saved = localStorage.getItem(key);
+  try {
+    return saved ? JSON.parse(saved) : defaultValue;
+  } catch (e) {
+    return defaultValue;
+  }
+};
+
+const saveToStorage = (key: string, value: any) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+};
+
+let localMockMessages: Record<string, Message[]> = loadFromStorage('be4l_local_messages', {
   'u2': [
     { id: 'm1', echo_id: 'u2', sender_id: 'u2', content: 'Hey! Are we going to the Wreck later?', timestamp: '10:25 AM', created_at: '2025-12-31T10:25:00Z', is_me: false, type: 'text', content_type: 'text' },
     { id: 'm2', echo_id: 'u2', sender_id: 'me', content: 'Yeah, I will meet you there.', timestamp: '10:28 AM', created_at: '2025-12-31T10:28:00Z', is_me: true, type: 'text', content_type: 'text' }
@@ -83,24 +100,7 @@ const localMockMessages: Record<string, Message[]> = {
     { id: 'm8', echo_id: 'u4', sender_id: 'u3', content: 'We need a plan.', timestamp: 'Yesterday', created_at: '2025-12-30T10:00:00Z', is_me: false, type: 'text', content_type: 'text' },
     { id: 'm9', echo_id: 'u4', sender_id: 'u5', content: 'I say we just go for it.', timestamp: 'Yesterday', created_at: '2025-12-30T10:05:00Z', is_me: false, type: 'text', content_type: 'text' }
   ]
-};
-
-// Helper for local persistence in mock mode
-const loadFromStorage = (key: string, defaultValue: any[]) => {
-  if (typeof window === 'undefined') return defaultValue;
-  const saved = localStorage.getItem(key);
-  try {
-    return saved ? JSON.parse(saved) : defaultValue;
-  } catch (e) {
-    return defaultValue;
-  }
-};
-
-const saveToStorage = (key: string, value: any[]) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(key, JSON.stringify(value));
-  }
-};
+});
 
 let localCaptures: Capture[] = loadFromStorage('be4l_local_captures', []);
 let localBookings: any[] = loadFromStorage('be4l_local_bookings', []);
@@ -538,18 +538,30 @@ export const supabaseService = {
   quests: {
     getQuestParticipants: async (qid: string) => {
       if (!isValidUUID(qid)) return [];
-      const { data } = await supabase.from('user_quests')
+      const { data, error } = await supabase.from('user_quests')
         .select('user_id, status, user:profiles(*)')
         .eq('quest_id', qid)
-        .in('status', [QuestParticipantStatus.ACCEPTED, QuestParticipantStatus.REQUESTED]); // Get accepted and pending
+        .in('status', [QuestParticipantStatus.ACCEPTED, QuestParticipantStatus.REQUESTED]);
 
-      return (data || []).map((p: any) => ({
-        ...p.user,
-        participant_status: p.status
-      }));
+      if (error) {
+        console.error(`[SupabaseService] getQuestParticipants error for ${qid}:`, error);
+        return [];
+      }
+
+      // Filter for valid rows and map to participant objects
+      const participants = (data || [])
+        .filter((p: any) => p.user_id && isValidUUID(p.user_id))
+        .map((p: any) => ({
+          ...p.user,
+          id: p.user_id,
+          participant_status: p.status
+        }));
+
+      console.log(`[SupabaseService] Participants for ${qid}:`, participants.length);
+      return participants;
     },
     getMyQuests: async (uid: string) => {
-      const { data } = await supabase.from('quests').select(`*, host:profiles(*), user_quests(user_id, status)`).eq('host_id', uid);
+      const { data } = await supabase.from('quests').select(`*, host:profiles(*), user_quests(user_id, status)`).eq('host_id', uid).order('created_at', { ascending: false });
       return (data || []).map((i: any) => ({
         ...i,
         mode: i.type,
@@ -566,7 +578,7 @@ export const supabaseService = {
 
       if (cat !== 'All') query = query.eq('category', cat);
 
-      const { data } = await query.order('start_time', { ascending: true });
+      const { data } = await query.order('created_at', { ascending: false });
       const rawQuests = data || [];
 
       // If no auth user, only show public quests
@@ -697,10 +709,19 @@ export const supabaseService = {
       const id = uid || au?.id;
       if (!id || !isValidUUID(qid) || !isValidUUID(id)) return true;
 
-      const status = approval ? QuestParticipantStatus.REQUESTED : QuestParticipantStatus.ACCEPTED;
+      // Always require approval unless explicitly set to false in DB
+      const requiresApproval = approval !== false;
+      const status = requiresApproval ? QuestParticipantStatus.REQUESTED : QuestParticipantStatus.ACCEPTED;
       const { error } = await supabase.from('user_quests').insert({ user_id: id, quest_id: qid, status });
 
-      if (!error && approval) {
+      if (error) {
+        // If it's a unique violation, they already requested/joined
+        if (error.code === '23505') return true;
+        console.error("Failed to join quest:", error);
+        return false;
+      }
+
+      if (requiresApproval) {
         // Notify host
         const { data: q } = await supabase.from('quests').select('host_id, title').eq('id', qid).single();
         if (q && q.host_id !== id) {
@@ -718,79 +739,97 @@ export const supabaseService = {
           });
         }
       }
-
-      if (!error && !approval) {
-        // Auto-join: Add to chat lobby immediately
-        const { data: q } = await supabase.from('quests').select('title').eq('id', qid).single();
-        await supabaseService.chat.getOrCreateQuestLobby(qid, q?.title || 'Quest Lobby', [id]);
-      }
-      return !error;
+      return true;
     },
     updateParticipantStatus: async (qid: string, uid: string, status: QuestParticipantStatus, reasoning?: string) => {
       const { data: { user: au } } = await supabase.auth.getUser();
       if (!isValidUUID(qid) || !isValidUUID(uid) || !au) return false;
 
-      const { error } = await supabase.from('user_quests')
+      console.log(`[SupabaseService] Updating status to ${status} for quest ${qid}, user ${uid}...`);
+      const { data, error } = await supabase.from('user_quests')
         .update({ status })
-        .match({ quest_id: qid, user_id: uid });
+        .match({ quest_id: qid, user_id: uid })
+        .select();
 
-      if (!error) {
-        const { data: quest } = await supabase.from('quests').select('title').eq('id', qid).single();
-        if (quest) {
-          if (status === QuestParticipantStatus.ACCEPTED) {
-            // If accepted, ensure they are in the lobby
-            await supabaseService.chat.getOrCreateQuestLobby(qid, quest.title, [uid]);
+      if (error || !data || data.length === 0) {
+        console.error(`[SupabaseService] Update FAILED for quest ${qid}, user ${uid}. Data:`, data, "Error:", error);
+        return false;
+      }
+      console.log(`[SupabaseService] Update SUCCESS:`, data[0]);
 
-            // Notify user via chat
-            const chat = await supabaseService.chat.getOrCreatePersonalChat(au.id, uid, quest.title);
-            if (chat) {
-              await supabaseService.chat.sendMessage(chat.id, `✅ MISSION ACCEPTED: You've been cleared for "${quest.title}". Note: ${reasoning || 'Prepare for deployment.'}`, 'text');
-            }
+      const { data: quest } = await supabase.from('quests').select('title, host_id').eq('id', qid).single();
+      const { data: profile } = await supabase.from('profiles').select('name').eq('id', uid).single();
 
-            // Notify user via notifications
-            await supabaseService.notifications.createNotification({
-              user_id: uid,
-              type: 'QUEST_ACCEPTED',
-              title: 'Mission Accepted',
-              content: `You've been cleared for "${quest.title}". ${reasoning ? `Note: ${reasoning}` : ''}`,
-              target_id: qid,
-              metadata: { reasoning }
-            });
-          } else if (status === QuestParticipantStatus.DECLINED) {
-            // Notify user via chat
-            const chat = await supabaseService.chat.getOrCreatePersonalChat(au.id, uid, quest.title);
-            if (chat) {
-              await supabaseService.chat.sendMessage(chat.id, `❌ MISSION UPDATE: Your request for "${quest.title}" was declined. Reason: ${reasoning || 'No reason specified.'}`, 'text');
-            }
+      if (quest) {
+        if (status === QuestParticipantStatus.ACCEPTED) {
+          // If accepted, ensure host & participant are in the lobby
+          const lobby = await supabaseService.chat.getOrCreateQuestLobby(qid, quest.title, [quest.host_id, uid]);
 
-            // Notify user via notifications
-            await supabaseService.notifications.createNotification({
-              user_id: uid,
-              type: 'QUEST_DECLINED',
-              title: 'Request Declined',
-              content: `Your request for "${quest.title}" was declined. ${reasoning ? `Reason: ${reasoning}` : ''}`,
-              target_id: qid,
-              metadata: { reasoning }
-            });
+          if (lobby && profile) {
+            await supabaseService.chat.sendMessage(lobby.id, `[System] SIGNAL ESTABLISHED: ${profile.name} has joined the mission.`, 'text');
           }
+
+          // Notify user via chat
+          const chat = await supabaseService.chat.getOrCreatePersonalChat(au.id, uid, quest.title);
+          if (chat) {
+            await supabaseService.chat.sendMessage(chat.id, `✅ MISSION ACCEPTED: You've been cleared for "${quest.title}". Note: ${reasoning || 'Accepted'}`, 'text');
+          }
+
+          // Notify user via notifications
+          await supabaseService.notifications.createNotification({
+            user_id: uid,
+            type: 'QUEST_ACCEPTED',
+            title: 'Mission Accepted',
+            content: `You've been cleared for "${quest.title}". ${reasoning ? `Note: ${reasoning}` : ''}`,
+            target_id: qid,
+            metadata: { reasoning }
+          });
+        } else if (status === QuestParticipantStatus.DECLINED) {
+          // Notify user via chat
+          const chat = await supabaseService.chat.getOrCreatePersonalChat(au.id, uid, quest.title);
+          if (chat) {
+            await supabaseService.chat.sendMessage(chat.id, `❌ MISSION UPDATE: Your request for "${quest.title}" was declined. Reason: ${reasoning || 'No reason specified.'}`, 'text');
+          }
+
+          // Notify user via notifications
+          await supabaseService.notifications.createNotification({
+            user_id: uid,
+            type: 'QUEST_DECLINED',
+            title: 'Request Declined',
+            content: `Your request for "${quest.title}" was declined. ${reasoning ? `Reason: ${reasoning}` : ''}`,
+            target_id: qid,
+            metadata: { reasoning }
+          });
         }
       }
-      return !error;
+      return true;
     },
     removeQuestParticipant: async (qid: string, uid: string) => {
       if (!isValidUUID(qid) || !isValidUUID(uid)) return false;
 
+      console.log(`[SupabaseService] Removing participant ${uid} from quest ${qid}...`);
       // 1. Remove from user_quests record
       const { error } = await supabase.from('user_quests').delete().match({ quest_id: qid, user_id: uid });
 
-      // 2. Remove from lobby participant_ids
+      if (error) {
+        console.error(`[SupabaseService] Remove FAILED:`, error);
+        return false;
+      }
+
+      // 2. Remove from lobby participant_ids & send signal
       const { data: lobby } = await supabase.from('echoes').select('id, participant_ids').match({ type: 'lobby', context_id: qid }).single();
       if (lobby && lobby.participant_ids?.includes(uid)) {
+        const { data: profile } = await supabase.from('profiles').select('name').eq('id', uid).single();
+        if (profile) {
+          await supabaseService.chat.sendMessage(lobby.id, `[System] ${profile.name} left the quest`, 'text');
+        }
+
         const newPids = lobby.participant_ids.filter((p: string) => p !== uid);
         await supabase.from('echoes').update({ participant_ids: newPids }).eq('id', lobby.id);
       }
 
-      return !error;
+      console.log(`[SupabaseService] Remove SUCCESS.`);
+      return true;
     },
     leaveQuest: async (qid: string) => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -938,21 +977,121 @@ export const supabaseService = {
         return echoes.map((e: any) => ({ ...e, lastMsg: 'Tap to view', time: e.time || '10:30 AM' }));
       }
       const { data } = await supabase.from('echoes')
-        .select('*')
-        .contains('participant_ids', [id])
-        .order('last_message_at', { ascending: false }) // Sort by new column
+        .select('*, echo_messages(content, created_at, type)')
+        .contains('participant_ids', JSON.stringify([id]))
+        .order('created_at', { foreignTable: 'echo_messages', ascending: false })
+        .limit(1, { foreignTable: 'echo_messages' })
         .order('created_at', { ascending: false });
 
-      return (data || []).map((e: any) => ({
-        id: e.id,
-        type: e.type,
-        context_type: e.context_type,
-        context_id: e.context_id,
-        name: e.name || 'Chat',
-        lastMsg: 'Tap to view',
-        time: new Date(e.last_message_at || e.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        unread: 0 // TODO: Implement real unread count
-      }));
+      let seenGlobal = false;
+      let seenCity = false;
+      let results: any[] = [];
+
+      // Keep the oldest global/city lobbies as the primary ones
+      const sortedByCreated = [...(data || [])].sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+      for (const e of sortedByCreated) {
+        if (e.type === 'GLOBAL') {
+          if (seenGlobal) {
+            // Silently delete duplicates
+            supabase.from('echoes').delete().eq('id', e.id).then();
+            continue;
+          }
+          seenGlobal = true;
+        }
+        if (e.type === 'CITY') {
+          if (seenCity) {
+            supabase.from('echoes').delete().eq('id', e.id).then();
+            continue;
+          }
+          seenCity = true;
+        }
+
+        const latestMsg = e.echo_messages?.[0];
+
+        // Hide empty personal DMs until a message is sent
+        if (['personal', 'DM'].includes(e.type) && !latestMsg) {
+          continue;
+        }
+
+        const msgTime = latestMsg?.created_at || e.created_at;
+        const msgPreview = latestMsg?.content ?
+          (latestMsg.type === 'image' ? 'Sent an image' :
+            latestMsg.type === 'system' ? latestMsg.content :
+              latestMsg.content.substring(0, 60))
+          : 'No messages yet';
+
+        results.push({
+          id: e.id,
+          type: e.type,
+          context_type: e.context_type,
+          context_id: e.context_id,
+          name: e.name || 'Chat',
+          lastMsg: msgPreview,
+          time: new Date(msgTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          sortTime: new Date(msgTime).getTime(),
+          unread: 0,
+          avatar: e.avatar || (e.type === 'GLOBAL' ? 'https://cdn-icons-png.flaticon.com/512/921/921591.png' :
+            e.type === 'CITY' ? `https://ui-avatars.com/api/?name=${encodeURIComponent(e.name)}&background=random` :
+              e.type === 'BRAND' ? `/logo.png` :
+                e.type === 'lobby' ? 'https://cdn-icons-png.flaticon.com/512/2354/2354573.png' : undefined)
+        });
+      }
+
+      // Inject local mock personal chats from local memory
+      const localKeys = Object.keys(localMockMessages).filter(k => k.startsWith(`m-${id}-`) || (k.startsWith('m-') && k.endsWith(`-${id}`)));
+      for (const k of localKeys) {
+        const msgs = localMockMessages[k] || [];
+        if (msgs.length === 0) continue;
+        const latestMsg = msgs[msgs.length - 1];
+
+        // Extract the target's ID to find their mock profile
+        const parts = k.split('-');
+        let otherId = parts[1];
+        if (otherId === id && parts.length > 2) otherId = parts[2];
+
+        // Ensure we don't accidentally duplicate if it snuck in
+        if (results.find(r => r.id === k)) continue;
+
+        const otherUser = OTHER_USERS.find(u => u.id === otherId) || MOCK_OPERATOR;
+        const name = otherUser ? otherUser.name : `Mock User`;
+        const avatar = otherUser ? otherUser.avatar_url : undefined;
+
+        results.push({
+          id: k,
+          type: 'personal',
+          name,
+          lastMsg: latestMsg.content || 'Draft',
+          time: latestMsg.timestamp || 'Just now',
+          sortTime: new Date(latestMsg.created_at || Date.now()).getTime(),
+          unread: 0,
+          avatar
+        });
+      }
+
+      // Re-sort results by recent activity for the UI
+      results.sort((a, b) => b.sortTime - a.sortTime);
+
+      // Ensure Global is present for everyone
+      if (!results.find(r => r.type === 'GLOBAL')) {
+        const global = await supabaseService.chat.getGlobalChat();
+        if (global) {
+          results.unshift({
+            ...global,
+            type: 'GLOBAL',
+            lastMsg: 'Welcome to Be4L Global!',
+            time: 'Live',
+            unread: 0,
+            avatar: 'https://cdn-icons-png.flaticon.com/512/921/921591.png'
+          });
+          // Auto-join persistence (silently)
+          await supabase.from('echoes').update({
+            participant_ids: Array.from(new Set([...(global.participant_ids || []), id]))
+          }).eq('id', global.id);
+        }
+      }
+
+      return results;
     },
     joinCityChat: async (cityId: string) => {
       const { data, error } = await supabase.rpc('join_city_chat', { city_chat_id: cityId });
@@ -960,17 +1099,17 @@ export const supabaseService = {
       return data; // Returns { success: true } or { success: false, error: '...' }
     },
     getGlobalChat: async () => {
-      // Fetch the single global chat, create if missing (auto-healing)
-      let { data } = await supabase.from('echoes').select('*').eq('type', 'GLOBAL').single();
-      if (!data) {
-        // Create it if it doesn't exist (only runs once essentially)
-        const { data: newGlobal } = await supabase.from('echoes')
-          .insert({ type: 'GLOBAL', name: 'Global Lobby', participant_ids: [] })
-          .select()
-          .single();
-        data = newGlobal;
+      // Fetch the single global chat gracefully
+      let { data } = await supabase.from('echoes').select('*').eq('type', 'GLOBAL').limit(1);
+      if (data && data.length > 0) {
+        return { id: data[0].id, name: data[0].name };
       }
-      return data ? { id: data.id, name: data.name } : null;
+      // Create it if it doesn't exist
+      const { data: newGlobal } = await supabase.from('echoes')
+        .insert({ type: 'GLOBAL', name: 'GLOBAL LOBBY', participant_ids: [] })
+        .select()
+        .single();
+      return newGlobal ? { id: newGlobal.id, name: newGlobal.name } : null;
     },
     async getOrCreateQuestLobby(qid: string, name: string, pids: string[]) {
       if (!isValidUUID(qid)) return { id: `lobby-${qid}`, name: `LOBBY: ${name}` };
@@ -984,15 +1123,39 @@ export const supabaseService = {
         }
         return { id: data.id, name: data.name };
       }
-      const { data: ne } = await supabase.from('echoes').insert({ type: 'lobby', context_id: qid, context_type: 'QUEST', participant_ids: pids, name }).select().single();
+      const { data: ne, error: insertError } = await supabase.from('echoes').insert({
+        type: 'lobby',
+        context_id: qid,
+        context_type: 'QUEST',
+        participant_ids: pids,
+        name
+      }).select().single();
+
+      if (insertError) {
+        console.error("[SupabaseService] Failed to create quest lobby:", insertError);
+      }
+
       return ne ? { id: ne.id, name: ne.name } : null;
     },
     getOrCreatePersonalChat: async (a: string, b: string, n: string) => {
       if (!isValidUUID(a) || !isValidUUID(b)) return { id: `m-${a}-${b}`, name: n };
-      const { data } = await supabase.from('echoes').select('*').eq('type', 'personal').contains('participant_ids', [a, b]);
+      const { data } = await supabase.from('echoes').select('*').eq('type', 'personal').contains('participant_ids', JSON.stringify([a, b]));
       if (data?.[0]) return { id: data[0].id, name: n };
-      const { data: ne } = await supabase.from('echoes').insert({ type: 'personal', participant_ids: [a, b], name: n }).select().single();
+      const { data: ne, error } = await supabase.from('echoes').insert({ type: 'personal', participant_ids: [a, b], name: n }).select().single();
+      if (error) console.error("[SupabaseService] Failed to create personal chat:", error);
       return ne ? { id: ne.id, name: n } : null;
+    },
+    createGroup: async (creatorId: string, groupName: string) => {
+      if (!isValidUUID(creatorId)) return { data: null, error: 'Invalid User' };
+      const { data, error } = await supabase.from('echoes')
+        .insert({
+          type: 'SQUAD',
+          name: groupName,
+          participant_ids: [creatorId]
+        })
+        .select()
+        .single();
+      return { data, error };
     },
     getMessages: async (id: string) => {
       if (!isValidUUID(id)) return localMockMessages[id] || [];
@@ -1006,10 +1169,13 @@ export const supabaseService = {
         const newMsg = { id: `m-${Date.now()}`, echo_id: id, sender_id: 'me', content: c, is_me: true, created_at: new Date().toISOString(), timestamp: new Date().toLocaleTimeString(), type: t, ...p } as any;
         if (!localMockMessages[id]) localMockMessages[id] = [];
         localMockMessages[id].push(newMsg);
+        saveToStorage('be4l_local_messages', localMockMessages);
+        if (typeof window !== 'undefined') window.dispatchEvent(new Event('local-chat-update'));
         return newMsg;
       }
       if (!au) return null;
-      const { data } = await supabase.from('echo_messages').insert({ echo_id: id, sender_id: au.id, content: c, type: t, ...p }).select().single();
+      const { data, error } = await supabase.from('echo_messages').insert({ echo_id: id, sender_id: au.id, content: c, type: t, ...p }).select().single();
+      if (error) console.error("[SupabaseService] Failed to send message:", error);
       return data;
     },
     subscribeToEcho: (id: string, cb: (m: any) => void) => {
@@ -1262,6 +1428,25 @@ export const supabaseService = {
       });
       if (!error) {
         await supabase.rpc('increment_following', { user_id: au.id });
+
+        // Auto-join Brand Chat
+        const { data: op } = await supabase.from('operators').select('business_name, logo_url').eq('user_id', id).single();
+        if (op) {
+          const { data: brandChat } = await supabase.from('echoes').select('*').match({ type: 'BRAND', context_id: id }).single();
+          if (brandChat) {
+            const newPids = Array.from(new Set([...(brandChat.participant_ids || []), au.id]));
+            await supabase.from('echoes').update({ participant_ids: newPids }).eq('id', brandChat.id);
+          } else {
+            await supabase.from('echoes').insert({
+              type: 'BRAND',
+              name: op.business_name,
+              context_id: id,
+              context_type: 'OPERATOR',
+              participant_ids: [au.id],
+              avatar: op.logo_url
+            });
+          }
+        }
       }
       return !error || error.code === '23505';
     },

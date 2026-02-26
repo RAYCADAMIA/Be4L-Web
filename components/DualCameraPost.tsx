@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useToast } from './Toast';
 import { MoreHorizontal, User as UserIcon, Lock, Globe, Smile, X, Check, Trash2, Download, MessageCircle, UserPlus, Search, Share2, Users } from 'lucide-react';
 import MapPopup from './MapPopup';
 import { Capture, User, Reaction, QuestType, QuestStatus } from '../types';
@@ -17,6 +18,7 @@ interface Props {
 }
 
 const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail, onUserClick, currentUser, isLocked, onUnlock }) => {
+    const { showToast } = useToast();
     const [capture, setCapture] = useState(initialCapture);
     const [isSwapped, setIsSwapped] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -148,7 +150,7 @@ const DualCameraPost: React.FC<Props> = ({ capture: initialCapture, onOpenDetail
                 await navigator.share(shareData);
             } else {
                 await navigator.clipboard.writeText(shareData.url);
-                window.alert("Link copied to clipboard!");
+                showToast("Link copied to clipboard!", "success");
             }
         } catch (err) {
             console.log('Share failed');

@@ -8,7 +8,7 @@ import { EKGLoader } from '../ui/AestheticComponents';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../Toast';
 import SmartMap from '../ui/SmartMap';
-import QuestReasonModal from './QuestReasonModal';
+import QuestSystemModal, { SystemModalType } from './QuestSystemModal';
 
 interface QuestOverlayProps {
     questId: string | null;
@@ -23,7 +23,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
     const [quest, setQuest] = useState<Quest | null>(null);
     const [loading, setLoading] = useState(true);
     const [joinState, setJoinState] = useState<'idle' | 'requested' | 'joined'>('idle');
-    const [activeTab, setActiveTab] = useState<'details' | 'itinerary' | 'checklist'>('details');
+    const [activeTab, setActiveTab] = useState<'participants' | 'details' | 'itinerary' | 'checklist'>('participants');
     const [participants, setParticipants] = useState<any[]>([]);
     const [managingSquad, setManagingSquad] = useState(false);
     const [showGuestPrompt, setShowGuestPrompt] = useState(false);
@@ -31,7 +31,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
     // Decision Modal State
     const [decisionModal, setDecisionModal] = useState<{
         isOpen: boolean;
-        type: 'ACCEPT' | 'DECLINE';
+        type: SystemModalType;
         userId: string;
         userName: string;
     }>({
@@ -51,7 +51,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
         const loadQuest = async () => {
             setLoading(true);
             setJoinState('idle');
-            setActiveTab('details');
+            setActiveTab('participants');
             try {
                 const { data } = await supabaseService.quests.getQuestById(questId);
                 if (data) {
@@ -75,6 +75,39 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
 
     const isHost = user?.id === quest?.host?.id;
     const isLive = quest?.status === QuestStatus.ACTIVE;
+    const isFinished = quest?.status === QuestStatus.COMPLETED;
+
+    // Refresh join state and participants from the server
+    const refreshJoinState = async () => {
+        if (!questId || !user) return;
+        try {
+            console.log(`[QuestOverlay] Re-fetching data for quest ${questId} and user ${user.id}...`);
+            const { data } = await supabaseService.quests.getQuestById(questId);
+            if (data) {
+                console.log(`[QuestOverlay] New data received:`, {
+                    participant_ids: data.participant_ids,
+                    requested_ids: (data as any).requested_ids,
+                    user_status_in_data: data.user_quests?.find((uq: any) => uq.user_id === user.id)?.status
+                });
+
+                setQuest(data);
+                if (data.participant_ids?.includes(user.id)) {
+                    setJoinState('joined');
+                    console.log(`[QuestOverlay] USER IS JOINED`);
+                } else if ((data as any).requested_ids?.includes(user.id)) {
+                    setJoinState('requested');
+                    console.log(`[QuestOverlay] USER IS REQUESTED (PENDING)`);
+                } else {
+                    setJoinState('idle');
+                    console.log(`[QuestOverlay] USER IS IDLE`);
+                }
+                const parts = await supabaseService.quests.getQuestParticipants(questId);
+                setParticipants(parts);
+            }
+        } catch (err) {
+            console.error("Failed to refresh join state:", err);
+        }
+    };
 
     useEffect(() => {
         if (!user || !questId) return;
@@ -82,26 +115,28 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
         const { supabase } = supabaseService as any;
         if (!supabase) return;
 
-        const subscription = supabase.channel(`uq-overlay-${questId}-${user.id}`)
+        // Listen for ANY change to participation in THIS quest
+        const subscription = supabase.channel(`uq-overlay-${questId}`)
             .on('postgres_changes', {
                 event: '*',
                 schema: 'public',
                 table: 'user_quests',
-                filter: `user_id=eq.${user.id}`
-            }, (payload: any) => {
-                const newUserQuest = payload.new as any;
-                if (newUserQuest && newUserQuest.quest_id === questId) {
-                    if (newUserQuest.status === 'ACCEPTED') setJoinState('joined');
-                    else if (newUserQuest.status === 'REQUESTED') setJoinState('requested');
-                    else if (newUserQuest.status === 'DECLINED') setJoinState('idle');
-                } else if (payload.eventType === 'DELETE') {
-                    setJoinState('idle');
-                }
+                filter: `quest_id=eq.${questId}`
+            }, () => {
+                // Re-fetch from DB instead of relying on payload (Replica Identity may not be FULL)
+                refreshJoinState();
             })
             .subscribe();
 
+        // Also refresh when the browser tab regains focus (fallback for missed events)
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible') refreshJoinState();
+        };
+        document.addEventListener('visibilitychange', handleVisibility);
+
         return () => {
             subscription.unsubscribe();
+            document.removeEventListener('visibilitychange', handleVisibility);
         };
     }, [questId, user]);
 
@@ -119,7 +154,12 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
             }, (payload: any) => {
                 const updatedQuest = payload.new as Quest;
                 if (updatedQuest && updatedQuest.id === questId) {
-                    setQuest(prev => prev ? { ...prev, status: updatedQuest.status } : updatedQuest);
+                    // Update the quest state with new counts/status/ids
+                    setQuest(prev => prev ? { ...prev, ...updatedQuest } : updatedQuest);
+
+                    // Crucial: Re-fetch participation since ID arrays in quests table might have changed
+                    refreshJoinState();
+
                     if (updatedQuest.status === QuestStatus.CANCELLED) {
                         showToast("Mission aborted.", "info");
                         onClose();
@@ -143,6 +183,16 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
             return;
         }
 
+        if (user.is_operator) {
+            showToast("Brand accounts cannot join quests.", "info");
+            return;
+        }
+
+        if (isFinished) {
+            showToast("This mission is completed.", "info");
+            return;
+        }
+
         if (joinState === 'joined') {
             onClose();
             navigate('/app/chat', {
@@ -153,15 +203,10 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
             });
         } else if (joinState === 'idle') {
             if (!questId) return;
-            supabaseService.quests.requestToJoin(questId, user.id, !!quest?.approval_required).then(success => {
+            supabaseService.quests.requestToJoin(questId, user.id, true).then(success => {
                 if (success) {
-                    if (quest?.approval_required) {
-                        setJoinState('requested');
-                        showToast("Join request sent!", "info");
-                    } else {
-                        setJoinState('joined');
-                        showToast("Joined squad!", "success");
-                    }
+                    setJoinState('requested');
+                    showToast("Join requested! Awaiting host approval. 📡", "info");
                 } else {
                     showToast("Failed to join.", "error");
                 }
@@ -171,15 +216,12 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
 
     const handleFinishQuest = async () => {
         if (!questId) return;
-        if (window.confirm("Complete activity and award points?")) {
-            const { success } = await supabaseService.quests.finishQuest(questId);
-            if (success) {
-                showToast("Quest Completed!", "success");
-                onClose();
-            } else {
-                showToast("Error finishing quest.", "error");
-            }
-        }
+        setDecisionModal({
+            isOpen: true,
+            type: 'FINISH',
+            userId: '',
+            userName: ''
+        });
     };
 
     const handleStartQuest = async () => {
@@ -193,11 +235,12 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
 
     const handleDeleteQuest = async () => {
         if (!questId) return;
-        if (window.confirm("Cancel this quest?")) {
-            await supabaseService.quests.cancelQuest(questId);
-            showToast("Quest cancelled", "info");
-            onClose();
-        }
+        setDecisionModal({
+            isOpen: true,
+            type: 'CANCEL',
+            userId: '',
+            userName: ''
+        });
     };
 
     const handleStatusAction = (uid: string, action: 'ACCEPT' | 'DECLINE') => {
@@ -210,46 +253,19 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
         });
     };
 
-    const confirmStatusAction = async (reason: string) => {
-        if (!questId || !decisionModal.userId) return;
-
-        const { userId, type } = decisionModal;
-        const { QuestParticipantStatus } = await import('../../types');
-        const status = type === 'ACCEPT' ? QuestParticipantStatus.ACCEPTED : QuestParticipantStatus.DECLINED;
-
-        const success = await supabaseService.quests.updateParticipantStatus(questId, userId, status, reason);
-
-        if (success) {
-            if (type === 'ACCEPT') {
-                setParticipants(prev => prev.map(p => p.id === userId ? { ...p, participant_status: QuestParticipantStatus.ACCEPTED } : p));
-                showToast("Hunter accepted!", "success");
-            } else {
-                setParticipants(prev => prev.filter(p => p.id !== userId));
-                showToast("Request declined.", "info");
-            }
-        } else {
-            showToast("Failed to update status.", "error");
-        }
-
-        setDecisionModal(prev => ({ ...prev, isOpen: false }));
-    };
-
-    const handleKickParticipant = async (uid: string) => {
+    const confirmStatusAction = async () => {
         if (!questId) return;
-        if (window.confirm("Remove this user from the squad?")) {
-            const success = await supabaseService.quests.removeQuestParticipant(questId, uid);
+        const { userId, type } = decisionModal;
+
+        if (type === 'KICK' && userId) {
+            const success = await supabaseService.quests.removeQuestParticipant(questId, userId);
             if (success) {
-                setParticipants(prev => prev.filter(p => p.id !== uid));
+                setParticipants(prev => prev.filter(p => p.id !== userId));
                 showToast("User removed", "info");
             } else {
                 showToast("Failed to remove user.", "error");
             }
-        }
-    };
-
-    const handleLeaveQuest = async () => {
-        if (!questId) return;
-        if (window.confirm("Abandon this hunt?")) {
+        } else if (type === 'ABANDON') {
             const success = await supabaseService.quests.leaveQuest(questId);
             if (success) {
                 setJoinState('idle');
@@ -259,7 +275,56 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
             } else {
                 showToast("Failed to leave.", "error");
             }
+        } else if (type === 'CANCEL') {
+            await supabaseService.quests.cancelQuest(questId);
+            showToast("Quest cancelled", "info");
+            onClose();
+        } else if (type === 'FINISH') {
+            const { success } = await supabaseService.quests.finishQuest(questId);
+            if (success) {
+                showToast("Quest Completed!", "success");
+                // The realtime subscription will update the UI status automatically
+            } else {
+                showToast("Error finishing quest.", "error");
+            }
+        } else if (userId) {
+            const { QuestParticipantStatus } = await import('../../types');
+            const status = type === 'ACCEPT' ? QuestParticipantStatus.ACCEPTED : QuestParticipantStatus.DECLINED;
+            const success = await supabaseService.quests.updateParticipantStatus(questId, userId, status, 'Confirmed');
+
+            if (success) {
+                if (type === 'ACCEPT') {
+                    setParticipants(prev => prev.map(p => p.id === userId ? { ...p, participant_status: QuestParticipantStatus.ACCEPTED } : p));
+                    showToast("Hunter accepted!", "success");
+                } else {
+                    setParticipants(prev => prev.filter(p => p.id !== userId));
+                    showToast("Request declined.", "info");
+                }
+            } else {
+                showToast("Failed to update status.", "error");
+            }
         }
+
+        setDecisionModal(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const handleKickParticipant = async (uid: string) => {
+        const u = participants.find(p => p.id === uid);
+        setDecisionModal({
+            isOpen: true,
+            type: 'KICK',
+            userId: uid,
+            userName: u?.name || u?.username || 'Unknown Hunter'
+        });
+    };
+
+    const handleLeaveQuest = async () => {
+        setDecisionModal({
+            isOpen: true,
+            type: 'ABANDON',
+            userId: '',
+            userName: ''
+        });
     };
 
     const handleGuestAuth = () => {
@@ -303,6 +368,11 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                         Live Now
                                                     </span>
                                                 )}
+                                                {isFinished && (
+                                                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-[0.2em] border border-emerald-500/20">
+                                                        COMPLETED
+                                                    </span>
+                                                )}
                                                 <span className="px-2 py-0.5 rounded-full bg-white/5 text-gray-400 text-[8px] font-black uppercase tracking-[0.2em] border border-white/10">
                                                     {quest.current_participants}/{quest.max_participants || '∞'} Squad
                                                 </span>
@@ -338,8 +408,8 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                         {/* Immersive Tabs */}
                                         <div className="flex gap-6 border-b border-white/5 pb-2 mb-8 overflow-x-auto no-scrollbar">
                                             {[
-                                                { id: 'details', label: 'Details' },
-                                                { id: 'participants', label: 'Participants', mobileOnly: true },
+                                                { id: 'participants', label: 'Squad' },
+                                                { id: 'details', label: 'Deets' },
                                                 { id: 'itinerary', label: 'The Plan' },
                                                 { id: 'checklist', label: 'Essentials' }
                                             ].map(tab => (
@@ -389,7 +459,11 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                             <div>
                                                                 <h4 className="text-[7px] font-black uppercase tracking-[0.2em] text-gray-500 mb-0.5">Mission Start</h4>
                                                                 <p className="text-xs font-bold text-white leading-tight">
-                                                                    {new Date(quest.start_time).toLocaleDateString([], { month: 'short', day: 'numeric' })} <span className="text-gray-500">@</span> {new Date(quest.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                    {new Date(quest.start_time).toLocaleDateString([], { month: 'short', day: 'numeric' })} <span className="text-gray-500">@</span> {
+                                                                        new Date(quest.start_time).getHours() === 23 && new Date(quest.start_time).getMinutes() === 59
+                                                                            ? 'TBD'
+                                                                            : new Date(quest.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                                    }
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -418,7 +492,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                     initial={{ opacity: 0, x: 20 }}
                                                     animate={{ opacity: 1, x: 0 }}
                                                     exit={{ opacity: 0, x: -20 }}
-                                                    className="space-y-6 md:hidden"
+                                                    className="space-y-6"
                                                 >
                                                     <div className="space-y-4">
                                                         <div className="flex items-center justify-between">
@@ -426,7 +500,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Squad Members</h3>
                                                                 <p className="text-[8px] text-primary/60 font-black uppercase tracking-widest">{squadMembers.length + (quest.host ? 1 : 0)} Active</p>
                                                             </div>
-                                                            {isHost && squadMembers.length > 0 && (
+                                                            {isHost && squadMembers.length > 0 && !isFinished && (
                                                                 <button
                                                                     onClick={() => setManagingSquad(!managingSquad)}
                                                                     className={`text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-all ${managingSquad ? 'text-red-500 border-red-500/20 bg-red-500/10' : 'text-gray-400 border-white/5 hover:text-white hover:border-white/10'}`}
@@ -492,7 +566,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                             ))}
                                                         </div>
 
-                                                        {isHost && joinRequests.length > 0 && (
+                                                        {isHost && joinRequests.length > 0 && !isFinished && (
                                                             <div className="space-y-4 pt-4 border-t border-white/5">
                                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
                                                                     Join Requests
@@ -537,7 +611,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                         {squadMembers.length === 0 && !quest.host && joinRequests.length === 0 && (
                                                             <div className="py-12 text-center border border-white/5 border-dashed rounded-3xl">
                                                                 <Users className="mx-auto text-gray-800 mb-2 opacity-30" size={32} />
-                                                                <p className="text-[10px] text-gray-600 font-black uppercase tracking-widest">Waiting for signals</p>
+                                                                <p className="text-[10px] text-gray-600 font-black uppercase tracking-widest">No Join Requests Yet</p>
                                                             </div>
                                                         )}
                                                     </div>
@@ -606,22 +680,22 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                 <div className="w-full md:w-[320px] md:border-l border-white/5 bg-white/[0.01] flex flex-col p-6 shrink-0 relative z-30">
                                     <button
                                         onClick={onClose}
-                                        className="hidden md:flex absolute top-4 right-4 w-7 h-7 rounded-full bg-white/5 border border-white/10 items-center justify-center text-gray-500 hover:text-white transition-all hover:bg-white/10 z-50"
+                                        className="hidden md:flex absolute top-6 right-6 w-8 h-8 rounded-full bg-white/5 border border-white/10 items-center justify-center text-gray-500 hover:text-white transition-all hover:bg-white/10 hover:border-white/20 z-50 shadow-xl"
                                     >
                                         <X size={16} />
                                     </button>
-                                    <div className="hidden md:flex flex-col flex-1 min-h-0 mb-6 mt-4">
+                                    <div className="hidden md:flex flex-col flex-1 min-h-0 mb-6 mt-12">
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="space-y-0.5">
-                                                <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">Participants</h3>
+                                                <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">Squad</h3>
                                                 <p className="text-[7px] text-primary/60 font-black uppercase tracking-widest">{squadMembers.length + (quest.host ? 1 : 0)} Active</p>
                                             </div>
-                                            {isHost && squadMembers.length > 0 && (
+                                            {isHost && squadMembers.length > 0 && !isFinished && (
                                                 <button
                                                     onClick={() => setManagingSquad(!managingSquad)}
-                                                    className={`text-[7px] font-black uppercase tracking-widest px-2 py-1.5 rounded-lg border transition-all ${managingSquad ? 'text-red-500 border-red-500/20 bg-red-500/10' : 'text-gray-400 border-white/5 hover:text-white hover:border-white/10'}`}
+                                                    className={`text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border transition-all ${managingSquad ? 'text-red-500 border-red-500/20 bg-red-500/10' : 'text-primary border-primary/20 bg-primary/5 hover:bg-primary/20'}`}
                                                 >
-                                                    {managingSquad ? 'Finish' : 'Edit'}
+                                                    {managingSquad ? 'Done' : 'Kick'}
                                                 </button>
                                             )}
                                         </div>
@@ -678,7 +752,7 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                                                     onClick={(e) => { e.stopPropagation(); handleKickParticipant(p.id); }}
                                                                     className="w-6 h-6 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center border border-red-500/20 shadow-lg ml-1 shrink-0"
                                                                 >
-                                                                    <Trash size={10} />
+                                                                    <UserMinus size={10} />
                                                                 </button>
                                                             )}
                                                         </div>
@@ -687,10 +761,10 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                             </div>
 
                                             {/* Join Requests Section (Host Only) */}
-                                            {isHost && joinRequests.length > 0 && (
+                                            {isHost && joinRequests.length > 0 && !isFinished && (
                                                 <div className="space-y-2 pt-2 border-t border-white/5">
                                                     <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-primary px-2 flex items-center justify-between">
-                                                        Incoming Signals
+                                                        Join Requests
                                                         <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[8px]">{joinRequests.length}</span>
                                                     </h4>
                                                     <div className="space-y-1.5">
@@ -739,36 +813,103 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                                     </div>
 
                                     <div className="space-y-6">
-                                        {!isHost ? (
-                                            <button
-                                                onClick={handleJoinAction}
-                                                disabled={joinState === 'requested'}
-                                                className={`
-                                                    w-full py-4 rounded-2xl flex items-center justify-center gap-3 transition-all font-black uppercase text-[10px] tracking-[0.2em] shadow-xl
-                                                    ${joinState === 'idle' ? 'bg-white text-black hover:bg-primary shadow-white/5' : ''}
-                                                    ${joinState === 'requested' ? 'bg-white/5 text-gray-500 border border-white/10 cursor-not-allowed' : ''}
-                                                    ${joinState === 'joined' ? 'bg-primary text-black shadow-primary/20' : ''}
-                                                `}
-                                            >
-                                                {joinState === 'idle' && <>Hunt <ArrowRight size={14} /></>}
-                                                {joinState === 'requested' && <>Pending...</>}
+                                        {isFinished ? (
+                                            <div className="p-6 rounded-3xl bg-emerald-500/[0.03] border border-emerald-500/10 text-center space-y-4 relative overflow-hidden group">
+                                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+                                                <div className="w-14 h-14 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)] group-hover:scale-110 transition-transform duration-500">
+                                                    <Trophy className="text-emerald-500" size={28} />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <h3 className="text-sm font-black uppercase tracking-[0.2em] text-emerald-500">Mission Accomplished</h3>
+                                                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed">
+                                                        This quest record is now sealed in history.
+                                                    </p>
+                                                </div>
+
+                                                {/* Participation Badge if joined */}
                                                 {joinState === 'joined' && (
-                                                    <div className="flex items-center gap-4 w-full">
-                                                        <div className="flex-1 flex items-center justify-center gap-2">
-                                                            <MessageCircle size={14} /> Open Comms
-                                                        </div>
-                                                        <div className="w-[1px] h-4 bg-black/10" />
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleLeaveQuest(); }}
-                                                            className="px-4 py-2 hover:bg-black/5 rounded-xl transition-all"
-                                                        >
-                                                            <X size={14} />
-                                                        </button>
+                                                    <div className="flex items-center justify-center gap-2 py-2 px-4 bg-white/[0.02] border border-white/5 rounded-2xl mx-auto w-fit">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                                        <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">You were there</span>
                                                     </div>
                                                 )}
-                                            </button>
+                                            </div>
+                                        ) : !isHost ? (
+                                            <div className="space-y-2">
+                                                <button
+                                                    onClick={joinState === 'requested' ? undefined : handleJoinAction}
+                                                    disabled={false}
+                                                    className={`
+                                                    w-full py-4 rounded-2xl flex items-center justify-center gap-3 transition-all font-black uppercase text-[10px] tracking-[0.2em] shadow-xl
+                                                    ${joinState === 'idle' ? 'bg-white text-black hover:bg-primary shadow-white/5' : ''}
+                                                    ${joinState === 'requested' ? 'bg-white/5 text-gray-500 border border-white/10' : ''}
+                                                    ${joinState === 'joined' ? 'bg-primary text-black shadow-primary/20' : ''}
+                                                `}
+                                                >
+                                                    {joinState === 'idle' && <>Join <ArrowRight size={14} /></>}
+                                                    {joinState === 'requested' && <>Pending...</>}
+                                                    {joinState === 'joined' && (
+                                                        <div
+                                                            onClick={async () => {
+                                                                const { data } = await supabaseService.quests.getQuestById(questId!);
+                                                                onClose();
+                                                                navigate('/app/chat', {
+                                                                    state: {
+                                                                        openChatId: data?.lobby_id || `lobby-${questId}`,
+                                                                        openChatName: data?.title || 'Mission Chat'
+                                                                    }
+                                                                });
+                                                            }}
+                                                            className="flex items-center justify-center gap-2 w-full h-full cursor-pointer hover:bg-white transition-all group"
+                                                        >
+                                                            <MessageCircle size={14} className="group-hover:text-black" />
+                                                            <span className="group-hover:text-black">Open Chat</span>
+                                                        </div>
+                                                    )}
+                                                </button>
+                                                {joinState === 'joined' && (
+                                                    <button
+                                                        onClick={handleLeaveQuest}
+                                                        className="w-full py-2.5 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 font-black uppercase text-[8px] tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all"
+                                                    >
+                                                        Leave Quest
+                                                    </button>
+                                                )}
+                                                {joinState === 'requested' && (
+                                                    <button
+                                                        onClick={async () => {
+                                                            const success = await supabaseService.quests.leaveQuest(questId!);
+                                                            if (success) {
+                                                                setJoinState('idle');
+                                                                showToast("Request cancelled.", "info");
+                                                                const parts = await supabaseService.quests.getQuestParticipants(questId!);
+                                                                setParticipants(parts);
+                                                            } else {
+                                                                showToast("Failed to cancel request.", "error");
+                                                            }
+                                                        }}
+                                                        className="w-full py-2.5 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 font-black uppercase text-[8px] tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all"
+                                                    >
+                                                        Cancel Request
+                                                    </button>
+                                                )}
+                                            </div>
                                         ) : (
                                             <div className="grid grid-cols-2 gap-3">
+                                                <button
+                                                    onClick={() => {
+                                                        onClose();
+                                                        navigate('/app/chat', {
+                                                            state: {
+                                                                openChatId: (quest as any)?.lobby_id || `lobby-${questId}`,
+                                                                openChatName: quest?.title || 'Group Chat'
+                                                            }
+                                                        });
+                                                    }}
+                                                    className="col-span-2 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white font-black uppercase text-[8px] tracking-[0.2em] hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <MessageCircle size={14} /> Open Chat
+                                                </button>
                                                 {!isLive ? (
                                                     <button onClick={handleStartQuest} className="col-span-2 py-3.5 rounded-xl bg-electric-teal text-black font-black uppercase text-[8px] tracking-[0.2em] hover:bg-white transition-all flex items-center justify-center gap-2">
                                                         <Play size={12} fill="black" /> Start Quest
@@ -832,10 +973,11 @@ const QuestOverlay: React.FC<QuestOverlayProps> = ({ questId, onClose }) => {
                 </div>
             )
             }
-            <QuestReasonModal
+            <QuestSystemModal
                 isOpen={decisionModal.isOpen}
                 type={decisionModal.type}
                 userName={decisionModal.userName}
+                questTitle={quest?.title}
                 onClose={() => setDecisionModal(prev => ({ ...prev, isOpen: false }))}
                 onConfirm={confirmStatusAction}
             />

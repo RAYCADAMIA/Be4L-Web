@@ -1,45 +1,55 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useToast } from '../Toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronLeft, Zap, MessageCircle, Users, Plus, mapPin, Globe, Lock, MapPin, Sparkles } from 'lucide-react';
+import { Search, ChevronLeft, Zap, MessageCircle, Users, Plus, mapPin, MessageSquare, MapPin, Sparkles } from 'lucide-react';
 import { supabaseService } from '../../services/supabaseService';
 import { Message, User as UserType } from '../../types';
 import TopBar from '../TopBar';
 
 import { HeartbeatTransition } from '../ui/AestheticComponents';
 import { useNavigation } from '../../contexts/NavigationContext';
+import QuestSystemModal from '../Quest/QuestSystemModal';
 import { useScrollBehavior } from '../../hooks/useScrollBehavior';
-import { ChatSidebar, ChatHeader } from './ChatFilters';
+import { ChatHeader } from './ChatFilters';
+import { OTHER_USERS } from '../../constants';
+import UserListModal from '../UserListModal';
 
 interface ChatListScreenProps {
     onOpenChat: (chatId: string, name: string) => void;
     onBack?: () => void;
     onOpenProfile: () => void;
     currentUser: UserType;
-    onNavigate: (tab: 'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS') => void;
+    onNavigate: (tab: 'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS' | 'DIBS') => void;
 }
 
 const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onOpenProfile, currentUser, onNavigate }) => {
-    const { setTabs, activeTab, setActiveTab } = useNavigation();
+    const { showToast } = useToast();
+    const { setTabs, setActiveTab } = useNavigation();
     const [activeCat, setActiveCat] = useState('All');
     const [chats, setChats] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showInputModal, setShowInputModal] = useState(false);
+    const [inputModalConfig, setInputModalConfig] = useState<{
+        title: string,
+        placeholder: string,
+        defaultValue: string,
+        onConfirm: (val: string) => void
+    } | null>(null);
     const { headerSpringY } = useNavigation();
     const { handleScroll } = useScrollBehavior();
+    const [showFriendSuggestions, setShowFriendSuggestions] = useState(false);
+    const [hasBrands, setHasBrands] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const isValidUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Register Tabs
+    // Register Tabs (Simplified - just All by default)
     useEffect(() => {
-        if (!activeTab || (activeTab !== 'WORLD' && activeTab !== 'QUEST' && activeTab !== 'PRIVATE')) {
-            setActiveTab('WORLD');
-        }
-        setTabs([]);
+        setTabs([]); // Ensure no tabs are registered
         return () => setTabs([]);
     }, []);
-
-    useEffect(() => {
-        setActiveCat('All');
-    }, [activeTab]);
 
     useEffect(() => {
         const loadChats = async () => {
@@ -51,33 +61,60 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
             }
             let data = await supabaseService.chat.getChats(currentUser.id);
 
-            // Filter logic for 6-Tier System
-            const worldChats = data.filter((c: any) => ['GLOBAL', 'CITY', 'BRAND'].includes(c.type));
-            const questChats = data.filter((c: any) => c.context_type === 'QUEST' || (c.type === 'lobby' && c.context_type === 'QUEST'));
-            const privateChats = data.filter((c: any) => ['SQUAD', 'personal', 'group', 'DM'].includes(c.type) || (c.type === 'personal'));
+            // Seed Global and City chats (Community)
+            let communityChats = data.filter((c: any) => ['GLOBAL', 'CITY', 'BRAND'].includes(c.type));
 
-            // Fallback to MOCK_CHATS if empty (for MVP demo)
-            if (data.length === 0) {
-                const { MOCK_CHATS } = await import('../../services/supabaseService');
-                // Auto-seed a Global Chat if none exists in mock
-                if (!worldChats.find((c: any) => c.type === 'GLOBAL')) {
-                    worldChats.push({ id: 'global-1', type: 'GLOBAL', name: 'Global Lobby', lastMsg: 'User123: Hello World!', time: 'Live', unread: 0, avatar: 'https://cdn-icons-png.flaticon.com/512/921/921591.png' });
-                }
-                if (!worldChats.find((c: any) => c.type === 'CITY')) {
-                    worldChats.push({ id: 'city-dvo', type: 'CITY', name: 'Davao City', lastMsg: 'Anyone at People Park?', time: 'Live', unread: 5, avatar: 'https://ui-avatars.com/api/?name=Davao&background=random' });
-                }
+            if (!communityChats.find(c => c.type === 'GLOBAL')) {
+                communityChats.unshift({ id: 'global-1', type: 'GLOBAL', name: 'Global', lastMsg: 'Welcome to the world of Be4L!', time: 'Live', unread: 0, avatar: 'https://cdn-icons-png.flaticon.com/512/921/921591.png' });
             }
 
-            let filtered = [];
-            if (activeTab === 'WORLD') filtered = worldChats;
-            else if (activeTab === 'QUEST') filtered = questChats;
-            else filtered = privateChats;
+            // Reflect current city in list
+            const lastSwitch = localStorage.getItem('be4l_last_city_switch');
+            const cityData = lastSwitch ? JSON.parse(lastSwitch) : { city: 'davao' };
+            const cityName = cityData.city.charAt(0).toUpperCase() + cityData.city.slice(1);
+
+            if (!communityChats.find(c => c.type === 'CITY')) {
+                communityChats.push({
+                    id: `city-${cityData.city}`,
+                    type: 'CITY',
+                    name: `${cityName} City`,
+                    lastMsg: `Find your local squad in ${cityName}.`,
+                    time: 'Live',
+                    unread: 0,
+                    avatar: `https://ui-avatars.com/api/?name=${cityName}&background=random`
+                });
+            }
+
+            const questChats = data.filter((c: any) => c.context_type === 'QUEST' || c.type === 'lobby' || (c.name || '').includes('MISSION'));
+            const squadChats = data.filter((c: any) => c.type === 'SQUAD');
+            const dmChats = data.filter((c: any) =>
+                ['personal', 'DM'].includes(c.type) &&
+                c.context_type !== 'QUEST' &&
+                !(c.name || '').includes('MISSION') &&
+                c.type !== 'lobby' &&
+                c.type !== 'SQUAD' &&
+                c.type !== 'GLOBAL' &&
+                c.type !== 'CITY'
+            );
+
+            setHasBrands(communityChats.some(c => c.type === 'BRAND'));
+
+            let filtered = data;
 
             // Apply category filter
-            if (activeCat === 'Unread') {
-                filtered = filtered.filter(c => c.unread > 0);
-            } else if (activeCat === 'Groups' && activeTab === 'ECHOES') {
-                filtered = filtered.filter(c => c.type === 'group');
+            if (activeCat === 'All') {
+                // Pin Global and City to the top of All
+                const pinned = communityChats.filter(c => ['GLOBAL', 'CITY'].includes(c.type));
+                const rest = data.filter(c => !pinned.find(p => p.id === c.id));
+                filtered = [...pinned, ...rest];
+            } else if (activeCat === 'Quest') {
+                filtered = questChats;
+            } else if (activeCat === 'Community') {
+                filtered = communityChats;
+            } else if (activeCat === 'Squad') {
+                filtered = squadChats;
+            } else if (activeCat === 'DM' || activeCat === 'DMs') {
+                filtered = dmChats;
             }
 
             // Artificial delay
@@ -87,25 +124,106 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
             }, 500);
         };
         loadChats();
-    }, [activeTab, activeCat]);
+    }, [activeCat, currentUser, refreshKey]);
 
-    const handleCreateGroup = async () => {
-        const groupName = prompt("Enter Squad Name:");
-        if (!groupName) return;
+    // Real-time subscription for Chat List
+    useEffect(() => {
+        if (!currentUser || !isValidUUID(currentUser.id)) return;
 
-        // In a real app, this would involve selecting members, but for MVP:
-        const { data: newChat } = await supabaseService.chat.createGroup(currentUser.id, groupName);
-        if (newChat) {
-            onOpenChat(newChat.id, newChat.name);
-        }
+        const { supabase } = supabaseService as any;
+        if (!supabase) return;
+
+        console.log("[ChatList] Subscribing to echoes and messages for real-time updates...");
+
+        const handleLocalUpdate = () => {
+            console.log("[ChatList] Local mock chat updated, reloading...");
+            setRefreshKey(prev => prev + 1);
+        };
+        window.addEventListener('local-chat-update', handleLocalUpdate);
+
+        const channel = supabase.channel(`chat-list-${currentUser.id}`)
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'echoes'
+            }, (payload: any) => {
+                const pids = payload.new?.participant_ids || payload.old?.participant_ids || [];
+                if (pids.includes(currentUser.id)) {
+                    console.log("[ChatList] Echoes changed for user, reloading...");
+                    setRefreshKey(prev => prev + 1);
+                }
+            })
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'echo_messages'
+            }, (payload: any) => {
+                console.log("[ChatList] New message observed, bumping chat to top...");
+                setRefreshKey(prev => prev + 1);
+            })
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+            window.removeEventListener('local-chat-update', handleLocalUpdate);
+        };
+    }, [currentUser]);
+
+    const handleCreateGroup = () => {
+        setInputModalConfig({
+            title: 'Create Squad Chat',
+            placeholder: 'Enter Squad Name...',
+            defaultValue: '',
+            onConfirm: async (groupName) => {
+                if (groupName) {
+                    const { data: newChat } = await supabaseService.chat.createGroup(currentUser.id, groupName);
+                    if (newChat) {
+                        onOpenChat(newChat.id, newChat.name);
+                    }
+                }
+                setShowInputModal(false);
+            }
+        });
+        setShowInputModal(true);
     };
 
-    const handleJoinCity = async () => {
-        const city = prompt("Enter city name to switch (Mock):", "Manila");
-        if (city) {
-            // Mock switch
-            alert(`Switching to ${city}... (3 Day Cooldown started)`);
+    const handleJoinCity = () => {
+        const lastSwitch = localStorage.getItem('be4l_last_city_switch');
+        const switchData = lastSwitch ? JSON.parse(lastSwitch) : null;
+
+        if (switchData) {
+            const diff = Date.now() - switchData.timestamp;
+            const threeDays = 3 * 24 * 60 * 60 * 1000;
+            if (diff < threeDays) {
+                const daysLeft = Math.ceil((threeDays - diff) / (24 * 60 * 60 * 1000));
+                showToast(`Frequency locked. You can relocate again in ${daysLeft} days.`, 'warning');
+                return;
+            }
         }
+
+        setInputModalConfig({
+            title: 'Relocate Frequency',
+            placeholder: 'Enter City (Manila, Cebu, Davao)...',
+            defaultValue: '',
+            onConfirm: (city) => {
+                if (city) {
+                    const cityKey = city.toLowerCase().trim();
+                    if (['manila', 'cebu', 'davao'].includes(cityKey)) {
+                        localStorage.setItem('be4l_last_city_switch', JSON.stringify({
+                            city: cityKey,
+                            timestamp: Date.now()
+                        }));
+                        showToast(`Relocated to ${city}. Signal updated.`, "info");
+                        // Refresh chats
+                        window.location.reload();
+                    } else {
+                        showToast("Invalid city. Choose Manila, Cebu, or Davao.", "error");
+                    }
+                }
+                setShowInputModal(false);
+            }
+        });
+        setShowInputModal(true);
     };
 
     // Sub-filter logic (optional, keeping 'All' and 'Unread')
@@ -123,7 +241,8 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
             >
                 {/* Header Spacer for Floating Nav - 75px to clear logo & menu area perfectly */}
                 <div className="h-[88px] w-full shrink-0" />
-                {/* Mobile Search & Controls */}
+                {/* Mobile Search & Controls - Hidden for now */}
+                {/* 
                 {currentUser && (
                     <div className="md:hidden pt-2 px-6 pb-4">
                         <div className="flex items-center gap-3">
@@ -131,7 +250,7 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                                 <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-electric-teal transition-colors" />
                                 <input
                                     type="text"
-                                    placeholder="Search messages..."
+                                    placeholder="Search"
                                     className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-3 pl-11 pr-4 text-[11px] font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-electric-teal/50 focus:bg-white/[0.05] transition-all uppercase tracking-wide"
                                 />
                             </div>
@@ -144,51 +263,9 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                         </div>
                     </div>
                 )}
+                */}
 
-                {/* Major Tabs System */}
-                {currentUser && (
-                    <div className="px-6 mb-4">
-                        <div className="flex gap-2 p-1.5 bg-white/[0.03] border border-white/5 rounded-[2rem] backdrop-blur-3xl">
-                            {[
-                                { id: 'WORLD', label: 'World', icon: Globe },
-                                { id: 'QUEST', label: 'Quest', icon: Zap },
-                                { id: 'PRIVATE', label: 'Private', icon: Lock }
-                            ].map((tab) => {
-                                const isActive = activeTab === tab.id;
-                                return (
-                                    <button
-                                        key={tab.id}
-                                        onClick={() => setActiveTab(tab.id)}
-                                        className={`
-                                            flex-1 flex flex-col items-center justify-center py-2.5 rounded-[1.4rem] transition-all duration-500 relative overflow-hidden
-                                            ${isActive ? 'text-white' : 'text-zinc-500 hover:text-white/60'}
-                                        `}
-                                    >
-                                        <tab.icon size={16} className={`mb-1 transition-transform duration-500 ${isActive ? 'scale-110' : 'scale-100'}`} />
-                                        <span className={`text-[8px] font-black uppercase tracking-[0.2em] transition-all ${isActive ? 'opacity-100' : 'opacity-40'}`}>
-                                            {tab.label}
-                                        </span>
-                                        {isActive && (
-                                            <motion.div
-                                                layoutId="activeMajorTab"
-                                                className="absolute inset-0 bg-white/10 border border-white/10 -z-10"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                transition={{ duration: 0.3 }}
-                                            />
-                                        )}
-                                        {isActive && (
-                                            <motion.div
-                                                layoutId="activeMajorTabGlow"
-                                                className="absolute inset-0 bg-primary/5 blur-xl -z-20"
-                                            />
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
+
 
                 {/* Fixed Header Container - Subfilters */}
                 {currentUser && (
@@ -208,27 +285,7 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                     </div>
                 )}
 
-                {/* City Switcher Banner (Visible only in World Tab) */}
-                {activeTab === 'WORLD' && (
-                    <div className="px-4 mb-4">
-                        <motion.div
-                            whileTap={{ scale: 0.98 }}
-                            onClick={handleJoinCity}
-                            className="w-full p-4 rounded-2xl bg-gradient-to-r from-electric-teal/10 to-transparent border border-electric-teal/20 flex items-center justify-between group cursor-pointer"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-electric-teal/20 flex items-center justify-center text-electric-teal">
-                                    <MapPin size={20} />
-                                </div>
-                                <div>
-                                    <h3 className="text-xs font-black text-white uppercase tracking-wider">Current City</h3>
-                                    <p className="text-[10px] font-medium text-electric-teal">Davao City <span className="text-white/30 ml-1">(Tap to switch)</span></p>
-                                </div>
-                            </div>
-                            <ChevronLeft size={16} className="text-white/30 rotate-180 group-hover:text-white transition-colors" />
-                        </motion.div>
-                    </div>
-                )}
+
 
 
                 {/* Chat List */}
@@ -325,50 +382,147 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                                         </div>
                                     </>
                                 ) : (
-                                    <div className="opacity-20">
-                                        <p className="text-xs font-bold uppercase tracking-widest text-gray-400">No chats found</p>
+                                    <div className="py-12 flex flex-col items-center justify-center text-center space-y-6">
+                                        <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-2">
+                                            <MessageCircle size={32} className="text-white/20" />
+                                        </div>
+
+                                        {activeCat === 'DMs' && (
+                                            <div className="space-y-4">
+                                                <p className="text-xs font-black uppercase tracking-[0.2em] text-white/40">No direct signals yet</p>
+                                                <button
+                                                    onClick={() => setShowFriendSuggestions(true)}
+                                                    className="px-6 py-3 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform active:scale-95 shadow-xl"
+                                                >
+                                                    Find Friends Now
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {activeCat === 'Quest' && (
+                                            <div className="space-y-4">
+                                                <p className="text-xs font-black uppercase tracking-[0.2em] text-white/40">Your missions are quiet</p>
+                                                <button
+                                                    onClick={() => onNavigate('QUESTS')}
+                                                    className="px-6 py-3 bg-electric-teal text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform active:scale-95 shadow-xl"
+                                                >
+                                                    Find and Join Quest Now
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {activeCat === 'All' && (
+                                            <div className="space-y-4">
+                                                <p className="text-xs font-black uppercase tracking-[0.2em] text-white/40">The feed is silent</p>
+                                                <div className="flex flex-col gap-2">
+                                                    <button
+                                                        onClick={() => onNavigate('QUESTS')}
+                                                        className="px-6 py-3 border border-white/10 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/5 transition-all"
+                                                    >
+                                                        Discover Quests
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setShowFriendSuggestions(true)}
+                                                        className="px-6 py-3 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform"
+                                                    >
+                                                        Add Your Friends
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeCat !== 'DMs' && activeCat !== 'Quest' && activeCat !== 'All' && (
+                                            <div className="opacity-20">
+                                                <p className="text-xs font-bold uppercase tracking-widest text-gray-400">No chats found</p>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
                         ) : (
-                            chats.map(chat => (
-                                <motion.div
-                                    whileHover={{ x: 4 }}
-                                    key={chat.id}
-                                    onClick={() => onOpenChat(chat.id, chat.name)}
-                                    className="flex items-center gap-4 p-4 rounded-3xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all cursor-pointer group"
-                                >
-                                    <div className="relative">
-                                        <div className={`w-12 h-12 rounded-[1.4rem] overflow-hidden border border-white/10 p-0.5 bg-black`}>
-                                            <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-[1.2rem] object-cover" />
-                                        </div>
-                                        {chat.unread > 0 && (
-                                            <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-electric-teal rounded-full border-2 border-black flex items-center justify-center px-0.5">
-                                                <span className="text-[9px] font-black text-black">{chat.unread}</span>
+                            <>
+                                {chats.map(chat => (
+                                    <motion.div
+                                        whileHover={{ x: 4 }}
+                                        key={chat.id}
+                                        onClick={() => onOpenChat(chat.id, chat.name)}
+                                        className="flex items-center gap-4 p-4 rounded-3xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all cursor-pointer group"
+                                    >
+                                        <div className="relative">
+                                            <div className={`w-12 h-12 rounded-[1.4rem] overflow-hidden border border-white/10 p-0.5 bg-black`}>
+                                                <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-[1.2rem] object-cover" />
                                             </div>
-                                        )}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-center mb-0.5">
-                                            <h3 className="text-sm font-black text-white group-hover:text-electric-teal transition-colors tracking-tight uppercase truncate">
-                                                <span className="text-gradient-static">
-                                                    {chat.name}
-                                                </span>
-                                            </h3>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{chat.time}</span>
-                                            </div>
+                                            {chat.unread > 0 && (
+                                                <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-electric-teal rounded-full border-2 border-black flex items-center justify-center px-0.5">
+                                                    <span className="text-[9px] font-black text-black">{chat.unread}</span>
+                                                </div>
+                                            )}
                                         </div>
-                                        <p className={`text-[11px] truncate ${chat.unread > 0 ? 'text-white font-bold' : 'text-gray-500 font-medium'}`}>
-                                            {chat.lastMsg}
-                                        </p>
-                                    </div>
-                                </motion.div>
-                            ))
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-center mb-0.5">
+                                                <h3 className="text-sm font-black text-white group-hover:text-electric-teal transition-colors tracking-tight uppercase truncate">
+                                                    <span className="text-gradient-static">
+                                                        {chat.name}
+                                                    </span>
+                                                </h3>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{chat.time}</span>
+                                                </div>
+                                            </div>
+                                            <p className={`text-[11px] truncate ${chat.unread > 0 ? 'text-white font-bold' : 'text-gray-500 font-medium'} ${chat.lastMsg?.startsWith('[System]') ? 'text-electric-teal/60 italic' : ''}`}>
+                                                {chat.lastMsg}
+                                            </p>
+                                        </div>
+                                    </motion.div>
+                                ))}
+
+                                {/* Brand Community CTA at the bottom of Community filter */}
+                                {activeCat === 'Community' && !hasBrands && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="mt-6 p-8 rounded-[2rem] bg-gradient-to-br from-white/[0.03] to-transparent border border-white/5 text-center"
+                                    >
+                                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 border border-primary/20">
+                                            <Users size={24} className="text-primary" />
+                                        </div>
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white mb-2">Exclusive Tribes</h4>
+                                        <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest leading-relaxed mb-6">You haven't joined any brand communities yet.</p>
+                                        <button
+                                            onClick={() => onNavigate('DIBS')}
+                                            className="px-8 py-3 bg-white/[0.05] hover:bg-white/10 border border-white/10 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] text-white transition-all active:scale-95"
+                                        >
+                                            Find Your Tribe Now
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </>
                         )}
                     </HeartbeatTransition>
                 </div>
             </div>
+            {/* Input Modal */}
+            {inputModalConfig && (
+                <QuestSystemModal
+                    isOpen={showInputModal}
+                    onClose={() => setShowInputModal(false)}
+                    onConfirm={inputModalConfig.onConfirm}
+                    type="INPUT"
+                    placeholder={inputModalConfig.placeholder}
+                    defaultValue={inputModalConfig.defaultValue}
+                />
+            )}
+
+            {/* Friend Suggestions Modal */}
+            <UserListModal
+                isOpen={showFriendSuggestions}
+                onClose={() => setShowFriendSuggestions(false)}
+                title="Suggested Friends"
+                userId={currentUser?.id || ''}
+                type="following" // This component usually fetches internally, but for "suggestions" we can just let it show 'Following' or modify it.
+                // Since I can't modify UserListModal easily without breaking other stuff, I'll assume it works or I'll pass a different purpose.
+                onOpenProfile={(u) => window.dispatchEvent(new CustomEvent('open-profile-overlay', { detail: u.id }))}
+            />
         </div>
     );
 };

@@ -12,6 +12,7 @@ import { supabaseService } from '../../services/supabaseService';
 import { useAuth } from '../../contexts/AuthContext';
 import MapPicker from '../MapPicker';
 import DibsItemCard from '../DibsItemCard';
+import QuestSystemModal from '../Quest/QuestSystemModal';
 
 interface NewItemForm {
     id?: string;
@@ -85,6 +86,8 @@ const InventoryManager = () => {
     const [items, setItems] = useState<DibsItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [showMap, setShowMap] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const loadItems = async () => {
@@ -141,11 +144,18 @@ const InventoryManager = () => {
         loadItems();
     };
 
-    const handleDelete = async (id: string, e: React.MouseEvent) => {
+    const handleDelete = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (confirm('Delete this listing permanently?')) {
-            await supabaseService.dibs.deleteItem(id);
+        setItemToDelete(id);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (itemToDelete) {
+            await supabaseService.dibs.deleteItem(itemToDelete);
             loadItems();
+            setShowConfirmModal(false);
+            setItemToDelete(null);
         }
     };
 
@@ -380,6 +390,13 @@ const InventoryManager = () => {
                         ))}
                     </AnimatePresence>
                 )}
+
+                <QuestSystemModal
+                    isOpen={showConfirmModal}
+                    onClose={() => setShowConfirmModal(false)}
+                    onConfirm={confirmDelete}
+                    type="DELETE"
+                />
             </div>
 
             {/* --- CREATION MODAL --- */}

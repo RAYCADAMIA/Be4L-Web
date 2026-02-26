@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Camera, Send, Check, X, MapPin, Zap, Info, Phone, Shield, Trash2, Sparkles, ChevronRight } from 'lucide-react';
+import { ChevronLeft, Camera, Send, Check, X, MapPin, Zap, Info, Phone, Shield, Trash2, Sparkles, ChevronRight, MoreHorizontal, Globe } from 'lucide-react';
 import { supabaseService } from '../../services/supabaseService';
 import { Message } from '../../types';
 import { useNavigate } from 'react-router-dom';
@@ -32,8 +32,8 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
     // Resolve the other person's ID from messages if it's an Echo
     const targetUserId = messages.find(m => !m.is_me)?.sender_id || chatId;
 
-    const handleCall = () => {
-        triggerToast('feature coming soon...');
+    const handleMoreOptions = () => {
+        if (onToggleInfo) onToggleInfo();
     };
 
     const triggerToast = (msg: string) => {
@@ -96,9 +96,40 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
             setCooldown(10);
         }
 
+        const isFirstMessage = messages.length === 0;
+
         const sentMsg = await supabaseService.chat.sendMessage(chatId, tempMsg);
         if (sentMsg) {
             setMessages(prev => [...prev, sentMsg]);
+
+            // First time DM notification
+            if (isFirstMessage && ['personal', 'DM'].includes(chatType)) {
+                try {
+                    // Only attempt for valid Supabase UUIDs
+                    if (targetUserId && targetUserId !== 'me' && targetUserId.length > 20) {
+                        const { supabase } = supabaseService as any;
+                        const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+                        let senderName = 'Someone';
+                        if (currentUser?.user_metadata?.name) {
+                            senderName = currentUser.user_metadata.name;
+                        } else if (currentUser) {
+                            const profile = await supabaseService.profile.getProfile(currentUser.id);
+                            if (profile?.name) senderName = profile.name;
+                        }
+
+                        await supabaseService.notifications.createNotification({
+                            user_id: targetUserId,
+                            type: 'MESSAGE',
+                            title: 'New Message',
+                            body: `${senderName} sent you a message`,
+                            link: `/app/chat?id=${chatId}`
+                        });
+                    }
+                } catch (e) {
+                    console.error("Failed to send first message notification", e);
+                }
+            }
         }
     };
 
@@ -137,8 +168,8 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
                 </div>
 
                 <div className="flex items-center gap-2 md:gap-3">
-                    <button onClick={handleCall} className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-primary hover:border-primary/30 transition-all shadow-lg active:scale-90">
-                        <Phone size={18} />
+                    <button onClick={handleMoreOptions} className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-primary hover:border-primary/30 transition-all shadow-lg active:scale-90">
+                        <MoreHorizontal size={18} />
                     </button>
                 </div>
             </header>

@@ -7,12 +7,14 @@ import { Starfield } from '../components/Landing/LandingComponents';
 import { useAuth } from '../contexts/AuthContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import Cropper from 'react-easy-crop';
+import { useToast } from '../components/Toast';
 import getCroppedImg from '../utils/cropImage';
 
 export const OnboardingPage: React.FC = () => {
     const navigate = useNavigate();
     useDocumentTitle('Setup Profile');
     const { updateUser } = useAuth();
+    const { showToast } = useToast();
 
     // Step 1: Basics (Name, Username)
     // Step 2: Profile (PFP, Bio)
@@ -166,7 +168,7 @@ export const OnboardingPage: React.FC = () => {
 
         } catch (err: any) {
             console.error('Onboarding Error:', err);
-            alert('Setup Failed: ' + (err.message || String(err)));
+            showToast('Setup Failed: ' + (err.message || String(err)), 'error');
         } finally {
             setLoading(false);
         }

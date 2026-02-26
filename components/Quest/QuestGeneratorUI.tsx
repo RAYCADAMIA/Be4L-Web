@@ -68,7 +68,7 @@ const QuestGeneratorUI: React.FC<QuestGeneratorUIProps> = ({ onAccept, onViewDet
 
                         <div className="flex flex-col w-full gap-4 pt-6 border-t border-white/5">
                             <div className="flex flex-col items-center gap-3 mb-2">
-                                <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${retries > 0 ? 'text-primary/60' : 'text-red-500/60'}`}>
+                                <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${retries > 0 ? 'text-primary drop-shadow-md' : 'text-red-500 drop-shadow-md'}`}>
                                     {retries} remaining out of 5 tries
                                 </span>
                             </div>
@@ -77,9 +77,9 @@ const QuestGeneratorUI: React.FC<QuestGeneratorUIProps> = ({ onAccept, onViewDet
                                 <button
                                     onClick={handleRoll}
                                     disabled={retries <= 0 || isRolling}
-                                    className={`w-14 h-14 rounded-2xl border transition-all flex items-center justify-center group ${retries > 0
-                                            ? 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
-                                            : 'bg-red-500/5 border-red-500/10 text-red-500/30 cursor-not-allowed'
+                                    className={`w-14 h-14 rounded-2xl border transition-all flex items-center justify-center group shadow-lg backdrop-blur-md ${retries > 0
+                                        ? 'bg-white/10 border-white/20 text-white/80 hover:text-white hover:bg-white/20'
+                                        : 'bg-red-500/10 border-red-500/20 text-red-500/50 cursor-not-allowed'
                                         }`}
                                     title="Reroll"
                                 >
@@ -92,9 +92,9 @@ const QuestGeneratorUI: React.FC<QuestGeneratorUIProps> = ({ onAccept, onViewDet
 
                             <button
                                 onClick={() => onViewDetail(currentQuest)}
-                                className="w-full py-2 text-[8px] font-black text-gray-600 uppercase tracking-[0.3em] hover:text-white transition-colors flex items-center justify-center gap-3"
+                                className="w-full py-2 text-[8px] font-black text-white/50 uppercase tracking-[0.3em] hover:text-white transition-colors flex items-center justify-center gap-3 mt-2"
                             >
-                                <div className="w-1 h-1 rounded-full bg-primary/40" />
+                                <div className="w-1 h-1 rounded-full bg-primary/60" />
                                 Inspect Mission
                                 <div className="w-1 h-1 rounded-full bg-primary/40" />
                             </button>

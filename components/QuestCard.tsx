@@ -132,6 +132,12 @@ const QuestCard: React.FC<Props> = ({ quest, currentUser, onOpenDetail }) => {
                     <span className={`text-[9px] font-bold uppercase tracking-widest transition-colors ${isStartingSoon ? 'text-electric-teal' : 'text-white/60 group-hover:text-white/80'}`}>
                         {isLive ? 'NOW' : (() => {
                             const date = new Date(quest.start_time);
+                            const isTBD = date.getHours() === 23 && date.getMinutes() === 59;
+
+                            if (isTBD) {
+                                return `TBD • ${date.toLocaleDateString([], { month: 'short', day: 'numeric' })}`;
+                            }
+
                             const hasTime = date.getHours() !== 0 || date.getMinutes() !== 0;
                             const timeStr = hasTime ? ` • ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '';
                             return isStartingSoon

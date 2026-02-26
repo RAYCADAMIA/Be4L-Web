@@ -103,21 +103,23 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
             return;
         }
 
+        if (currentUser.is_operator) {
+            showToast("Brand accounts cannot join quests.", "info");
+            return;
+        }
+
         if (id.startsWith('mock-') || id.startsWith('gen-')) {
-            showToast("Hunt Joined! (Simulated)", 'success');
+            showToast("Joined! (Simulated)", 'success');
             onNavigate('CHATS');
             return;
         }
 
         const quest = quests.find(q => q.id === id);
-        const success = await supabaseService.quests.requestToJoin(id, currentUser?.id, quest?.approval_required);
+        const success = await supabaseService.quests.requestToJoin(id, currentUser?.id, true);
         if (success) {
-            showToast(quest?.approval_required ? "Hunt Requested! 📡" : "Hunt Started! Joining Comms... ⚡", 'success');
-            if (!quest?.approval_required) {
-                onNavigate('CHATS');
-            }
+            showToast("Join Requested! Awaiting host approval. 📡", 'success');
         } else {
-            showToast("Failed to start hunt", 'error');
+            showToast("Failed to send request", 'error');
         }
     };
 
@@ -166,10 +168,31 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
 
             const allQuests = [...featured, ...existingQuests, ...randomQuests].filter(q => {
                 const isDiscoverable = q.status === QuestStatus.DISCOVERABLE || !q.status;
-                const hasNotStarted = new Date() < new Date(q.start_time);
+                const qDate = new Date(q.start_time);
 
-                // Remove if started, cancelled, or time elapsed
-                return isDiscoverable && hasNotStarted;
+                // Rule 4: Remove if capacity is reached
+                const currentParticipants = Array.isArray(q.participant_ids) ? q.participant_ids.length : 0;
+                const maxCapacity = q.capacity || q.max_participants || 999;
+                const isNotFull = currentParticipants < maxCapacity;
+
+                // Rule 2 & TBD: Remove if start time elapsed, UNLESS it's a TBD quest (23:59)
+                const now = new Date();
+                const isTBD = qDate.getHours() === 23 && qDate.getMinutes() === 59;
+
+                let isNotPast = false;
+                if (isTBD) {
+                    // For TBD, just check if the date hasn't passed (meaning it's today or future)
+                    const today = new Date(now);
+                    today.setHours(0, 0, 0, 0);
+                    const questDay = new Date(qDate);
+                    questDay.setHours(0, 0, 0, 0);
+                    isNotPast = questDay >= today;
+                } else {
+                    // For specific times, strictly check if the timestamp hasn't passed
+                    isNotPast = qDate > now;
+                }
+
+                return isDiscoverable && isNotFull && isNotPast;
             });
 
             // De-duplicate by ID, keeping featured first
@@ -266,14 +289,29 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                 if (!locStr.toLowerCase().includes(filter)) return false;
             }
 
-            // Discovery filter: only show DISCOVERABLE quests that haven't started
+            // Discovery filter: only show DISCOVERABLE quests
             const isDiscoverable = q.status === QuestStatus.DISCOVERABLE || !q.status;
+            if (!isDiscoverable) return false;
+
             const now = new Date();
             const qDate = new Date(q.start_time);
 
-            if (!isDiscoverable || now > qDate) return false;
+            // Rule 4: Remove if capacity is reached
+            const currentParticipants = Array.isArray(q.participant_ids) ? q.participant_ids.length : 0;
+            const maxCapacity = q.capacity || q.max_participants || 999;
+            if (currentParticipants >= maxCapacity) return false;
 
-            return qDate.toDateString() === selectedDate.toDateString();
+            // Rule 2 & TBD: Remove if start time elapsed, UNLESS it's a TBD quest (23:59)
+            const isTBD = qDate.getHours() === 23 && qDate.getMinutes() === 59;
+            if (!isTBD && qDate <= now) return false;
+
+            // Date filter: show quests for the selected day (compare dates only, not time)
+            const qDay = new Date(qDate);
+            qDay.setHours(0, 0, 0, 0);
+            const selDay = new Date(selectedDate);
+            selDay.setHours(0, 0, 0, 0);
+
+            return qDay.getTime() === selDay.getTime();
         });
     }, [quests, questMode, activeCat, viewingLocation, selectedDate]);
 

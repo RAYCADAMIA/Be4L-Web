@@ -9,7 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../Toast';
 import SmartMap from '../ui/SmartMap';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
-import QuestReasonModal from './QuestReasonModal';
+import QuestSystemModal, { SystemModalType } from './QuestSystemModal';
 
 const QuestDetailScreen: React.FC = () => {
     const { questId } = useParams();
@@ -28,7 +28,7 @@ const QuestDetailScreen: React.FC = () => {
     // Decision Modal State
     const [decisionModal, setDecisionModal] = useState<{
         isOpen: boolean;
-        type: 'ACCEPT' | 'DECLINE';
+        type: SystemModalType;
         userId: string;
         userName: string;
     }>({
@@ -95,32 +95,75 @@ const QuestDetailScreen: React.FC = () => {
         loadQuest();
     }, [questId, user]);
 
+    // Refresh join state and participants from the server
+    const refreshJoinState = async () => {
+        if (!questId || !user) return;
+        try {
+            console.log(`[QuestDetail] Re-fetching data for quest ${questId} and user ${user.id}...`);
+            const { data } = await supabaseService.quests.getQuestById(questId);
+            if (data) {
+                setQuest(data);
+                const parts = await supabaseService.quests.getQuestParticipants(questId);
+                console.log(`[QuestDetail] Participants re-fetched:`, parts.map(p => ({ id: p.id, status: p.participant_status })));
+                setParticipants(parts);
+
+                const myPart = parts.find((p: any) => p.user_id === user.id || p.id === user.id);
+                console.log(`[QuestDetail] Found myPart:`, myPart);
+
+                if (myPart) {
+                    if (myPart.participant_status === QuestParticipantStatus.ACCEPTED || myPart.status === QuestParticipantStatus.ACCEPTED) {
+                        setJoinState('joined');
+                        console.log(`[QuestDetail] Setting state to JOINED`);
+                    } else if (myPart.participant_status === QuestParticipantStatus.REQUESTED || myPart.status === QuestParticipantStatus.REQUESTED) {
+                        setJoinState('requested');
+                        console.log(`[QuestDetail] Setting state to REQUESTED`);
+                    } else {
+                        setJoinState('idle');
+                        console.log(`[QuestDetail] Setting state to IDLE (other status)`);
+                    }
+                } else {
+                    if (data.host_id === user.id) {
+                        setJoinState('joined');
+                        console.log(`[QuestDetail] Setting state to JOINED (is host)`);
+                    } else {
+                        setJoinState('idle');
+                        console.log(`[QuestDetail] Setting state to IDLE (no part)`);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Failed to refresh join state:", err);
+        }
+    };
+
     useEffect(() => {
         if (!user || !questId) return;
 
         const { supabase } = supabaseService as any;
         if (!supabase) return;
 
-        const subscription = supabase.channel(`uq-${questId}-${user.id}`)
+        // Listen for ANY change to participation in THIS quest
+        const subscription = supabase.channel(`uq-detail-${questId}`)
             .on('postgres_changes', {
                 event: '*',
                 schema: 'public',
                 table: 'user_quests',
-                filter: `user_id=eq.${user.id}`
-            }, (payload: any) => {
-                const newUserQuest = payload.new as any;
-                if (newUserQuest && newUserQuest.quest_id === questId) {
-                    if (newUserQuest.status === QuestParticipantStatus.ACCEPTED) setJoinState('joined');
-                    else if (newUserQuest.status === QuestParticipantStatus.REQUESTED) setJoinState('requested');
-                    else if (newUserQuest.status === QuestParticipantStatus.DECLINED) setJoinState('idle');
-                } else if (payload.eventType === 'DELETE') {
-                    setJoinState('idle');
-                }
+                filter: `quest_id=eq.${questId}`
+            }, () => {
+                // Re-fetch from DB instead of relying on payload
+                refreshJoinState();
             })
             .subscribe();
 
+        // Also refresh when the browser tab regains focus
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible') refreshJoinState();
+        };
+        document.addEventListener('visibilitychange', handleVisibility);
+
         return () => {
             subscription.unsubscribe();
+            document.removeEventListener('visibilitychange', handleVisibility);
         };
     }, [questId, user]);
 
@@ -190,29 +233,22 @@ const QuestDetailScreen: React.FC = () => {
 
     const handleFinishQuest = async () => {
         if (!questId) return;
-        if (window.confirm("Ready to finish this activity and award points to all participants?")) {
-            showToast("Processing quest rewards...", "info");
-            const { success } = await supabaseService.quests.finishQuest(questId);
-            if (success) {
-                showToast("Quest Completed! Aura points awarded.", "success");
-                navigate('/app/quests');
-            } else {
-                showToast("Failed to close activity.", "error");
-            }
-        }
+        setDecisionModal({
+            isOpen: true,
+            type: 'FINISH',
+            userId: '',
+            userName: ''
+        });
     };
 
     const handleDeleteQuest = async () => {
         if (!questId) return;
-        if (window.confirm("Are you sure you want to cancel this quest? This cannot be undone.")) {
-            const success = await supabaseService.quests.cancelQuest(questId);
-            if (success) {
-                showToast("Quest cancelled.", "info");
-                navigate('/app/quests');
-            } else {
-                showToast("Failed to cancel quest.", "error");
-            }
-        }
+        setDecisionModal({
+            isOpen: true,
+            type: 'CANCEL',
+            userId: '',
+            userName: ''
+        });
     };
 
     const handleStartQuest = async () => {
@@ -227,19 +263,12 @@ const QuestDetailScreen: React.FC = () => {
     };
 
     const handleLeaveQuest = async () => {
-        if (!questId) return;
-        if (window.confirm("Abandon this hunt?")) {
-            const success = await supabaseService.quests.leaveQuest(questId);
-            if (success) {
-                setJoinState('idle');
-                showToast("You left the squad.", "info");
-                // Refresh participants
-                const parts = await supabaseService.quests.getQuestParticipants(questId);
-                setParticipants(parts);
-            } else {
-                showToast("Failed to leave.", "error");
-            }
-        }
+        setDecisionModal({
+            isOpen: true,
+            type: 'ABANDON',
+            userId: '',
+            userName: ''
+        });
     };
 
     const handleStatusAction = (uid: string, action: 'ACCEPT' | 'DECLINE') => {
@@ -252,40 +281,67 @@ const QuestDetailScreen: React.FC = () => {
         });
     };
 
-    const confirmStatusAction = async (reason: string) => {
-        if (!questId || !decisionModal.userId) return;
-
+    const confirmStatusAction = async () => {
+        if (!questId) return;
         const { userId, type } = decisionModal;
-        const status = type === 'ACCEPT' ? QuestParticipantStatus.ACCEPTED : QuestParticipantStatus.DECLINED;
 
-        const success = await supabaseService.quests.updateParticipantStatus(questId, userId, status, reason);
-
-        if (success) {
-            if (type === 'ACCEPT') {
-                setParticipants(prev => prev.map(p => p.id === userId ? { ...p, participant_status: QuestParticipantStatus.ACCEPTED } : p));
-                showToast("Hunter accepted!", "success");
-            } else {
+        if (type === 'KICK' && userId) {
+            const success = await supabaseService.quests.removeQuestParticipant(questId, userId);
+            if (success) {
                 setParticipants(prev => prev.filter(p => p.id !== userId));
-                showToast("Request declined.", "info");
+                showToast("User removed", "info");
+            } else {
+                showToast("Failed to remove user.", "error");
             }
-        } else {
-            showToast("Failed to update status.", "error");
+        } else if (type === 'ABANDON') {
+            const success = await supabaseService.quests.leaveQuest(questId);
+            if (success) {
+                setJoinState('idle');
+                showToast("You left the squad.", "info");
+                const parts = await supabaseService.quests.getQuestParticipants(questId);
+                setParticipants(parts);
+            } else {
+                showToast("Failed to leave.", "error");
+            }
+        } else if (type === 'CANCEL') {
+            await supabaseService.quests.cancelQuest(questId);
+            showToast("Quest cancelled", "info");
+            navigate('/app/quests');
+        } else if (type === 'FINISH') {
+            const { success } = await supabaseService.quests.finishQuest(questId);
+            if (success) {
+                showToast("Mission Completed!", "success");
+            } else {
+                showToast("Error finishing quest.", "error");
+            }
+        } else if (userId) {
+            const status = type === 'ACCEPT' ? QuestParticipantStatus.ACCEPTED : QuestParticipantStatus.DECLINED;
+            const success = await supabaseService.quests.updateParticipantStatus(questId, userId, status, 'Confirmed');
+
+            if (success) {
+                if (type === 'ACCEPT') {
+                    setParticipants(prev => prev.map(p => p.id === userId ? { ...p, participant_status: QuestParticipantStatus.ACCEPTED } : p));
+                    showToast("Hunter accepted!", "success");
+                } else {
+                    setParticipants(prev => prev.filter(p => p.id !== userId));
+                    showToast("Request declined.", "info");
+                }
+            } else {
+                showToast("Failed to update status.", "error");
+            }
         }
 
         setDecisionModal(prev => ({ ...prev, isOpen: false }));
     };
 
     const handleKickParticipant = async (uid: string) => {
-        if (!questId) return;
-        if (window.confirm("Remove this user from the squad?")) {
-            const success = await supabaseService.quests.removeQuestParticipant(questId, uid);
-            if (success) {
-                setParticipants(prev => prev.filter(p => p.id !== uid));
-                showToast("User removed.", "info");
-            } else {
-                showToast("Failed to remove user.", "error");
-            }
-        }
+        const u = participants.find(p => p.id === uid);
+        setDecisionModal({
+            isOpen: true,
+            type: 'KICK',
+            userId: uid,
+            userName: u?.name || u?.username || 'Unknown Hunter'
+        });
     };
 
     if (loading) return <div className="h-screen flex items-center justify-center bg-deep-black"><EKGLoader /></div>;
@@ -412,9 +468,13 @@ const QuestDetailScreen: React.FC = () => {
                                             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2">MISSION START</h4>
                                             <p className="text-lg font-black text-white leading-tight">
                                                 {new Date(quest.start_time).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                                                {(new Date(quest.start_time).getHours() !== 0 || new Date(quest.start_time).getMinutes() !== 0) && (
-                                                    ` @ ${new Date(quest.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                                                )}
+                                                {
+                                                    new Date(quest.start_time).getHours() === 23 && new Date(quest.start_time).getMinutes() === 59
+                                                        ? ' @ TBD'
+                                                        : (new Date(quest.start_time).getHours() !== 0 || new Date(quest.start_time).getMinutes() !== 0) && (
+                                                            ` @ ${new Date(quest.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                                                        )
+                                                }
                                             </p>
                                         </div>
                                     </div>
@@ -514,7 +574,7 @@ const QuestDetailScreen: React.FC = () => {
                                             {isHost && joinRequests.length > 0 && (
                                                 <div className="space-y-4 pt-10 border-t border-white/5">
                                                     <h3 className="text-xs font-black uppercase tracking-[0.4em] text-primary flex items-center gap-3">
-                                                        Incoming Signals
+                                                        Join Requests
                                                         <span className="bg-primary/10 text-primary px-2 py-1 rounded-lg text-[10px]">{joinRequests.length}</span>
                                                     </h3>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -558,7 +618,7 @@ const QuestDetailScreen: React.FC = () => {
                                             {squadMembers.length === 0 && !quest.host && joinRequests.length === 0 && (
                                                 <div className="col-span-full py-24 flex flex-col items-center justify-center bg-white/[0.02] rounded-[3rem] border border-white/5 border-dashed">
                                                     <Users className="text-gray-700 mb-4" size={48} />
-                                                    <p className="text-xs uppercase font-black text-gray-600 tracking-widest">Waiting for signals</p>
+                                                    <p className="text-xs uppercase font-black text-gray-600 tracking-widest">No Join Requests Yet</p>
                                                 </div>
                                             )}
                                         </div>
@@ -667,62 +727,82 @@ const QuestDetailScreen: React.FC = () => {
                             {/* Action Matrix */}
                             <div className="space-y-4">
                                 {!isHost ? (
-                                    <button
-                                        onClick={handleJoinAction}
-                                        className={`
+                                    <div className="space-y-3">
+                                        <button
+                                            onClick={handleJoinAction}
+                                            className={`
                                               w-full py-4 rounded-3xl flex items-center justify-center gap-4 transition-all active:scale-95 font-black uppercase tracking-widest text-[11px] overflow-hidden relative
                                               ${joinState === 'idle' ? 'bg-white text-black hover:bg-primary shadow-xl hover:shadow-primary/20' : ''}
                                               ${joinState === 'requested' ? 'bg-white/5 border border-white/10 text-gray-500' : ''}
                                               ${joinState === 'joined' ? 'bg-primary text-black shadow-lg shadow-primary/20' : ''}
                                           `}
-                                    >
-                                        <AnimatePresence mode="wait">
-                                            {joinState === 'idle' && (
-                                                <motion.div
-                                                    key="idle"
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: -10 }}
-                                                    className="flex items-center gap-3"
-                                                >
-                                                    HUNT <ArrowRight size={16} />
-                                                </motion.div>
-                                            )}
-                                            {joinState === 'requested' && (
-                                                <motion.div
-                                                    key="requested"
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: -10 }}
-                                                    className="flex items-center gap-3"
-                                                >
-                                                    <EKGLoader size={16} /> SIGNAL SENT
-                                                </motion.div>
-                                            )}
-                                            {joinState === 'joined' && (
-                                                <div className="flex items-center gap-4 w-full">
+                                        >
+                                            <AnimatePresence mode="wait">
+                                                {joinState === 'idle' && (
                                                     <motion.div
-                                                        key="joined"
+                                                        key="idle"
                                                         initial={{ opacity: 0, y: 10 }}
                                                         animate={{ opacity: 1, y: 0 }}
                                                         exit={{ opacity: 0, y: -10 }}
-                                                        className="flex-1 flex items-center justify-center gap-3"
-                                                        onClick={(e) => { e.stopPropagation(); navigate('/app/chat', { state: { openChatId: `lobby-${questId}`, openChatName: quest?.title } }); }}
+                                                        className="flex items-center gap-3"
                                                     >
-                                                        <MessageCircle size={18} /> Open Chat
+                                                        JOIN <ArrowRight size={16} />
                                                     </motion.div>
-                                                    <div className="w-[1px] h-6 bg-black/10" />
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); handleLeaveQuest(); }}
-                                                        className="px-6 py-4 hover:bg-black/5 rounded-3xl transition-all"
-                                                        title="Leave Squad"
+                                                )}
+                                                {joinState === 'requested' && (
+                                                    <motion.div
+                                                        key="requested"
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        exit={{ opacity: 0, y: -10 }}
+                                                        className="flex items-center gap-3"
                                                     >
-                                                        <X size={18} />
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </AnimatePresence>
-                                    </button>
+                                                        <EKGLoader size={16} /> SIGNAL SENT
+                                                    </motion.div>
+                                                )}
+                                                {joinState === 'joined' && (
+                                                    <div className="flex items-center gap-4 w-full">
+                                                        <motion.div
+                                                            key="joined"
+                                                            initial={{ opacity: 0, y: 10 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            exit={{ opacity: 0, y: -10 }}
+                                                            className="flex-1 flex items-center justify-center gap-3"
+                                                            onClick={(e) => { e.stopPropagation(); navigate('/app/chat', { state: { openChatId: `lobby-${questId}`, openChatName: quest?.title } }); }}
+                                                        >
+                                                            <MessageCircle size={18} /> Open Chat
+                                                        </motion.div>
+                                                        <div className="w-[1px] h-6 bg-black/10" />
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleLeaveQuest(); }}
+                                                            className="px-6 py-4 hover:bg-black/5 rounded-3xl transition-all"
+                                                            title="Leave Squad"
+                                                        >
+                                                            <X size={18} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </AnimatePresence>
+                                        </button>
+                                        {joinState === 'requested' && (
+                                            <button
+                                                onClick={async () => {
+                                                    const success = await supabaseService.quests.leaveQuest(questId!);
+                                                    if (success) {
+                                                        setJoinState('idle');
+                                                        showToast("Request cancelled.", "info");
+                                                        const parts = await supabaseService.quests.getQuestParticipants(questId!);
+                                                        setParticipants(parts);
+                                                    } else {
+                                                        showToast("Failed to cancel request.", "error");
+                                                    }
+                                                }}
+                                                className="w-full py-2.5 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 font-black uppercase text-[8px] tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all"
+                                            >
+                                                Cancel Request
+                                            </button>
+                                        )}
+                                    </div>
                                 ) : (
                                     <div className="space-y-4 pt-6 border-t border-white/10">
                                         {!isLive ? (
@@ -763,10 +843,11 @@ const QuestDetailScreen: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <QuestReasonModal
+            <QuestSystemModal
                 isOpen={decisionModal.isOpen}
                 type={decisionModal.type}
                 userName={decisionModal.userName}
+                questTitle={quest?.title}
                 onClose={() => setDecisionModal(prev => ({ ...prev, isOpen: false }))}
                 onConfirm={confirmStatusAction}
             />
