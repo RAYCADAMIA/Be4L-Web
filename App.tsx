@@ -6,8 +6,8 @@ import { ToastProvider } from './components/Toast';
 import { NavigationProvider } from './contexts/NavigationContext';
 import './index.css';
 import { Starfield } from './components/Landing/LandingComponents';
-import { PreLaunchWelcome } from './components/ui/PreLaunchWelcome';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { PreLaunchWelcome } from './components/ui/PreLaunchWelcome';
 
 const AppContent = () => {
     return (
