@@ -12,8 +12,6 @@ import { supabaseService } from '../services/supabaseService';
 import { QuestType, QuestStatus, User, QuestVisibilityScope, QuestTimingIntent } from '../types';
 import { QUEST_VIBE_PRESETS } from '../constants';
 import { useToast } from './Toast';
-import MapPicker from './MapPicker';
-import SmartMap from './ui/SmartMap';
 import { AestheticDayPicker, AestheticTimeGrid } from './ui/AestheticDateTimePicker';
 import { MissionTimeline } from './ui/AestheticComponents';
 
@@ -148,7 +146,6 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-    const [showMapPicker, setShowMapPicker] = useState(false);
     const [showVibeDropdown, setShowVibeDropdown] = useState(false);
     const [showItinTimePicker, setShowItinTimePicker] = useState(false);
     const [customCategory, setCustomCategory] = useState('');
@@ -678,7 +675,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                                 if (!locationCoords) setLocationCoords({ latitude: 14.5995, longitude: 120.9842 });
                                             }}
                                             placeholder="ENTER LOCATION DEETS..."
-                                            className="w-full bg-[var(--bg-glass)] border border-[var(--border-tech)] rounded-2xl px-4 py-4 text-sm text-[var(--text-primary)] outline-none focus:border-primary/50 focus:bg-white/[0.05] placeholder:text-white/20 font-bold uppercase tracking-wide transition-all"
+                                            className="w-full bg-[var(--bg-glass)] border border-[var(--border-tech)] rounded-2xl px-4 py-4 text-sm text-[var(--text-primary)] outline-none focus:border-primary/50 focus:bg-white/[0.05] placeholder:text-white/20 font-bold tracking-wide transition-all"
                                             autoFocus
                                         />
                                         <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mt-3 ml-1">
@@ -708,9 +705,6 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                     </div>
 
                                     {/* Map Hidden for now as requested */}
-                                    {/* <div className="h-64 rounded-3xl bg-white/5 border border-white/5 relative overflow-hidden shadow-lg">
-                                        <SmartMap ... />
-                                    </div> */}
                                 </div>
                             </motion.div>
                         )}
@@ -980,7 +974,9 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                                     }
                                 }
                                 if (step === 2) {
-                                    if (!locationName.trim()) { showToast("Location details required.", "info"); return; }
+                                    if (!locationName.trim()) {
+                                        setLocationName('TBD');
+                                    }
                                 }
                                 if (step === 3) {
                                     // Optional checks for Itinerary 
@@ -1014,7 +1010,6 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                     {showStartTimePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={startTime} onChange={setStartTime} onClose={() => setShowStartTimePicker(false)} /></div>}
                     {showEndTimePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={endTime} onChange={setEndTime} onClose={() => setShowEndTimePicker(false)} minTime={startTime} /></div>}
                     {showItinTimePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={itinTime} onChange={setItinTime} onClose={() => setShowItinTimePicker(false)} /></div>}
-                    {showMapPicker && <div className="absolute inset-0 z-[60] bg-black"><MapPicker onSelect={(loc, addr) => { setLocationCoords(loc); setLocationName(addr); setShowMapPicker(false); }} onClose={() => setShowMapPicker(false)} /></div>}
                 </AnimatePresence>
             </motion.div>
         </div>

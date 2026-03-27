@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, Compass, Zap, MapPin, MessageCircle } from 'lucide-react';
-import { UNIVERSAL_CATEGORIES } from '../../constants';
+import { UNIVERSAL_CATEGORIES, PRESET_CITIES } from '../../constants';
 import { useOnClickOutside } from '../../hooks/useOnClickOutside';
 
 interface QuestFiltersProps {
@@ -147,7 +147,7 @@ export const QuestSidebar: React.FC<QuestFiltersProps> = ({
                                 className="overflow-hidden mb-2"
                             >
                                 <div className="flex flex-col gap-1 px-1">
-                                    {['Global', 'Davao', 'Manila', 'Cebu'].map((city) => {
+                                    {PRESET_CITIES.map((city) => {
                                         const isActive = viewingLocation === city;
                                         return (
                                             <button
@@ -441,7 +441,7 @@ export const QuestHeader: React.FC<QuestFiltersProps> = ({
                                                 <div className="px-2 py-1 mb-1 border-b border-white/5">
                                                     <span className="text-[9px] font-black text-white/50 uppercase tracking-widest">Active Cities</span>
                                                 </div>
-                                                {['Global', 'Davao', 'Manila', 'Cebu'].map((loc) => {
+                                                {PRESET_CITIES.map((loc) => {
                                                     const isSelected = viewingLocation === loc;
                                                     return (
                                                         <button

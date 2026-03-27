@@ -27,6 +27,7 @@ const BookScreen: React.FC<{
     const [activeCat, setActiveCat] = useState('All');
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
     const [locationFilter, setLocationFilter] = useState('');
+    const [vibeFilter, setVibeFilter] = useState('');
     const { headerSpringY } = useNavigation();
     const { handleScroll } = useScrollBehavior();
 
@@ -99,6 +100,12 @@ const BookScreen: React.FC<{
             return false;
         }
 
+        // Vibe Tag filter
+        if (vibeFilter) {
+            const hasVibe = brand.vibe_tags?.some(tag => tag.toLowerCase().includes(vibeFilter.toLowerCase()));
+            if (!hasVibe) return false;
+        }
+
         // Price filter for Brands: check if brand has any item in price range
         // If price filter is at MAX, assume user is exploring everything
         if (priceRange[1] < 10000) {
@@ -113,20 +120,29 @@ const BookScreen: React.FC<{
         }
 
         if (activeCat === 'All') return true;
-        if (activeCat === 'Courts') return brand.category === 'venue' || brand.business_name.toLowerCase().includes('court');
-        if (activeCat === 'Events') return brand.category === 'event';
+        const brandCat = (brand.category || '').toLowerCase();
+        const brandName = (brand.business_name || '').toLowerCase();
+        
+        if (activeCat === 'Courts') return brandCat === 'venue' || brandCat === 'courts' || brandName.includes('court');
+        if (activeCat === 'Events') return brandCat === 'event' || brandCat === 'events';
 
         return true;
     });
 
     const filteredItems = allItems.filter(item => {
         // Global restriction: Only starting with Courts and Events
-        // (PLACE type is usually Courts, EVENT type is usually Events/Competitions)
-        const isAllowedType = item.type === 'PLACE' || item.type === 'EVENT';
-        // But we want to be stricter:
+        const itemType = (item.type || '').toUpperCase();
+        const isAllowedType = itemType === 'PLACE' || itemType === 'EVENT';
+        
         const brand = brands.find(b => b.user_id === item.operator_id);
         if (!brand) return false;
-        const brandIsAllowed = brand.category === 'venue' || brand.category === 'event';
+        
+        const brandCat = (brand.category || '').toLowerCase();
+        const brandName = (brand.business_name || '').toLowerCase();
+        // Allow more categories, including food/comida, and dev accounts
+        const brandIsAllowed = ['venue', 'event', 'courts', 'events', 'rental', 'sport', 'comida', 'food', 'cafe', 'bar'].includes(brandCat) || 
+                              brandName.includes('sample') || 
+                              brandName.includes('test');
         if (!brandIsAllowed) return false;
 
         // Empty specific categories
@@ -144,6 +160,12 @@ const BookScreen: React.FC<{
             const hasLocation = item.event_location?.toLowerCase().includes(locationFilter.toLowerCase());
             const brandHasLocation = brand?.location_text?.toLowerCase().includes(locationFilter.toLowerCase());
             if (!hasLocation && !brandHasLocation) return false;
+        }
+
+        // Vibe Tag filter (check against operator's vibe tags)
+        if (vibeFilter) {
+            const hasVibe = brand?.vibe_tags?.some(tag => tag.toLowerCase().includes(vibeFilter.toLowerCase()));
+            if (!hasVibe) return false;
         }
 
         if (activeCat === 'All') return true;
@@ -165,6 +187,8 @@ const BookScreen: React.FC<{
                         setPriceRange={setPriceRange}
                         locationFilter={locationFilter}
                         setLocationFilter={setLocationFilter}
+                        vibeFilter={vibeFilter}
+                        setVibeFilter={setVibeFilter}
                     />
                 </div>
 
@@ -192,6 +216,8 @@ const BookScreen: React.FC<{
                                 setPriceRange={setPriceRange}
                                 locationFilter={locationFilter}
                                 setLocationFilter={setLocationFilter}
+                                vibeFilter={vibeFilter}
+                                setVibeFilter={setVibeFilter}
                             />
                         </motion.div>
                     </div>

@@ -192,7 +192,7 @@ const InventoryManager = () => {
             </div>
 
             {/* Sub-Navigation */}
-            <div className="flex gap-8 border-b border-white/5 relative">
+            <div className="flex gap-8 border-b border-white/5 relative bg-black/20 px-6 rounded-t-3xl backdrop-blur-sm">
                 {[
                     { id: 'PLACES', label: 'Spots & Rentals', icon: Store },
                     { id: 'EVENTS', label: 'Events & Tickets', icon: Ticket },
@@ -204,9 +204,9 @@ const InventoryManager = () => {
                         <button
                             key={tab.id}
                             onClick={() => setSubTab(tab.id as any)}
-                            className={`flex items-center gap-2.5 px-1 py-4 text-[11px] font-black uppercase tracking-[0.2em] transition-all relative ${active ? 'text-electric-teal' : 'text-gray-500 hover:text-white'}`}
+                            className={`flex items-center gap-2.5 px-2 py-5 text-[11px] font-black uppercase tracking-[0.2em] transition-all relative ${active ? 'text-electric-teal' : 'text-gray-500 hover:text-white'}`}
                         >
-                            <Icon size={14} />
+                            <Icon size={14} className={active ? 'text-electric-teal animate-pulse' : ''} />
                             {tab.label}
                             {active && (
                                 <motion.div

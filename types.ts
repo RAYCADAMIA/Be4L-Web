@@ -337,7 +337,8 @@ export interface Operator {
   business_name: string;
   slug: string; // Unique URL identifier
   bio: string;
-  category: string; // 'venue' | 'event' | 'service' | 'food' | 'barber' etc
+  category: string; // Primary category
+  categories?: string[]; // Up to 3 categories
   cover_photo_url: string;
   logo_url: string; // Circular avatar
   location_text: string; // e.g. "Davao City"
@@ -349,6 +350,13 @@ export interface Operator {
   gcash_number?: string;
 
   is_verified: boolean;
+
+  // Brand Marketplace additions
+  tagline?: string;
+  gallery_images?: string[];
+  vibe_tags?: string[];
+  google_maps_link?: string;
+  status?: 'pending' | 'active' | 'rejected' | 'onboarding' | 'live' | 'suspended';
 
   // UI Helpers
   followers_count?: number;

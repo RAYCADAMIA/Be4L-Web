@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabaseService } from '../services/supabaseService';
 import { useAuth } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Trophy, Zap, Target, Star, LayoutGrid, Sparkles, ChevronRight, Users, ArrowRight, Send } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
-import { MOCK_QUESTS } from '../constants';
+import { PRESET_CITIES, MOCK_QUESTS } from '../constants';
+import { X } from 'lucide-react';
 import QuestCard from './QuestCard';
 import { generateRandomQuests } from '../utils/questGenerator';
 import { QuestType } from '../types';
@@ -32,60 +33,73 @@ export const HomePage: React.FC = () => {
     const [discoveryQuests, setDiscoveryQuests] = useState<any[]>([]);
     const [partnerPosts, setPartnerPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedCity, setSelectedCity] = useState<string | null>(() => {
+        return localStorage.getItem('selectedCity') || null;
+    });
+    const [showCityModal, setShowCityModal] = useState(false);
+
+    const loadHomePageData = useCallback(async (cityFilter?: string | null) => {
+        setLoading(true);
+        const cityToUse = cityFilter !== undefined ? cityFilter : selectedCity;
+        try {
+            const [opData, itemData, questData, postData] = await Promise.all([
+                supabaseService.dibs.getOperators(),
+                supabaseService.dibs.getAllItems(),
+                supabaseService.quests.getQuests(),
+                supabaseService.partner.getPosts()
+            ]);
+
+            // Mix real quests with generated ones for a more alive feed
+            const canonRandom = generateRandomQuests('All', new Date(), 8, QuestType.CANON, cityToUse);
+            const spontyRandom = generateRandomQuests('All', new Date(), 4, QuestType.SPONTY, cityToUse);
+
+            // Filter real quests by city if selected
+            const filteredRealQuests = (questData || []).filter(q => {
+                if (!cityToUse || cityToUse.toLowerCase() === 'global') return true;
+                const locStr = (q.location?.address_full || q.location?.place_name || '').toLowerCase();
+                return locStr.includes(cityToUse.toLowerCase());
+            });
+
+            const allQuests = [
+                ...filteredRealQuests,
+                ...canonRandom,
+                ...spontyRandom
+            ];
+
+            // Shuffle for variety and take top 12
+            setDiscoveryQuests(allQuests.sort(() => Math.random() - 0.5).slice(0, 12));
+
+            if (opData) {
+                // Match BookScreen filtering: only venue and event
+                const filteredOps = opData.filter((op: any) =>
+                    op.category === 'venue' || op.category === 'event'
+                );
+                setBrands(filteredOps.slice(0, 4)); // Show top 4 for better grid balance
+            }
+            if (itemData && opData) {
+                // Enrich items with their operators for consistent display
+                const enrichedItems = itemData
+                    .filter((item: any) => {
+                        const brand = opData.find((b: any) => b.user_id === item.operator_id);
+                        return brand && (brand.category === 'venue' || brand.category === 'event');
+                    })
+                    .slice(0, 7);
+                setDiscoveryItems(enrichedItems);
+            }
+
+            if (postData) {
+                setPartnerPosts(postData.slice(0, 5)); // Show top 5 latest updates
+            }
+        } catch (err) {
+            console.error("Home feed load failed", err);
+            setDiscoveryQuests(MOCK_QUESTS.slice(0, 5));
+        }
+        setLoading(false);
+    }, [selectedCity]); // Dependency on selectedCity
 
     useEffect(() => {
-        const loadHomePageData = async () => {
-            setLoading(true);
-            try {
-                const [opData, itemData, questData, postData] = await Promise.all([
-                    supabaseService.dibs.getOperators(),
-                    supabaseService.dibs.getAllItems(),
-                    supabaseService.quests.getQuests(),
-                    supabaseService.partner.getPosts()
-                ]);
-
-                // Mix real quests with generated ones for a more alive feed
-                const canonRandom = generateRandomQuests('All', new Date(), 8, QuestType.CANON);
-                const spontyRandom = generateRandomQuests('All', new Date(), 4, QuestType.SPONTY);
-
-                const allQuests = [
-                    ...(questData || []),
-                    ...canonRandom,
-                    ...spontyRandom
-                ];
-
-                // Shuffle for variety and take top 12
-                setDiscoveryQuests(allQuests.sort(() => Math.random() - 0.5).slice(0, 12));
-
-                if (opData) {
-                    // Match BookScreen filtering: only venue and event
-                    const filteredOps = opData.filter((op: any) =>
-                        op.category === 'venue' || op.category === 'event'
-                    );
-                    setBrands(filteredOps.slice(0, 4)); // Show top 4 for better grid balance
-                }
-                if (itemData && opData) {
-                    // Enrich items with their operators for consistent display
-                    const enrichedItems = itemData
-                        .filter((item: any) => {
-                            const brand = opData.find((b: any) => b.user_id === item.operator_id);
-                            return brand && (brand.category === 'venue' || brand.category === 'event');
-                        })
-                        .slice(0, 7);
-                    setDiscoveryItems(enrichedItems);
-                }
-
-                if (postData) {
-                    setPartnerPosts(postData.slice(0, 5)); // Show top 5 latest updates
-                }
-            } catch (err) {
-                console.error("Home feed load failed", err);
-                setDiscoveryQuests(MOCK_QUESTS.slice(0, 5));
-            }
-            setLoading(false);
-        };
-        loadHomePageData();
-    }, []);
+        loadHomePageData(selectedCity);
+    }, [loadHomePageData, selectedCity]); // Re-run when selectedCity or loadHomePageData changes
 
     const displayName = user?.name || user?.username || user?.email?.split('@')[0] || 'Friend';
 
@@ -101,6 +115,17 @@ export const HomePage: React.FC = () => {
             setFeedback('');
             setTimeout(() => setFeedbackStatus('idle'), 3000);
         }, 1500);
+    };
+
+    const handleCitySelect = (city: string) => {
+        const cityKey = city.toLowerCase();
+        setSelectedCity(city);
+        localStorage.setItem('selectedCity', city);
+        localStorage.setItem('be4l_last_city_switch', JSON.stringify({
+            city: cityKey,
+            timestamp: new Date().toISOString()
+        }));
+        setShowCityModal(false);
     };
 
     if (!user) return null;
@@ -129,10 +154,13 @@ export const HomePage: React.FC = () => {
                 >
                     Do a side quest now to farm aura points
                 </motion.p>
-                <div className="flex items-center gap-2 group cursor-pointer">
-                    <MapPin size={18} className="text-electric-teal group-hover:animate-bounce" />
-                    <p className="text-cool-grey font-bold text-sm tracking-widest uppercase">
-                        Davao City, PH
+                <div
+                    onClick={() => setShowCityModal(true)}
+                    className="flex items-center gap-2 group cursor-pointer w-fit"
+                >
+                    <MapPin size={18} className="text-electric-teal group-hover:animate-bounce transition-transform" />
+                    <p className="text-cool-grey font-bold text-sm tracking-widest uppercase group-hover:text-white transition-colors">
+                        {selectedCity ? `${selectedCity}, PH` : 'Select your city'}
                     </p>
                 </div>
             </div>
@@ -172,12 +200,12 @@ export const HomePage: React.FC = () => {
                 </div>
             </section>
 
-            {/* Partner Updates Feed */}
+            {/* Brand Updates Feed */}
             {partnerPosts.length > 0 && (
                 <section className="mb-24">
                     <div className="px-6 flex items-center justify-between mb-8">
                         <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40 flex items-center gap-2 px-1">
-                            <Send size={14} className="text-electric-teal" /> PARTNER UPDATES
+                            <Send size={14} className="text-electric-teal" /> BRAND UPDATES
                         </h2>
                     </div>
                     <div className="flex overflow-x-auto no-scrollbar gap-6 px-6 snap-x pb-4">
@@ -185,6 +213,7 @@ export const HomePage: React.FC = () => {
                             <PartnerPostCard
                                 key={post.id}
                                 post={post}
+                                currentUser={user}
                                 onOpenProfile={(id) => {
                                     const op = brands.find(b => b.user_id === id);
                                     if (op) navigate('/app/shop/' + op.slug);
@@ -380,6 +409,52 @@ export const HomePage: React.FC = () => {
                 <div className="absolute -top-48 -right-48 w-96 h-96 bg-purple-500/5 blur-[120px] rounded-full pointer-events-none" />
             </section>
 
+            {/* City Selection Modal */}
+            <AnimatePresence>
+                {showCityModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md px-6">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="w-full max-w-sm bg-gradient-to-br from-white/[0.05] to-transparent border border-white/10 rounded-[2.5rem] p-8 space-y-6 shadow-2xl relative overflow-hidden"
+                        >
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-electric-teal/10 blur-[50px] rounded-full pointer-events-none" />
+
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-xl font-black text-white uppercase tracking-widest">Select your city</h3>
+                                <button
+                                    onClick={() => setShowCityModal(false)}
+                                    className="p-2 text-gray-500 hover:text-white transition-colors hover:bg-white/5 rounded-full"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto no-scrollbar pr-2">
+                                {PRESET_CITIES.slice(1).map((city) => ( // Skip 'Global' for home selection
+                                    <button
+                                        key={city}
+                                        onClick={() => handleCitySelect(city)}
+                                        className={`px-4 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border ${selectedCity?.toLowerCase() === city.toLowerCase()
+                                            ? 'bg-electric-teal text-black border-electric-teal shadow-[0_0_20px_rgba(45,212,191,0.3)]'
+                                            : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:text-white hover:border-white/10'
+                                            }`}
+                                    >
+                                        {city}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={() => handleCitySelect('Global')}
+                                    className="col-span-2 px-4 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:text-white hover:border-white/10"
+                                >
+                                    Global
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

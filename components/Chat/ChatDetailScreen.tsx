@@ -151,7 +151,7 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
                         onClick={() => navigate(`/app/${targetUserId}`)}
                         className="flex flex-col ml-1 group text-left active:scale-[0.98] transition-transform"
                     >
-                        <h2 className="text-xl font-black tracking-tighter uppercase text-white flex items-center gap-2 leading-none group-hover:text-primary transition-colors">
+                        <h2 className="text-xl font-black tracking-tighter text-white flex items-center gap-2 leading-none group-hover:text-primary transition-colors">
                             <span className="text-gradient-static">
                                 {chatName}
                             </span>
@@ -241,7 +241,7 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
                         placeholder={cooldown > 0 ? `Transmitting in ${cooldown}s...` : "What's up, chat?"}
                         disabled={cooldown > 0}
                         className={`
-                            flex-1 bg-transparent border-none outline-none text-[13px] font-bold px-2 uppercase tracking-wide transition-colors
+                            flex-1 bg-transparent border-none outline-none text-[13px] font-bold px-2 transition-colors
                             ${cooldown > 0 ? 'text-white/30 placeholder:text-white/30 italic' : 'text-white placeholder:text-white/10'}
                         `}
                     />

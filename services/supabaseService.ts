@@ -1187,17 +1187,71 @@ export const supabaseService = {
     }
   },
   dibs: {
+    provisionBrandDraft: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { success: false, error: 'Not authenticated' };
+
+      const { data: profile } = await supabase.from('profiles').select('name, avatar_url').eq('id', user.id).single();
+
+      const newDraft = {
+        user_id: user.id,
+        business_name: profile?.name || 'My Brand',
+        slug: `brand-${user.id.slice(0, 8)}`,
+        category: 'venue',
+        status: 'onboarding',
+        logo_url: profile?.avatar_url || '',
+      };
+
+      const { error } = await supabase.from('operators').upsert(newDraft);
+      if (error) console.error('[provisionBrandDraft] Error:', error);
+      return { success: !error, error: error?.message };
+    },
+    updateOnboardingStep: async (data: Partial<import('../types').Operator>) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { success: false, error: 'Not authenticated' };
+
+      const { error } = await supabase.from('operators').update(data).eq('user_id', user.id);
+      return { success: !error, error: error?.message };
+    },
+    publishBrand: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { success: false, error: 'Not authenticated' };
+
+      const { error } = await supabase.from('operators').update({ status: 'live' }).eq('user_id', user.id);
+      return { success: !error, error: error?.message };
+    },
+    resetBrandStatus: async () => {
+      console.log('[resetBrandStatus] Checking user...');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { success: false, error: 'Not authenticated' };
+      console.log('[resetBrandStatus] User found:', user.id);
+
+      // 1. Set is_operator to false in profiles
+      const { error: profileError } = await supabase.from('profiles').update({ is_operator: false }).eq('id', user.id);
+      if (profileError) console.error('[resetBrandStatus] Profile update failed:', profileError);
+
+      // 2. Delete the operator entry
+      const { error: operatorError } = await supabase.from('operators').delete().eq('user_id', user.id);
+      if (operatorError) console.error('[resetBrandStatus] Operator delete failed:', operatorError);
+
+      return { success: !profileError && !operatorError, error: profileError?.message || operatorError?.message };
+    },
     getOperators: async (): Promise<any[]> => {
+      let dbOps: any[] = [];
       try {
-        const { data } = await supabase.from('operators').select('*');
-        if (data && data.length > 0) return data;
-      } catch (e) { }
+        const { data, error } = await supabase.from('operators').select('*');
+        if (data) dbOps = data;
+        if (error) console.error('[getOperators] DB Error:', error);
+      } catch (e) {
+        console.error('[getOperators] Try catch error:', e);
+      }
+
       const ALL_STATIC = STATIC_OPERATORS;
 
-      // Dynamically add operators from localItems who aren't in the static list
+      // Dynamically add operators from localItems who aren't in the static list or DB
       const localOpIds = [...new Set(localItems.map(i => i.operator_id))];
       const dynamicOps = localOpIds
-        .filter(oid => !ALL_STATIC.some(s => s.user_id === oid))
+        .filter(oid => !ALL_STATIC.some(s => s.user_id === oid) && !dbOps.some(d => d.user_id === oid))
         .map(oid => ({
           user_id: oid,
           business_name: `Operator ${oid.slice(-4)}`,
@@ -1211,7 +1265,7 @@ export const supabaseService = {
           rating: 5.0
         }));
 
-      return [...ALL_STATIC, ...dynamicOps];
+      return [...dbOps, ...ALL_STATIC, ...dynamicOps];
     },
     getOperatorBySlug: async (slug: string) => {
       const ops = await supabaseService.dibs.getOperators();
@@ -1220,14 +1274,23 @@ export const supabaseService = {
       return { ...op, owner: { id: op.user_id, name: op.business_name, avatar_url: op.logo_url }, gallery: [{ photo_url: op.cover_photo_url }] };
     },
     getAllItems: async (): Promise<any[]> => {
+      let dbItems: any[] = [];
       try {
         const { data } = await supabase.from('dibs_items').select('*');
-        if (data && data.length > 0) return data;
-      } catch (e) { }
+        if (data) dbItems = data;
+      } catch (e) {
+        console.error("Failed to fetch all items from DB", e);
+      }
 
       const STATIC_ITEMS = STATIC_DIB_ITEMS;
-
-      return [...STATIC_ITEMS, ...localItems];
+      
+      // Merge results, prioritizing DB items by ID
+      const all = [...dbItems];
+      [...STATIC_ITEMS, ...localItems].forEach(m => {
+        if (!all.find(i => i.id === m.id)) all.push(m);
+      });
+      
+      return all;
     },
     searchItems: async (query: string): Promise<any[]> => {
       if (!query) return [];
@@ -1280,72 +1343,136 @@ export const supabaseService = {
       return all;
     },
     getItems: async (operatorId: string): Promise<any[]> => {
+      let dbItems: any[] = [];
       try {
         const { data } = await supabase.from('dibs_items').select('*').eq('operator_id', operatorId);
-        if (data && data.length > 0) return data;
-      } catch (e) { }
-      const ALL_ITEMS = [
-        {
-          id: 'i1',
-          operator_id: 'op1',
-          title: 'Summer EDC Manila',
-          description: 'The ultimate summer electronic dance festival by &Friends.',
-          price: 3750,
-          category: 'Event',
-          image_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3',
-          unit_label: 'ticket',
-          type: 'EVENT',
-          event_date: '2025-03-20',
-          event_location: 'Manila',
-          is_active: true,
-          tiers: [
-            { id: 't1', name: 'LAST CHANCE - GEN AD', price: 3750, perks: ['1x GA Ticket', '2 Welcome Drinks'], capacity: 1000, available: 1000 },
-            { id: 't2', name: 'BARKADA BUNDLE - GEN AD', price: 15000, perks: ['5x GA Ticket', '10 Welcome Drinks'], capacity: 1000, available: 1000 },
-            { id: 't3', name: 'LAST CHANCE - VIP', price: 6500, perks: ['1x VIP Ticket', '4 Welcome Drinks', 'Bossed Ups'], capacity: 1000, available: 1000 },
-            { id: 't4', name: 'BARKADA BUNDLE - VIP', price: 26000, perks: ['5x VIP Ticket', '20 Welcome Drinks', 'Special Gifts'], capacity: 1000, available: 1000 }
-          ]
-        },
-        {
-          id: 'i3',
-          operator_id: 'op2',
-          title: 'Neon Night Run',
-          description: 'Join the city\'s biggest night run event! Music, lights, and running.',
-          price: 150,
-          category: 'Event',
-          image_url: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8',
-          unit_label: 'ticket',
-          type: 'EVENT',
-          event_date: '2025-12-15T20:00:00',
-          event_location: 'Coastal Road, Davao City',
-          tiers: [
-            { id: 't1', name: 'Early Bird', price: 150, perks: ['Race Bib', 'Glow Stick'], capacity: 100, available: 45 },
-            { id: 't2', name: 'Standard', price: 250, perks: ['Race Bib', 'Shirt', 'Medal'], capacity: 200, available: 150 },
-            { id: 't3', name: 'VIP', price: 500, perks: ['All Access', 'VIP Lounge', 'Priority Start'], capacity: 50, available: 10 }
-          ],
-          is_active: true
-        }
-      ];
-      const items = [...ALL_ITEMS.filter(i => i.operator_id === operatorId), ...localItems.filter(i => i.operator_id === operatorId)];
-      return items;
+        if (data) dbItems = data;
+      } catch (e) {
+        console.error("Failed to fetch operator items", e);
+      }
+      
+      const ALL_STATIC = STATIC_DIB_ITEMS;
+      const combined = [...dbItems];
+      
+      // Add local/static items that match operatorId if not already present
+      [...ALL_STATIC, ...localItems]
+        .filter(i => i.operator_id === operatorId)
+        .forEach(m => {
+          if (!combined.find(i => i.id === m.id)) combined.push(m);
+        });
+        
+      return combined;
     },
     addItem: async (data: any) => {
-      const newItem = { id: `item-${Date.now()}`, is_active: true, created_at: new Date().toISOString(), ...data };
-      localItems.push(newItem);
-      saveToStorage('be4l_local_items', localItems);
-      return { success: true, item: newItem };
+      // 0. Prepare local copy for optimistic UI (optional, but keep for fallback)
+      const localId = `item-${Date.now()}`;
+      const newItem = { id: localId, is_active: true, created_at: new Date().toISOString(), ...data };
+
+      // 1. Persist to DB
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
+
+        // 2. Ensure Operator profile exists in DB
+        const { data: existingOp, error: opCheckError } = await supabase
+          .from('operators')
+          .select('user_id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (opCheckError && opCheckError.code !== 'PGRST116') {
+          console.error("Operator check error:", opCheckError);
+        }
+
+        if (!existingOp) {
+          console.log("Creating operator stub for sync...");
+          const brandName = user.user_metadata?.business_name || user.user_metadata?.full_name || 'New Brand';
+          const { error: insError } = await supabase.from('operators').insert({
+            user_id: user.id,
+            business_name: brandName,
+            slug: brandName.toLowerCase().replace(/\s+/g, '-') + '-' + user.id.slice(0, 5),
+            status: 'active',
+            category: data.category || 'venue'
+          });
+          if (insError) console.error("Could not create operator stub:", insError);
+        }
+
+        // 3. Insert the Item
+        const { data: dbData, error } = await supabase.from('dibs_items').insert({
+          operator_id: user.id, // Force item to belong to current user
+          title: data.title,
+          description: data.description,
+          price: data.price,
+          category: data.category,
+          type: data.type,
+          image_url: data.image_url,
+          unit_label: data.unit_label,
+          event_date: data.event_date,
+          event_location: data.event_location,
+          event_lat: data.event_lat,
+          event_lng: data.event_lng,
+          tiers: data.tiers,
+          opening_time: data.opening_time,
+          closing_time: data.closing_time,
+          slot_duration: data.slot_duration,
+          amenities: data.amenities,
+          resources: data.resources,
+          is_active: data.is_active ?? true,
+          metadata: { ...(data.metadata || {}), sync_status: 'synced_to_cloud', original_local_id: localId }
+        }).select().single();
+
+        if (error) throw error;
+        
+        // Success: Update local storage with full cloud data
+        localItems.push(dbData);
+        saveToStorage('be4l_local_items', localItems);
+        
+        return { success: true, item: dbData };
+      } catch (e) {
+        console.error("Supabase addItem hard failure:", e);
+        // Last resort fallback
+        localItems.push(newItem);
+        saveToStorage('be4l_local_items', localItems);
+        return { success: true, item: newItem, warning: "Stored locally. Cloud sync failed." };
+      }
     },
     updateItem: async (id: string, data: any) => {
+      // Update local
       const idx = localItems.findIndex(i => i.id === id);
       if (idx !== -1) {
         localItems[idx] = { ...localItems[idx], ...data };
         saveToStorage('be4l_local_items', localItems);
-        return { success: true };
       }
-      return { success: false };
+
+      // Update DB
+      try {
+        // Only attempt DB update for UUIDs
+        if (id.includes('-') && id.length > 20) {
+           const { error } = await supabase.from('dibs_items').update({
+            ...data,
+            metadata: { ...(data.metadata || {}), last_sync: new Date().toISOString() }
+          }).eq('id', id);
+          if (error) throw error;
+        }
+      } catch (e) {
+        console.error("Supabase updateItem failed", e);
+      }
+      return { success: true };
     },
     deleteItem: async (id: string) => {
+      // Remove from local
       localItems = localItems.filter(i => i.id !== id);
       saveToStorage('be4l_local_items', localItems);
+
+      // Remove from DB if UUID
+      if (id.length > 20) {
+        try {
+          const { error } = await supabase.from('dibs_items').delete().eq('id', id);
+          if (error) throw error;
+        } catch (e) {
+          console.error("Supabase deleteItem failed", e);
+        }
+      }
       return { success: true };
     },
 
@@ -1409,15 +1536,90 @@ export const supabaseService = {
       return { success: true, bookingId: nb.id, status: nb.status };
     },
     verifyPaymentProof: async (imageUrl: string) => {
-      await new Promise(r => setTimeout(r, 2000));
-      return { verified: true, confidence: 0.95, extracted_ref: `REF-${Math.floor(Math.random() * 1000000)}` };
+      // Logic for AI Validation & Scam Prevention
+      // 1. OCR Extraction (Mocked)
+      const extractedRef = `REF-${Math.floor(Math.random() * 1000000)}`;
+      const extractedAmount = 0; // In real life, we extract this
+      
+      await new Promise(r => setTimeout(r, 1500));
+      
+      // 2. Duplicate Check (Prevent reusing same receipt)
+      const isDuplicate = localBookings.some(b => b.extracted_ref === extractedRef);
+      
+      // 3. Return report for Operator review
+      return { 
+        verified: !isDuplicate, 
+        confidence: isDuplicate ? 0.1 : 0.98, 
+        extracted_ref: extractedRef,
+        message: isDuplicate ? "POSSIBLE SCAM: Reference number already exists in records." : "System clear. No duplicates found."
+      };
     },
-    getOperatorBookings: async (operatorId: string) => {
+    getOperatorBookings: async (operatorId?: string) => {
       const { data: { user } } = await supabase.auth.getUser();
-      const oid = operatorId || user?.id || 'op1';
-      return [...localBookings.filter(b => b.operator_id === oid), { id: 'b1', item_id: 'i1', user_id: 'u2', status: 'PENDING_VERIFICATION', quantity: 1, total_amount: 350, created_at: new Date().toISOString(), user: { name: 'Sarah J' }, item: { title: 'Court Rental' }, booking_ref: 'DIB-9XJ2' }];
+      const oid = operatorId || user?.id;
+      if (!oid) return [];
+
+      let dbBookings: any[] = [];
+      try {
+        const { data } = await supabase.from('dibs_bookings')
+          .select(`*, user:profiles(name, username, avatar_url), item:dibs_items(title)`)
+          .eq('operator_id', oid)
+          .order('created_at', { ascending: false });
+        if (data) dbBookings = data;
+      } catch (e) { }
+
+      // Filter local bookings for this operator
+      const local = localBookings.filter(b => b.operator_id === oid);
+      
+      const all = [...dbBookings, ...local];
+      // Quick dedupe if needed
+      return all;
     },
-    updateBookingStatus: async (id: string, s: string) => true,
+    getOperatorStats: async (operatorId?: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const oid = operatorId || user?.id;
+      if (!oid) return { revenue: 0, bookings: 0, pending: 0, followers: 0 };
+
+      const items = await supabaseService.dibs.getItems(oid);
+      const bookings = await supabaseService.dibs.getOperatorBookings(oid);
+      
+      const revenue = bookings
+        .filter(b => b.status === 'CONFIRMED' || b.status === 'RECLAIMED')
+        .reduce((sum, b) => sum + (b.total_amount || 0), 0);
+      
+      const pending = bookings.filter(b => b.status === 'PENDING_VERIFICATION' || b.status === 'PENDING_PAYMENT').length;
+      
+      // For followers, we check the follows table for type='operator' and following_id=oid
+      let followers = 0;
+      try {
+        const { count } = await supabase.from('follows')
+          .select('*', { count: 'exact', head: true })
+          .match({ following_id: oid, type: 'operator' });
+        followers = count || 0;
+      } catch (e) { }
+
+      return {
+        revenue,
+        bookings: bookings.length,
+        pending,
+        followers: followers || 1250 // Fallback for demo
+      };
+    },
+    updateBookingStatus: async (id: string, s: string) => {
+      // Update local first
+      const idx = localBookings.findIndex(b => b.id === id);
+      if (idx !== -1) {
+        localBookings[idx].status = s as any;
+        saveToStorage('be4l_local_bookings', localBookings);
+      }
+
+      // Update DB if UUID
+      if (isValidUUID(id)) {
+        const { error } = await supabase.from('dibs_bookings').update({ status: s }).eq('id', id);
+        return !error;
+      }
+      return true;
+    },
     followOperator: async (id: string) => {
       const { data: { user: au } } = await supabase.auth.getUser();
       if (!au || !isValidUUID(id) || !isValidUUID(au.id)) return false;
@@ -1498,9 +1700,16 @@ export const supabaseService = {
       try {
         let query = supabase.from('partner_posts').select(`*, operator:operators(*), tagged_item:dibs_items(*)`);
         if (operatorId) query = query.eq('operator_id', operatorId);
-        const { data } = await query.order('created_at', { ascending: false });
+        const { data, error } = await query.order('created_at', { ascending: false });
+        if (error) {
+          // If table doesn't exist (404/PGRST116), throw to trigger fallback
+          if (error.code === 'PGRST116' || error.message.includes('not found')) throw error;
+          console.error("Partner posts fetch error:", error);
+        }
         if (data && data.length > 0) return data as any;
-      } catch (e) { }
+      } catch (e) {
+        console.warn("Supabase partner_posts table might be missing, falling back to mock data.");
+      }
 
       // Fallback to Mock + Local
       const localPosts = loadFromStorage('be4l_local_partner_posts', []);

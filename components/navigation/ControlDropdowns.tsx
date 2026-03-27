@@ -330,12 +330,6 @@ export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     <p className="text-[6px] font-black uppercase tracking-[0.2em] text-electric-teal mt-0.5">
                         {user.aura_points || 0} Aura Points
                     </p>
-                    <button
-                        onClick={() => refreshProfile()}
-                        className="text-[5px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mt-1"
-                    >
-                        Sync Data
-                    </button>
                 </div>
             </div>
 
@@ -422,7 +416,7 @@ export const ProfileWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                     </button>
                 </div>
             </div>
-        </motion.div>
+        </motion.div >
     );
 };
 

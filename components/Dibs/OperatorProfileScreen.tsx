@@ -7,7 +7,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabaseService } from '../../services/supabaseService';
 import { Operator, DibsItem } from '../../types';
-import SmartMap from '../ui/SmartMap';
+import { LocationModal } from '../ui/LocationModal';
 import { EKGLoader, FloatingTabs } from '../ui/AestheticComponents';
 import BookingModal from './BookingModal'; // We might replace this with the new Flow later
 import { useNavigation } from '../../contexts/NavigationContext';
@@ -46,6 +46,7 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
     const [isOwner, setIsOwner] = useState(isOwnerView);
     const [showFollowers, setShowFollowers] = useState(false);
     const [showFollowing, setShowFollowing] = useState(false);
+    const [showLocationModal, setShowLocationModal] = useState(false);
     const { updateUser } = useAuth();
 
     // Local tab state initialization
@@ -183,6 +184,7 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                 }}
                 onEditProfile={() => { }} // Could link to settings
                 locationText={operator.location_text}
+                googleMapsLink={operator.google_maps_link}
                 onMessage={async () => {
                     if (currentUser) {
                         const chat = await supabaseService.chat.getOrCreatePersonalChat(
@@ -346,24 +348,35 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                             {/* Location & Map */}
                             <div className="bg-white/[0.03] border border-white/5 rounded-3xl overflow-hidden">
                                 <div className="p-6 pb-2">
-                                    <h3 className="text-white font-black uppercase tracking-widest flex items-center gap-2 text-xs">
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                                         <MapPin size={14} className="text-electric-teal" />
                                         Location
                                     </h3>
-                                    <p className="text-gray-400 text-xs mt-1">{operator.location_text || 'Davao City, Philippines'}</p>
+                                    <button
+                                        onClick={() => setShowLocationModal(true)}
+                                        className="group/loc cursor-pointer block text-left"
+                                    >
+                                        <p className="text-gray-400 text-xs mt-1 group-hover/loc:text-electric-teal transition-colors underline decoration-white/10 underline-offset-4 decoration-dotted">
+                                            {operator.location_text || 'Davao City, Philippines'}
+                                        </p>
+                                    </button>
                                 </div>
-                                <div className="h-48 w-full bg-white/5 relative group overflow-hidden">
-                                    <SmartMap
-                                        mode="view"
-                                        initialLocation={operator.lat ? {
-                                            lat: operator.lat,
-                                            lng: operator.lng!,
-                                            placeName: operator.location_text
-                                        } : undefined}
-                                        height="100%"
-                                    />
-                                    <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center bg-black/60 backdrop-blur-md p-3 rounded-xl border border-white/10 group-hover:border-electric-teal/50 transition-colors pointer-events-none">
-                                        <span className="text-[10px] font-bold text-white uppercase tracking-widest">Get Directions</span>
+                                <div
+                                    onClick={() => setShowLocationModal(true)}
+                                    className="h-48 w-full bg-black/40 relative group overflow-hidden cursor-pointer"
+                                >
+                                    {/* Static Map Background fallback or just a themed placeholder */}
+                                    <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000')] bg-cover bg-center opacity-20 grayscale" />
+                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
+
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-[2px]">
+                                        <div className="w-12 h-12 rounded-full bg-electric-teal/20 flex items-center justify-center border border-electric-teal/50 shadow-[0_0_20px_rgba(45,212,191,0.3)]">
+                                            <MapPin size={24} className="text-electric-teal animate-bounce" />
+                                        </div>
+                                    </div>
+
+                                    <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center bg-black/80 backdrop-blur-md p-3 rounded-xl border border-white/10 group-hover:border-electric-teal/50 transition-colors">
+                                        <span className="text-[10px] font-bold text-white uppercase tracking-widest">Open Interactive Map</span>
                                         <div className="flex items-center gap-1">
                                             <div className="w-1.5 h-1.5 rounded-full bg-electric-teal animate-pulse" />
                                             <ArrowRight size={16} className="text-electric-teal" />
@@ -486,7 +499,15 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                 type="following"
                 onOpenProfile={(u) => navigate(u.id === currentUser?.id ? '/app/myprofile' : `/app/${u.id}`)}
             />
-        </div >
+
+            {/* Location Modal */}
+            <LocationModal
+                isOpen={showLocationModal}
+                onClose={() => setShowLocationModal(false)}
+                locationName={operator.location_text}
+                googleMapsLink={operator.google_maps_link || ''}
+            />
+        </div>
     );
 };
 

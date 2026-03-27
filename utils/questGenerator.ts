@@ -1,36 +1,5 @@
 import { Quest, QuestStatus, QuestType, User, QuestVisibilityScope } from '../types';
 import { OTHER_USERS } from '../constants';
-
-// Quest templates for each category
-// Quest templates for each category
-const CANON_TEMPLATES = {
-    Sports: [
-        { activity: 'Pickleball', titles: ['SuperSmasher Open', 'Pickletown League Finals', 'MTC Pickle Cup'], descriptions: ['Elite pickleball competition at SuperSmasher.', 'Season finale for the local league.', 'Highest stakes pickleball in Davao.'] },
-        { activity: 'Golf', titles: ['Rancho Palos Verdes Open', 'Davao Golf Club Championship', 'Apo Golf Invitational'], descriptions: ['Premium golf tournament at Davao\'s finest course.', 'Annual championship for local legends.', 'Elite invitational at the foothills of Mt. Apo.'] },
-        { activity: 'Basketball', titles: ['Homecourt 5v5 Invitational', 'Ballbreakers 3x3', 'NCCC Centerstage Hops'], descriptions: ['Elite level basketball.', 'Davao\'s top ballers only.', 'City-wide streetball championship.'] }
-    ],
-    Adventures: [
-        { activity: 'Road Trip', titles: ['Buda Highlands Run', 'Calaunan Scenic Drive', 'Arakan Valley Loop'], descriptions: ['Epic road trip to the fog-covered Buda.', 'Scenic views of the mountains.', 'Full day adventure through the highlands.'] },
-        { activity: 'Coastal', titles: ['Coastal Road Sunset Run', 'Azuela Cove Morning Dash', 'Riverfront Loop'], descriptions: ['Scenic run along the Davao Coastal Road.', 'Early morning Azuela run.', 'Riverside cardio session.'] }
-    ],
-    Travel: [
-        { activity: 'Island', titles: ['Samal Island Traverse', 'Talikud Island Escape', 'Island Hopping Adventure'], descriptions: ['Cross-island trekking expedition.', 'Hidden beach discovery.', 'Epic Samal sea loop.'] }
-    ],
-    Socials: [
-        { activity: 'Party', titles: ['Psyched House Party', 'Secret Society Elite Social', 'Groundead Underground'], descriptions: ['Davao\'s wildest house party.', 'An exclusive night out.', 'Underground vibes only.'] }
-    ],
-    Train: [
-        { activity: 'Ironman', titles: ['Ironman 70.3 Azuela Prep', 'Quinspot Fitness Camp', 'Coastline Endurance'], descriptions: ['Intense prep for Ironman Davao.', 'High-intensity interval training.', 'Endurance training at the coast.'] }
-    ],
-    Others: [
-        { activity: 'Flea Market', titles: ['Weekend Flea Market', 'Azuela Night Market', 'Obrero Thrift Run'], descriptions: ['Best local finds and food.', 'Night-time shopping spree.', 'Curated thrifting at Obrero.'] }
-    ],
-    Jobs: [
-        { activity: 'Task', titles: ['Math Tutor Needed', 'App Beta Tester', 'Event Crew @ &Friends'], descriptions: ['Help a freshman with Calculus.', 'Test a new local lifestyle app.', 'Assist in a major event setup with &Friends.'] },
-        { activity: 'Gig', titles: ['Social Media Mod', 'Photography Assistant', 'Campus Courier'], descriptions: ['Moderate a local community group.', 'Assist in a wedding shoot.', 'Help deliver study packs around campus.'] }
-    ]
-};
-
 const QUEST_TEMPLATES = {
     Sports: [
         { activity: 'Pickleball', titles: ['Play Pickleball @ SuperSmasher', 'Quick Rally @ Pickletown', 'Pickleball Night', 'Beginner Pickleball Davao'], descriptions: ['Looking for players at SuperSmasher', 'Casual game at Pickletown', 'Sunset pickleball session', 'New to the sport? Let\'s rally!'] },
@@ -114,21 +83,13 @@ function getRandomInt(min: number, max: number): number {
 const CITIES = ['Davao City, PH', 'Manila, PH', 'Cebu, PH'];
 
 // Generate random quests for a specific category and date
-export function generateRandomQuests(category: string, date: Date, count: number = 10, specificType?: QuestType): Quest[] {
+export function generateRandomQuests(category: string, date: Date, count: number = 10, specificType?: QuestType, cityFilter?: string | null): Quest[] {
     const quests: Quest[] = [];
 
     // Choose templates based on type
     let templates: any[] = [];
     if (specificType === QuestType.RANDOM && category === 'All') {
         templates = SPONTY_PROCEDURAL_TEMPLATES;
-    } else if (specificType === QuestType.CANON) {
-        const canonBase = category === 'All'
-            ? Object.values(CANON_TEMPLATES).flat()
-            : CANON_TEMPLATES[category as keyof typeof CANON_TEMPLATES] || [];
-        const regularBase = category === 'All'
-            ? Object.values(QUEST_TEMPLATES).flat()
-            : QUEST_TEMPLATES[category as keyof typeof QUEST_TEMPLATES] || [];
-        templates = [...canonBase, ...regularBase];
     } else {
         templates = category === 'All'
             ? Object.values(QUEST_TEMPLATES).flat()
@@ -149,7 +110,7 @@ export function generateRandomQuests(category: string, date: Date, count: number
         const maxParticipants = getRandomInt(4, 12);
         const currentParticipants = getRandomInt(1, maxParticipants - 1);
         const fee = 0;
-        const city = getRandomElement(CITIES);
+        const city = cityFilter && cityFilter !== 'Global' ? `${cityFilter}, PH` : getRandomElement(CITIES);
 
         // Use specific type if provided, otherwise random between SPONTY and RANDOM
         const questType = specificType || (Math.random() > 0.7 ? QuestType.SPONTY : QuestType.RANDOM);

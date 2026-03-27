@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from '../Toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronLeft, Zap, MessageCircle, Users, Plus, mapPin, MessageSquare, MapPin, Sparkles } from 'lucide-react';
+import { Search, ChevronLeft, Zap, MessageCircle, Users, Plus, MessageSquare, MapPin, Sparkles, ArrowRight, Compass, UserPlus, Lock } from 'lucide-react';
 import { supabaseService } from '../../services/supabaseService';
 import { Message, User as UserType } from '../../types';
 import TopBar from '../TopBar';
@@ -22,6 +22,74 @@ interface ChatListScreenProps {
     onNavigate: (tab: 'HOME' | 'QUESTS' | 'CHATS' | 'BOOK' | 'SEARCH' | 'NOTIFICATIONS' | 'DIBS') => void;
 }
 
+const ChatQuickActions: React.FC<{
+    onNavigate: any,
+    onFriendClick: () => void,
+    showQuest?: boolean,
+    showTribe?: boolean,
+    showInvite?: boolean
+}> = ({ onNavigate, onFriendClick, showQuest = true, showTribe = true, showInvite = true }) => (
+    <div className="flex flex-col gap-2 mb-6">
+        {showQuest && (
+            <motion.button
+                whileHover={{ scale: 1.01, x: 4 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => onNavigate('QUESTS')}
+                className="group relative flex items-center justify-between p-3.5 rounded-3xl bg-white/[0.03] backdrop-blur-md border border-white/10 hover:bg-white/[0.06] hover:border-white/20 transition-all overflow-hidden"
+            >
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-electric-teal/10 flex items-center justify-center border border-electric-teal/20 group-hover:bg-electric-teal group-hover:text-black transition-all">
+                        <Zap size={20} className="relative z-10" />
+                    </div>
+                    <div className="text-left">
+                        <h3 className="text-sm font-bold text-white tracking-tight">Find and join a quest</h3>
+                    </div>
+                </div>
+                <ArrowRight size={16} className="text-white/20 group-hover:text-white group-hover:translate-x-1 transition-all" />
+            </motion.button>
+        )}
+
+        {showTribe && (
+            <motion.button
+                whileHover={{ scale: 1.01, x: 4 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => onNavigate('DIBS')}
+                className="group relative flex items-center justify-between p-3.5 rounded-3xl bg-white/[0.03] backdrop-blur-md border border-white/10 hover:bg-white/[0.06] hover:border-white/20 transition-all overflow-hidden"
+            >
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:bg-primary group-hover:text-black transition-all">
+                        <Compass size={20} className="relative z-10" />
+                    </div>
+                    <div className="text-left">
+                        <h3 className="text-sm font-bold text-white tracking-tight">Find your tribe</h3>
+                    </div>
+                </div>
+                <ArrowRight size={16} className="text-white/20 group-hover:text-white group-hover:translate-x-1 transition-all" />
+            </motion.button>
+        )}
+
+        {showInvite && (
+            <motion.button
+                whileHover={{ scale: 1.01, x: 4 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={onFriendClick}
+                className="group relative flex items-center justify-between p-3.5 rounded-3xl bg-white/[0.03] backdrop-blur-md border border-white/10 hover:bg-white/[0.06] hover:border-white/20 transition-all overflow-hidden"
+            >
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white group-hover:text-black transition-all">
+                        <UserPlus size={20} className="relative z-10" />
+                    </div>
+                    <div className="text-left">
+                        <h3 className="text-sm font-bold text-white tracking-tight">Invite your friends</h3>
+                    </div>
+                </div>
+                <ArrowRight size={16} className="text-white/20 group-hover:text-white group-hover:translate-x-1 transition-all" />
+            </motion.button>
+        )}
+    </div>
+);
+
+
 const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onOpenProfile, currentUser, onNavigate }) => {
     const { showToast } = useToast();
     const { setTabs, setActiveTab } = useNavigation();
@@ -39,6 +107,12 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
     const { handleScroll } = useScrollBehavior();
     const [showFriendSuggestions, setShowFriendSuggestions] = useState(false);
     const [hasBrands, setHasBrands] = useState(false);
+    const [showSquadCreator, setShowSquadCreator] = useState(false);
+    const [squadStep, setSquadStep] = useState<'FRIENDS' | 'NAME'>('FRIENDS');
+    const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>([]);
+    const [friendList, setFriendList] = useState<User[]>([]);
+    const [tempSquadName, setTempSquadName] = useState('');
+
     const [refreshKey, setRefreshKey] = useState(0);
 
     const isValidUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
@@ -77,7 +151,8 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                 communityChats.push({
                     id: `city-${cityData.city}`,
                     type: 'CITY',
-                    name: `${cityName} City`,
+                    name: `City Lobby`,
+                    actualCityName: `${cityName} City`,
                     lastMsg: `Find your local squad in ${cityName}.`,
                     time: 'Live',
                     unread: 0,
@@ -103,14 +178,20 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
 
             // Apply category filter
             if (activeCat === 'All') {
-                // Pin Global and City to the top of All
-                const pinned = communityChats.filter(c => ['GLOBAL', 'CITY'].includes(c.type));
+                const globalChat = communityChats.find(c => c.type === 'GLOBAL');
+                const cityChat = communityChats.find(c => c.type === 'CITY');
+
+                const pinned = [globalChat, cityChat].filter(Boolean);
                 const rest = data.filter(c => !pinned.find(p => p.id === c.id));
                 filtered = [...pinned, ...rest];
             } else if (activeCat === 'Quest') {
                 filtered = questChats;
             } else if (activeCat === 'Community') {
-                filtered = communityChats;
+                const globalChat = communityChats.find(c => c.type === 'GLOBAL');
+                const cityChat = communityChats.find(c => c.type === 'CITY');
+                const others = communityChats.filter(c => c.type !== 'GLOBAL' && c.type !== 'CITY');
+
+                filtered = [...[globalChat, cityChat].filter(Boolean), ...others];
             } else if (activeCat === 'Squad') {
                 filtered = squadChats;
             } else if (activeCat === 'DM' || activeCat === 'DMs') {
@@ -169,22 +250,36 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
         };
     }, [currentUser]);
 
-    const handleCreateGroup = () => {
-        setInputModalConfig({
-            title: 'Create Squad Chat',
-            placeholder: 'Enter Squad Name...',
-            defaultValue: '',
-            onConfirm: async (groupName) => {
-                if (groupName) {
-                    const { data: newChat } = await supabaseService.chat.createGroup(currentUser.id, groupName);
-                    if (newChat) {
-                        onOpenChat(newChat.id, newChat.name);
-                    }
-                }
-                setShowInputModal(false);
-            }
-        });
-        setShowInputModal(true);
+    const handleCreateGroup = async () => {
+        if (!currentUser) return;
+        setLoading(true);
+        // Load actual mutual friends for the picker
+        const friends = await (supabaseService.profiles as any).getFriendProfiles?.(currentUser.id) ||
+            await (supabaseService.profiles as any).getFollowingList?.(currentUser.id) || [];
+        setFriendList(friends);
+        setLoading(false);
+
+        setSquadStep('FRIENDS');
+        setSelectedFriendIds([]);
+        setTempSquadName('');
+        setShowSquadCreator(true);
+    };
+
+    const finalizeSquadCreation = async () => {
+        if (!tempSquadName.trim() || selectedFriendIds.length === 0) return;
+
+        setLoading(true);
+        const pids = [currentUser.id, ...selectedFriendIds];
+        const { data: newChat, error } = await (supabaseService.chat as any).createGroup(currentUser.id, tempSquadName, pids);
+
+        if (newChat) {
+            setShowSquadCreator(false);
+            onOpenChat(newChat.id, newChat.name);
+            setRefreshKey(prev => prev + 1);
+        } else {
+            showToast("Failed to create squad", "error");
+        }
+        setLoading(false);
     };
 
     const handleJoinCity = () => {
@@ -382,7 +477,7 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                                         </div>
                                     </>
                                 ) : (
-                                    <div className="py-12 flex flex-col items-center justify-center text-center space-y-6">
+                                    <div className="py-12 flex flex-col items-center justify-center text-center space-y-6 w-full">
                                         <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-2">
                                             <MessageCircle size={32} className="text-white/20" />
                                         </div>
@@ -412,21 +507,13 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                                         )}
 
                                         {activeCat === 'All' && (
-                                            <div className="space-y-4">
-                                                <p className="text-xs font-black uppercase tracking-[0.2em] text-white/40">The feed is silent</p>
-                                                <div className="flex flex-col gap-2">
-                                                    <button
-                                                        onClick={() => onNavigate('QUESTS')}
-                                                        className="px-6 py-3 border border-white/10 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/5 transition-all"
-                                                    >
-                                                        Discover Quests
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setShowFriendSuggestions(true)}
-                                                        className="px-6 py-3 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform"
-                                                    >
-                                                        Add Your Friends
-                                                    </button>
+                                            <div className="space-y-6 w-full max-w-sm mx-auto">
+                                                <div className="py-4">
+                                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-6">Quick Actions</p>
+                                                    <ChatQuickActions
+                                                        onNavigate={onNavigate}
+                                                        onFriendClick={() => setShowFriendSuggestions(true)}
+                                                    />
                                                 </div>
                                             </div>
                                         )}
@@ -441,40 +528,89 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                             </div>
                         ) : (
                             <>
-                                {chats.map(chat => (
-                                    <motion.div
-                                        whileHover={{ x: 4 }}
-                                        key={chat.id}
-                                        onClick={() => onOpenChat(chat.id, chat.name)}
-                                        className="flex items-center gap-4 p-4 rounded-3xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all cursor-pointer group"
-                                    >
-                                        <div className="relative">
-                                            <div className={`w-12 h-12 rounded-[1.4rem] overflow-hidden border border-white/10 p-0.5 bg-black`}>
-                                                <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-[1.2rem] object-cover" />
+                                {activeCat === 'DMs' && (
+                                    <ChatQuickActions
+                                        onNavigate={onNavigate}
+                                        onFriendClick={() => setShowFriendSuggestions(true)}
+                                        showQuest={false}
+                                        showTribe={false}
+                                    />
+                                )}
+
+                                {activeCat === 'Squad' && (
+                                    <div className="mb-6">
+                                        <motion.button
+                                            whileHover={{ scale: 1.01 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={handleCreateGroup}
+                                            className="w-full flex items-center justify-between p-4 rounded-[2rem] bg-electric-teal/10 border border-electric-teal/20 hover:bg-electric-teal/20 transition-all"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-2xl bg-electric-teal flex items-center justify-center shadow-lg">
+                                                    <Plus size={24} className="text-black" />
+                                                </div>
+                                                <h3 className="text-sm font-black text-white uppercase tracking-tighter">Create a Squad Chat</h3>
                                             </div>
-                                            {chat.unread > 0 && (
-                                                <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-electric-teal rounded-full border-2 border-black flex items-center justify-center px-0.5">
-                                                    <span className="text-[9px] font-black text-black">{chat.unread}</span>
+                                            <ArrowRight size={18} className="text-electric-teal" />
+                                        </motion.button>
+                                    </div>
+                                )}
+
+                                {(() => {
+                                    const pinned = chats.filter((c: any) => ['GLOBAL', 'CITY'].includes(c.type));
+                                    const rest = chats.filter((c: any) => !['GLOBAL', 'CITY'].includes(c.type));
+
+                                    const renderCard = (chat: any) => (
+                                        <motion.div
+                                            key={chat.id}
+                                            whileHover={{ x: 4 }}
+                                            onClick={() => onOpenChat(chat.id, chat.type === 'CITY' ? chat.actualCityName : chat.name)}
+                                            className="flex items-center gap-3.5 p-3 rounded-2xl bg-white/[0.03] backdrop-blur-sm border border-white/5 hover:bg-white/[0.06] hover:border-white/10 transition-all cursor-pointer group mb-1.5"
+                                        >
+                                            <div className="relative">
+                                                <div className={`w-10 h-10 rounded-full overflow-hidden border border-white/10 p-0.5 bg-black`}>
+                                                    <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+                                                </div>
+                                                {chat.unread > 0 && (
+                                                    <div className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] bg-electric-teal rounded-full border-2 border-black flex items-center justify-center px-0.5">
+                                                        <span className="text-[8px] font-black text-black">{chat.unread}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-center mb-0.5">
+                                                    <h3 className="text-sm font-bold text-white/90 group-hover:text-electric-teal transition-colors tracking-tight truncate">
+                                                        {chat.name}
+                                                    </h3>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[9px] font-medium text-white/30 tracking-tight">{chat.time}</span>
+                                                    </div>
+                                                </div>
+                                                <p className={`text-[11px] truncate ${chat.unread > 0 ? 'text-white/80 font-semibold' : 'text-white/40 font-normal'} ${chat.lastMsg?.startsWith('[System]') ? 'text-electric-teal/60 italic' : ''}`}>
+                                                    {chat.lastMsg}
+                                                </p>
+                                            </div>
+                                        </motion.div>
+                                    );
+
+                                    return (
+                                        <>
+                                            {pinned.map(renderCard)}
+
+                                            {activeCat === 'All' && (
+                                                <div className="mb-4">
+                                                    <ChatQuickActions
+                                                        onNavigate={onNavigate}
+                                                        onFriendClick={() => setShowFriendSuggestions(true)}
+                                                    />
                                                 </div>
                                             )}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-center mb-0.5">
-                                                <h3 className="text-sm font-black text-white group-hover:text-electric-teal transition-colors tracking-tight uppercase truncate">
-                                                    <span className="text-gradient-static">
-                                                        {chat.name}
-                                                    </span>
-                                                </h3>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{chat.time}</span>
-                                                </div>
-                                            </div>
-                                            <p className={`text-[11px] truncate ${chat.unread > 0 ? 'text-white font-bold' : 'text-gray-500 font-medium'} ${chat.lastMsg?.startsWith('[System]') ? 'text-electric-teal/60 italic' : ''}`}>
-                                                {chat.lastMsg}
-                                            </p>
-                                        </div>
-                                    </motion.div>
-                                ))}
+
+                                            {rest.map(renderCard)}
+                                        </>
+                                    );
+                                })()}
+
 
                                 {/* Brand Community CTA at the bottom of Community filter */}
                                 {activeCat === 'Community' && !hasBrands && (
@@ -501,6 +637,137 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                     </HeartbeatTransition>
                 </div>
             </div>
+
+            {/* Squad Creator Overlay */}
+            <AnimatePresence>
+                {showSquadCreator && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        className="absolute inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col"
+                    >
+                        <div className="p-6 flex items-center justify-between border-b border-white/5">
+                            <button onClick={() => setShowSquadCreator(false)} className="p-2 -ml-2 text-white/40 hover:text-white transition-colors">
+                                <ChevronLeft size={24} />
+                            </button>
+                            <h1 className="text-sm font-black uppercase tracking-[0.3em] text-white">Create Squad</h1>
+                            <div className="w-8" />
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-6 flex flex-col">
+                            {squadStep === 'FRIENDS' ? (
+                                <>
+                                    <div className="mb-8">
+                                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-2 italic">Invite your friends</h3>
+                                        <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Select members for your new squad</p>
+                                    </div>
+
+                                    <div className="space-y-2 flex-1">
+                                        {friendList.length > 0 ? (
+                                            friendList.map(friend => {
+                                                const isSelected = selectedFriendIds.includes(friend.id);
+                                                return (
+                                                    <motion.div
+                                                        whileTap={{ scale: 0.98 }}
+                                                        key={friend.id}
+                                                        onClick={() => {
+                                                            if (isSelected) {
+                                                                setSelectedFriendIds(prev => prev.filter(id => id !== friend.id));
+                                                            } else {
+                                                                setSelectedFriendIds(prev => [...prev, friend.id]);
+                                                            }
+                                                        }}
+                                                        className={`flex items-center gap-4 p-4 rounded-3xl border transition-all cursor-pointer ${isSelected
+                                                            ? 'bg-electric-teal/10 border-electric-teal text-white'
+                                                            : 'bg-white/[0.02] border-white/5 text-white/60 hover:border-white/20'
+                                                            }`}
+                                                    >
+                                                        <div className="w-10 h-10 rounded-2xl overflow-hidden border border-white/10">
+                                                            <img src={friend.avatar_url || `https://ui-avatars.com/api/?name=${friend.name}&background=random`} className="w-full h-full object-cover" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="font-black uppercase tracking-tight text-sm text-white">{friend.name}</p>
+                                                        </div>
+                                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-electric-teal border-electric-teal' : 'border-white/10'}`}>
+                                                            {isSelected && <Plus size={14} className="text-black rotate-45" />}
+                                                        </div>
+                                                    </motion.div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center py-20 opacity-30">
+                                                <Users size={48} className="mb-4 text-white" />
+                                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white">No friends found</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="flex flex-col gap-8 py-12 flex-1">
+                                    <div className="text-center mb-4">
+                                        <div className="w-24 h-24 rounded-[2.5rem] bg-electric-teal/20 border border-electric-teal/30 flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-electric-teal/20">
+                                            <Users size={48} className="text-electric-teal" />
+                                        </div>
+                                        <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-2 italic">Name your squad</h3>
+                                        <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Build a unique identity for your crew</p>
+                                    </div>
+
+                                    <div className="relative">
+                                        <input
+                                            autoFocus
+                                            type="text"
+                                            value={tempSquadName}
+                                            onChange={(e) => setTempSquadName(e.target.value)}
+                                            placeholder="SQUAD NAME..."
+                                            className="w-full bg-white/[0.03] border-b-2 border-white/10 p-6 text-white text-center text-2xl font-black placeholder:text-white/5 focus:border-electric-teal focus:outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-6 pb-12 border-t border-white/5 bg-black">
+                            {squadStep === 'FRIENDS' ? (
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    disabled={selectedFriendIds.length === 0}
+                                    onClick={() => setSquadStep('NAME')}
+                                    className={`w-full py-5 rounded-[2rem] font-black uppercase tracking-[0.3em] transition-all text-xs ${selectedFriendIds.length > 0
+                                        ? 'bg-electric-teal text-black shadow-2xl shadow-electric-teal/30'
+                                        : 'bg-white/5 text-white/10 cursor-not-allowed border border-white/5'
+                                        }`}
+                                >
+                                    Continue ({selectedFriendIds.length} Selected)
+                                </motion.button>
+                            ) : (
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={() => setSquadStep('FRIENDS')}
+                                        className="flex-1 py-5 rounded-[2rem] bg-white/5 text-white/40 font-black uppercase tracking-[0.3em] text-xs border border-white/5 hover:bg-white/10 transition-all"
+                                    >
+                                        Back
+                                    </button>
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        disabled={!tempSquadName.trim()}
+                                        onClick={finalizeSquadCreation}
+                                        className={`flex-[2] py-5 rounded-[2rem] font-black uppercase tracking-[0.3em] transition-all text-xs ${tempSquadName.trim()
+                                            ? 'bg-electric-teal text-black shadow-2xl shadow-electric-teal/30'
+                                            : 'bg-white/5 text-white/10 cursor-not-allowed border border-white/5'
+                                            }`}
+                                    >
+                                        Create Squad
+                                    </motion.button>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Input Modal */}
             {inputModalConfig && (
                 <QuestSystemModal

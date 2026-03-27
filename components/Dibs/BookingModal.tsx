@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Minus, Plus, Upload, Check, Copy, AlertCircle, Loader2, Shield, Wallet, Sparkles, Download, Share2, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 // toPng is dynamically imported in handleDownload and handleShare to avoid SSR issues
 import { DibsItem, Operator } from '../../types';
-import SmartMap from '../ui/SmartMap';
+
 import { GradientButton } from '../ui/AestheticComponents';
 import { supabaseService } from '../../services/supabaseService';
 import MapPicker from '../MapPicker';
@@ -953,15 +953,14 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                     </div>
 
                                                     {/* Interactive Maps Window */}
-                                                    <div className="h-56 w-full bg-zinc-900 relative border-t border-white/5">
-                                                        <SmartMap
-                                                            mode="view"
-                                                            initialLocation={item.event_lat ? {
-                                                                lat: item.event_lat,
-                                                                lng: item.event_lng!,
-                                                                placeName: item.event_location
-                                                            } : undefined}
+                                                    <div className="h-56 w-full bg-zinc-900 relative border-t border-white/5 overflow-hidden">
+                                                        <iframe
+                                                            width="100%"
                                                             height="100%"
+                                                            frameBorder="0"
+                                                            style={{ border: 0 }}
+                                                            src={`https://maps.google.com/maps?q=${item.event_lat || 14.5995},${item.event_lng || 120.9842}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                                                            allowFullScreen
                                                         />
                                                     </div>
                                                 </div>

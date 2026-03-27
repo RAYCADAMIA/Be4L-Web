@@ -4,6 +4,7 @@ import { X, ShieldCheck, Sparkles } from 'lucide-react';
 import { GlassCard, GradientButton, GlowText } from '../ui/AestheticComponents';
 import { supabaseService } from '../../services/supabaseService';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface BrandAccessModalProps {
     isOpen: boolean;
@@ -16,6 +17,7 @@ export const BrandAccessModal: React.FC<BrandAccessModalProps> = ({ isOpen, onCl
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const { updateUser } = useAuth();
 
     const handleVerify = async () => {
         if (!code.trim()) return;
@@ -25,11 +27,23 @@ export const BrandAccessModal: React.FC<BrandAccessModalProps> = ({ isOpen, onCl
         try {
             const res = await supabaseService.auth.claimBrandAccess(code.replace(/\s/g, '').toUpperCase());
             if (res.success) {
+                // Provision Draft for Wizard
+                const draftRes = await supabaseService.dibs.provisionBrandDraft();
+
+                if (!draftRes.success) {
+                    setError(draftRes.error || 'Failed to initialize brand profile.');
+                    setLoading(false);
+                    return;
+                }
+
+                // Immediately update local context so it survives a reload if needed
+                updateUser({ is_operator: true });
+
                 setSuccess(true);
                 setTimeout(() => {
                     onSuccess();
                     onClose();
-                }, 1500);
+                }, 3000); // 3 seconds to let them read the welcome message
             } else {
                 setError(res.error || 'Invalid Access Code');
             }
@@ -65,14 +79,17 @@ export const BrandAccessModal: React.FC<BrandAccessModalProps> = ({ isOpen, onCl
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="flex flex-col items-center space-y-4 py-8"
+                            className="flex flex-col items-center space-y-6 py-8"
                         >
-                            <div className="w-20 h-20 rounded-full bg-electric-teal/20 flex items-center justify-center animate-pulse">
-                                <Sparkles size={40} className="text-electric-teal" />
+                            <div className="w-24 h-24 rounded-full bg-electric-teal/20 flex items-center justify-center animate-pulse shadow-[0_0_50px_rgba(45,212,191,0.3)]">
+                                <Sparkles size={48} className="text-electric-teal drop-shadow-[0_0_15px_rgba(45,212,191,0.8)]" />
                             </div>
-                            <div>
-                                <GlowText size="lg" liquid>Brand Unlocked</GlowText>
-                                <p className="text-gray-400 text-sm mt-2 uppercase tracking-widest">Welcome to the inner circle.</p>
+                            <div className="space-y-3">
+                                <h1 className="text-3xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-electric-teal to-blue-500 tracking-tighter">THE INNER CIRCLE</h1>
+                                <p className="text-gray-400 text-[11px] uppercase tracking-widest leading-relaxed">
+                                    You're no longer just a user. <br />
+                                    You're a curator of the city's vibe.
+                                </p>
                             </div>
                         </motion.div>
                     ) : (

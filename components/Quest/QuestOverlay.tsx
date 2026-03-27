@@ -7,7 +7,6 @@ import { Quest, QuestStatus } from '../../types';
 import { EKGLoader } from '../ui/AestheticComponents';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../Toast';
-import SmartMap from '../ui/SmartMap';
 import QuestSystemModal, { SystemModalType } from './QuestSystemModal';
 
 interface QuestOverlayProps {

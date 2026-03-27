@@ -7,7 +7,6 @@ import { Quest, QuestStatus, User, QuestParticipantStatus } from '../../types';
 import { EKGLoader, GradientButton } from '../ui/AestheticComponents';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../Toast';
-import SmartMap from '../ui/SmartMap';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import QuestSystemModal, { SystemModalType } from './QuestSystemModal';
 

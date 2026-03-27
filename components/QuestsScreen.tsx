@@ -151,20 +151,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
         supabaseService.quests.getQuests(activeCat).then(existingQuests => {
             // ... (rest of the quest fetching logic)
             let featured: Quest[] = [];
-            if (questMode === 'CANON') {
-                const FEATURED_IDS = ['q-psy-1', 'q-sec-1', 'q-trv-1', 'q-trv-2', 'q-sp-1', 'q-and-1', 'q-golf-1', 'q-train-1', 'q-trv-3', 'q-job-1', 'q-soc-2'];
-                featured = FEATURED_IDS.map(id => {
-                    const q = [...existingQuests, ...randomQuests].find(quest => quest.id === id);
-                    if (q) {
-                        // Force the date to match selectedDate so it appears on "every date"
-                        const newDate = new Date(selectedDate);
-                        const originalDate = new Date(q.start_time);
-                        newDate.setHours(originalDate.getHours(), originalDate.getMinutes());
-                        return { ...q, start_time: newDate.toISOString(), mode: QuestType.CANON };
-                    }
-                    return null;
-                }).filter(Boolean) as Quest[];
-            }
+
 
             const allQuests = [...featured, ...existingQuests, ...randomQuests].filter(q => {
                 const isDiscoverable = q.status === QuestStatus.DISCOVERABLE || !q.status;

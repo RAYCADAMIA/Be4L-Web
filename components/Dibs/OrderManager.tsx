@@ -94,7 +94,7 @@ const OrderCard = ({ booking, onUpdateStatus }: { booking: DibsBooking, onUpdate
                                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md border ${(booking.confidence_score || 1) < 0.5 ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-electric-teal/10 border-electric-teal/20 text-electric-teal'}`}>
                                     {(booking.confidence_score || 1) < 0.5 ? <AlertCircle size={10} /> : <Check size={10} />}
                                     <span className="text-[9px] font-black uppercase tracking-widest">
-                                        {(booking.confidence_score || 1) < 0.5 ? 'Review Needed' : 'System Verified'}
+                                        {(booking.confidence_score || 1) < 0.5 ? 'Scam Alert' : 'System Verified'}
                                     </span>
                                 </div>
                                 {booking.extracted_ref && (
@@ -103,6 +103,14 @@ const OrderCard = ({ booking, onUpdateStatus }: { booking: DibsBooking, onUpdate
                             </div>
                         </div>
                     </div>
+                    {(booking.confidence_score || 1) < 0.5 && (
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex items-center gap-3">
+                            <AlertCircle size={14} className="text-red-500 shrink-0" />
+                            <p className="text-[8px] font-black text-red-400 uppercase tracking-widest leading-relaxed">
+                                WARNING: Reference number detected in other transactions. Please verify manualy before confirming.
+                            </p>
+                        </div>
+                    )}
                 </div>
             ) : isPending && (
                 <div className="py-8 bg-white/5 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-2 opacity-60">
@@ -143,8 +151,11 @@ const OrderManager: React.FC = () => {
     const fetchBookings = async () => {
         setLoading(true);
         try {
-            const data = await supabaseService.dibs.getOperatorBookings('op1');
-            setBookings(data || []);
+            const { data: { user } } = await supabaseService.auth.getUser();
+            if (user) {
+                const data = await supabaseService.dibs.getOperatorBookings(user.id);
+                setBookings(data || []);
+            }
         } catch (e) {
             console.error("Failed to fetch bookings", e);
         } finally {

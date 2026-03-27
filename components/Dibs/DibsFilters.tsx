@@ -7,8 +7,8 @@ export const DIB_CATEGORIES = [
     { id: 'All', label: 'All' },
     { id: 'Courts', label: 'Courts' },
     { id: 'Events', label: 'Events' },
-    { id: 'Competitions', label: 'Competitions' },
     { id: 'Services', label: 'Services' },
+    { id: 'Rental', label: 'Rental' },
     { id: 'Resto', label: 'Resto' },
     { id: 'Cafe', label: 'Cafe' },
     { id: 'Vacation', label: 'Vacation' },
@@ -22,6 +22,8 @@ interface DibsFiltersProps {
     setPriceRange?: (range: [number, number]) => void;
     locationFilter?: string;
     setLocationFilter?: (l: string) => void;
+    vibeFilter?: string;
+    setVibeFilter?: (v: string) => void;
 }
 
 export const DibsSidebar: React.FC<DibsFiltersProps> = ({
@@ -163,6 +165,8 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
     setPriceRange,
     locationFilter = '',
     setLocationFilter,
+    vibeFilter = '',
+    setVibeFilter,
 }) => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const filterRef = useRef<HTMLDivElement>(null);
@@ -273,6 +277,22 @@ export const DibsHeader: React.FC<DibsFiltersProps> = ({
                                                 </button>
                                             );
                                         })}
+                                    </div>
+                                </div>
+
+                                {/* Vibe Tag Section */}
+                                <div className="space-y-3">
+                                    <label className="text-[9px] font-black uppercase text-white/20 tracking-widest flex items-center gap-1.5 px-1">
+                                        Vibe Tag
+                                    </label>
+                                    <div className="relative px-1">
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. rooftop, chill..."
+                                            value={vibeFilter}
+                                            onChange={(e) => setVibeFilter?.(e.target.value)}
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-electric-teal/50"
+                                        />
                                     </div>
                                 </div>
 

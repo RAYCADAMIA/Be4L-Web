@@ -12,6 +12,8 @@ import { OnboardingTour } from '../Onboarding/OnboardingTour';
 import { AuraParticles } from '../Effects/AuraParticles';
 import { Footer } from '../Shared/Footer';
 import { AuthScreen } from '../AuthScreen';
+import { BrandOnboardingWizard } from '../Dibs/BrandOnboardingWizard';
+import { supabaseService } from '../../services/supabaseService';
 
 export const PlatformLayout: React.FC = () => {
     const { user, loading } = useAuth();
@@ -20,6 +22,7 @@ export const PlatformLayout: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const [showAuthModal, setShowAuthModal] = useState(false);
+    const [isOnboardingBrand, setIsOnboardingBrand] = useState(false);
     // Initialize as true if on landing page to prevent mid-refresh glitch
     const [isSplashActive, setIsSplashActive] = useState(() => {
         const isRoot = location.pathname === '/';
@@ -52,6 +55,17 @@ export const PlatformLayout: React.FC = () => {
             window.removeEventListener('splash-finished', handleSplashEnd);
         };
     }, []);
+
+    React.useEffect(() => {
+        if (user?.is_operator) {
+            supabaseService.dibs.getOperators().then((ops: any[]) => {
+                const myOp = ops.find(o => o.user_id === user.id);
+                setIsOnboardingBrand(myOp?.status === 'onboarding');
+            });
+        } else {
+            setIsOnboardingBrand(false);
+        }
+    }, [user]);
 
     const closeProfile = () => {
         const newParams = new URLSearchParams(searchParams);
@@ -217,6 +231,12 @@ export const PlatformLayout: React.FC = () => {
             />
             {/* <OnboardingTour /> */}
             <AuraParticles trigger={user?.aura_points || 0} />
+
+            <AnimatePresence>
+                {isOnboardingBrand && (
+                    <BrandOnboardingWizard onComplete={() => setIsOnboardingBrand(false)} />
+                )}
+            </AnimatePresence>
 
             <AnimatePresence>
                 {showAuthModal && (

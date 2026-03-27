@@ -5,8 +5,10 @@ import { User as UserType } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useOnClickOutside } from '../hooks/useOnClickOutside';
+import { supabaseService } from '../services/supabaseService';
 // import { BrandAccessModal } from './Dibs/BrandAccessModal';
 const BrandAccessModal = React.lazy(() => import('./Dibs/BrandAccessModal').then(module => ({ default: module.BrandAccessModal })));
+const LocationModal = React.lazy(() => import('./ui/LocationModal').then(module => ({ default: module.LocationModal })));
 
 interface ProfileHeaderProps {
     user: UserType;
@@ -24,6 +26,7 @@ interface ProfileHeaderProps {
     isFollowing?: boolean;
     onMore?: () => void;
     locationText?: string;
+    googleMapsLink?: string;
     onShowFollowers?: () => void;
     onShowFollowing?: () => void;
     onShowAuraStats?: () => void;
@@ -46,6 +49,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     isFollowing,
     onMore,
     locationText,
+    googleMapsLink,
     onShowFollowers,
     onShowFollowing,
     onShowAuraStats,
@@ -55,6 +59,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     const [showBrandModal, setShowBrandModal] = React.useState(false);
     const [showShareModal, setShowShareModal] = React.useState(false);
     const [showAuraModal, setShowAuraModal] = React.useState(false);
+    const [showLocationModal, setShowLocationModal] = React.useState(false);
     const [copied, setCopied] = React.useState(false);
     const navigate = useNavigate();
     const { updateUser, refreshProfile } = useAuth();
@@ -79,8 +84,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                             if (onProfileUpdate) {
                                 onProfileUpdate({ ...user, is_operator: true });
                             }
-                            // Force window reload to ensure all contexts refresh if needed, or rely on callback
-                            window.location.reload();
                         }}
                     />
                 </React.Suspense>
@@ -125,23 +128,29 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                                                     exit={{ opacity: 0, scale: 0.95, y: 10, x: 20 }}
                                                     className="absolute top-full right-0 mt-4 w-44 bg-white/[0.1] backdrop-blur-3xl backdrop-saturate-[180%] border border-white/20 rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] p-1"
                                                 >
-                                                    {isMe && (
-                                                        <button
-                                                            onClick={() => { refreshProfile(); setShowSettingsMenu(false); }}
-                                                            className="w-full px-2.5 py-1.5 text-left text-white/90 hover:bg-white/10 transition-colors flex items-center gap-2 group rounded-lg"
-                                                        >
-                                                            <div className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                                                                <Activity size={11} />
-                                                            </div>
-                                                            <span className="text-[9px] font-bold block">Sync Data</span>
-                                                        </button>
-                                                    )}
+
 
                                                     {isMe && user.is_admin && (
                                                         <div className="px-2 py-2 mb-1 bg-electric-teal/5 border border-white/5 rounded-xl">
-                                                            <div className="flex items-center gap-1.5 mb-2">
-                                                                <Zap size={10} className="text-electric-teal" />
-                                                                <span className="text-[7px] font-black uppercase tracking-widest text-white/50">God Mode</span>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <Zap size={10} className="text-electric-teal" />
+                                                                    <span className="text-[7px] font-black uppercase tracking-widest text-white/50">God Mode</span>
+                                                                </div>
+                                                                <button
+                                                                    onClick={async (e) => {
+                                                                        e.stopPropagation();
+                                                                        const res = await supabaseService.dibs.resetBrandStatus();
+                                                                        if (res.success) {
+                                                                            updateUser({ is_operator: false });
+                                                                            setShowSettingsMenu(false);
+                                                                            window.location.reload();
+                                                                        }
+                                                                    }}
+                                                                    className="text-[6px] font-black uppercase text-red-500 hover:text-red-400 transition-colors"
+                                                                >
+                                                                    Purge Brand
+                                                                </button>
                                                             </div>
                                                             <div className="flex gap-1">
                                                                 <button
@@ -224,6 +233,34 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
                                                     <div className="h-px bg-white/5 mx-2 my-0.5" />
 
+                                                    <button
+                                                        onClick={async (e) => {
+                                                            e.stopPropagation();
+                                                            console.log('[Dev] Purging brand stats...');
+                                                            const res = await supabaseService.dibs.resetBrandStatus();
+                                                            console.log('[Dev] Result:', res);
+                                                            if (res.success) {
+                                                                updateUser({ is_operator: false });
+                                                                setShowSettingsMenu(false);
+                                                                alert('Brand profile purged. Redirecting...');
+                                                                window.location.reload();
+                                                            } else {
+                                                                alert('Purge failed: ' + (res.error || 'Unknown error'));
+                                                            }
+                                                        }}
+                                                        className="w-full px-2.5 py-1.5 text-left text-white/90 hover:bg-white/10 transition-colors flex items-center gap-2 group rounded-lg"
+                                                    >
+                                                        <div className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center group-hover:bg-red-500/20 group-hover:text-red-500 transition-colors">
+                                                            <Trash2 size={11} className="text-red-500/50" />
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[9px] font-bold block text-red-500/70">Dev: Reset Brand</span>
+                                                            <span className="text-[6px] text-gray-400 font-medium">Purge account meta to re-test</span>
+                                                        </div>
+                                                    </button>
+
+                                                    <div className="h-px bg-white/5 mx-2 my-0.5" />
+
                                                     <div className="px-1 py-1">
                                                         <button
                                                             onClick={(e) => {
@@ -292,9 +329,15 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
                         {/* 3. Brand Location */}
                         {(user.is_operator || locationText) && (
-                            <div className="flex items-center gap-1 text-gray-500 font-bold text-xs uppercase tracking-widest mt-2 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
-                                <MapPin size={12} className="text-electric-teal/50" />
-                                {locationText || 'Davao City'}
+                            <div className="mt-2">
+                                <button
+                                    onClick={() => setShowLocationModal(true)}
+                                    className="flex items-center gap-1 text-gray-500 font-bold text-xs uppercase tracking-widest bg-white/5 px-4 py-1.5 rounded-full border border-white/5 hover:bg-electric-teal/10 hover:border-electric-teal/30 hover:text-electric-teal transition-all group shadow-lg active:scale-95"
+                                >
+                                    <MapPin size={12} className="text-electric-teal/50 group-hover:text-electric-teal group-hover:scale-110 transition-all" />
+                                    {locationText || 'Davao City'}
+                                    <ArrowRight size={10} className="ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                                </button>
                             </div>
                         )}
 
@@ -552,6 +595,16 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     </div>
                 </div>
             </div>
+
+            {/* Location Modal */}
+            <React.Suspense fallback={null}>
+                <LocationModal
+                    isOpen={showLocationModal}
+                    onClose={() => setShowLocationModal(false)}
+                    locationName={locationText || (user.is_operator ? user.name : '') || 'Location'}
+                    googleMapsLink={googleMapsLink || ''}
+                />
+            </React.Suspense>
         </div>
     );
 };
