@@ -27,7 +27,10 @@ export const PRESET_CITIES = [
   'Tagum',
   'CDO',
   'Digos',
-  'Malaybalay'
+  'Malaybalay',
+  'Valencia',
+  'Mati',
+  'Tagaytay'
 ];
 
 export const QUEST_VIBE_PRESETS = [
@@ -440,7 +443,23 @@ export const MOCK_CAPTURES: Capture[] = [
 // Helper for Quests
 const mockLocation = (name: string) => ({ lat: 0, lng: 0, place_name: name, address_full: 'Davao City' });
 
-export const MOCK_QUESTS: Quest[] = [];
+export const MOCK_QUESTS: Quest[] = [
+  {
+    id: 'q-bukidnon-1',
+    title: 'Sunrise Flight in Bukidnon',
+    description: 'Catch the sunrise mid-air! A tandem paragliding session with the best pilots in Bukidnon. No experience needed.',
+    mode: QuestType.SPONTY,
+    status: QuestStatus.DISCOVERABLE,
+    category: 'Adventures',
+    start_time: new Date().toISOString(),
+    capacity: 10,
+    current_participants: 3,
+    participant_ids: ['u2', 'u3', 'u4'],
+    location: { lat: 7.9066, lng: 125.0934, place_name: 'Valencia City, Bukidnon' },
+    host: { id: 'op10', name: 'Bukidnon Paragliding', avatar_url: '/bukidnon_paragliding_logo_1774608580266.png' } as any,
+    image_url: '/bukidnon_paragliding_item_paragliding_session_1774608602080.png'
+  }
+];
 
 
 export const MOCK_MESSAGES: EchoMessage[] = [
