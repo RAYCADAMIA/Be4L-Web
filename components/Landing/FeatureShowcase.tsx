@@ -33,7 +33,7 @@ const FEATURES = [
         id: 'DIBS',
         title: 'DIBS',
         subtitle: 'Smart Social Booking',
-        description: "Secure your spot with premium brands in a single tap. From midnight matches to exclusive socials—pick, book, and be there.",
+        description: "Secure your spot with curated brands across events, sports, venues, and experiences—all in a single tap. From midnight matches to exclusive socials—pick, book, and be there.",
         color: '#FFB854',
         icon: Zap,
         details: [

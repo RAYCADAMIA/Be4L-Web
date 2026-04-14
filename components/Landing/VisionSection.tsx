@@ -57,22 +57,7 @@ export const VisionSection: React.FC = () => {
                     </p>
                 </motion.div>
 
-                {/* 3. Closing Statement */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1], delay: 0.4 }}
-                    viewport={{ once: true }}
-                    className="glass-panel p-6 md:p-12 rounded-[2rem] shadow-2xl max-w-3xl mx-auto"
-                >
-                    <p className="text-lg md:text-2xl font-black text-white leading-tight font-display tracking-tighter">
-                        &ldquo;Be4L is a giant friend group <br />
-                        always down for <span className="brand-text-dusk font-black uppercase tracking-tighter">side quests</span> and adventures.&rdquo;
-                    </p>
-                    <p className="mt-8 text-base font-bold tracking-[0.3em] text-electric-teal font-display">
-                        We choose to be for life.
-                    </p>
-                </motion.div>
+
 
             </div>
 
