@@ -146,14 +146,7 @@ export const HomePage: React.FC = () => {
                         What's the plan, <span className="animate-liquid-text">{displayName}</span>?
                     </motion.h1>
                 </div>
-                <motion.p
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-electric-teal font-black uppercase tracking-[0.2em] text-[10px] mb-4"
-                >
-                    Do a side quest now to farm aura points
-                </motion.p>
+
                 <div
                     onClick={() => setShowCityModal(true)}
                     className="flex items-center gap-2 group cursor-pointer w-fit"

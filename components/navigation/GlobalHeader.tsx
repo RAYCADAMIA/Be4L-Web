@@ -119,15 +119,21 @@ export const GlobalHeader: React.FC = () => {
                                     <button
                                         key={item.path}
                                         onClick={() => {
+                                            if (item.label === 'Lore') return;
                                             if (item.path.startsWith('/app/') && item.path !== '/app/chat') {
                                                 navigate('/auth');
                                             } else {
                                                 navigate(item.path);
                                             }
                                         }}
-                                        className={`relative h-10 px-6 flex items-center justify-center rounded-full text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 z-10 ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                                        className={`relative h-10 px-6 flex items-center justify-center rounded-full text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 z-10 ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} ${item.label === 'Lore' ? 'cursor-not-allowed opacity-50' : ''}`}
                                     >
-                                        <span className="relative z-10">{item.label}</span>
+                                        <span className="relative z-10">
+                                            {item.label}
+                                            {item.label === 'Lore' && (
+                                                <span className="absolute -top-3 -right-6 bg-primary text-[6px] text-black px-1.5 py-0.5 rounded-full font-black tracking-tighter shadow-lg shadow-primary/20">SOON</span>
+                                            )}
+                                        </span>
                                         {isActive && (
                                             <motion.div
                                                 layoutId="activeTabGlobalGuest"
@@ -300,10 +306,18 @@ export const GlobalHeader: React.FC = () => {
                                 <button
                                     key={item.path}
                                     id={`nav-${item.label.toLowerCase()}`}
-                                    onClick={() => navigate(item.path)}
-                                    className={`relative h-10 px-6 flex items-center justify-center rounded-full text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 z-10 ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                                    onClick={() => {
+                                        if (item.label === 'Lore') return;
+                                        navigate(item.path);
+                                    }}
+                                    className={`relative h-10 px-6 flex items-center justify-center rounded-full text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 z-10 ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'} ${item.label === 'Lore' ? 'cursor-not-allowed opacity-50' : ''}`}
                                 >
-                                    <span className="relative z-10">{item.label}</span>
+                                    <span className="relative z-10">
+                                        {item.label}
+                                        {item.label === 'Lore' && (
+                                            <span className="absolute -top-3 -right-6 bg-primary text-[6px] text-black px-1.5 py-0.5 rounded-full font-black tracking-tighter shadow-lg shadow-primary/20">SOON</span>
+                                        )}
+                                    </span>
                                     {isActive && (
                                         <motion.div
                                             layoutId="activeTabGlobal"

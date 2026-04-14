@@ -109,7 +109,14 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children 
                 return;
             }
 
-            // 3. Regular User Logic
+            // 3. Guest User Logic - Skip onboarding
+            if (profile.is_guest) {
+                if (!location.pathname.startsWith('/app')) navigate('/app/home');
+                setIsVerifying(false);
+                return;
+            }
+
+            // 4. Regular User Logic
             if (!profile.onboarding_completed) {
                 // New User -> Onboarding
                 if (location.pathname !== '/onboarding') {

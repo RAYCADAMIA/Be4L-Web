@@ -222,6 +222,24 @@ export const AuthBox: React.FC<AuthBoxProps> = ({ onSuccess, initialMode = 'logi
                         </button>
                     </div>
 
+                    {/* Guest Access */}
+                    <div className="flex items-center gap-5 w-full my-3">
+                        <div className="flex-1 h-px bg-white/5" />
+                        <span className="text-white/20 text-[8px] font-black uppercase tracking-[0.4em] pr-2">OR</span>
+                        <div className="flex-1 h-px bg-white/5" />
+                    </div>
+
+                    <motion.button
+                        type="button"
+                        onClick={handleGuestLogin}
+                        disabled={loading}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-white/50 hover:text-white hover:bg-white/10 hover:border-white/20 text-[10px] uppercase font-black tracking-[0.3em] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                        {loading ? <Loader2 className="animate-spin" size={14} /> : 'Continue as Guest'}
+                    </motion.button>
+
                     {/* Switch Mode */}
                     <div className="mt-6 pt-4 border-t border-white/5 w-full text-center">
                         <button

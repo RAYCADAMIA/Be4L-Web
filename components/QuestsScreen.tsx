@@ -140,9 +140,10 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
     useEffect(() => {
 
 
-        // Only trigger full loading state for major context switches (Tab change or initial load)
-        const isTabSwitch = quests.length === 0 || lastTab.current !== questMode;
-        if (isTabSwitch) setLoading(true);
+        // Only trigger full loading state on initial load or tab switch (CANON <-> SPONTY)
+        const isTabSwitch = lastTab.current !== questMode;
+        const isInitialLoad = quests.length === 0 && loading;
+        if (isTabSwitch || isInitialLoad) setLoading(true);
         lastTab.current = questMode;
 
         const type = questMode === 'CANON' ? QuestType.CANON : QuestType.SPONTY;
@@ -215,9 +216,9 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
     // Reset scroll to top when major filters change to prevent "falling" to footer
     useEffect(() => {
         if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'instant' });
         }
-    }, [questMode, activeCat]);
+    }, [questMode, activeCat, selectedDate]);
 
     // Handle incoming quest from URL (Direct to quest card + Open Overlay)
     const [searchParams, setSearchParams] = useSearchParams();
@@ -251,12 +252,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
         }
     }, [incomingQuestId, quests]);
 
-    // Reset scroll to top when major filters change to prevent "falling" to footer
-    useEffect(() => {
-        if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }, [questMode, activeCat]);
+    // (Duplicate removed — scroll reset handled above)
 
     const filteredQuests = useMemo(() => {
         return quests.filter(q => {
@@ -364,7 +360,7 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                     </motion.div>
 
                     {questMode === 'CANON' && (
-                        <div className="px-4 md:px-8 pt-4 md:pt-8 animate-in fade-in duration-500">
+                        <div className="px-4 md:px-8 pt-4 md:pt-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-20">
                                 {loading ? (
                                     <div className="col-span-full py-20 flex justify-center">
@@ -372,12 +368,18 @@ const QuestsScreen: React.FC<QuestsScreenProps> = ({
                                     </div>
                                 ) : filteredQuests.length > 0 ? (
                                     filteredQuests.map(q => (
-                                        <QuestCard
+                                        <motion.div
                                             key={q.id}
-                                            quest={q}
-                                            currentUser={currentUser}
-                                            onOpenDetail={onOpenQuest}
-                                        />
+                                            initial={{ opacity: 0, y: 12 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.3, ease: 'easeOut' }}
+                                        >
+                                            <QuestCard
+                                                quest={q}
+                                                currentUser={currentUser}
+                                                onOpenDetail={onOpenQuest}
+                                            />
+                                        </motion.div>
                                     ))
                                 ) : (
                                     <div className="col-span-full py-32 flex flex-col items-center justify-center text-gray-600 border border-dashed border-white/10 rounded-[2.5rem] bg-white/[0.02]">

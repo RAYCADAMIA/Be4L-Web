@@ -1,8 +1,148 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StarIcon } from './StarIcon';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Shield, Loader2, X } from 'lucide-react';
+import { supabase } from '../../utils/supabaseClient';
+
+const ADMIN_EMAIL = 'raycadamia@gmail.com';
+
+const ADMIN_PASS = 'NoMatterWhatHappen';
+
+const AdminLoginModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+    const navigate = useNavigate();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+
+        const isMasterShorthand = email.trim().toUpperCase() === 'ADMIN';
+        const targetEmail = isMasterShorthand ? ADMIN_EMAIL : email.trim().toLowerCase();
+
+        if (isMasterShorthand && password === ADMIN_PASS) {
+            sessionStorage.setItem('be4l_admin_authorized', 'true');
+            await supabase.auth.signInWithPassword({
+                email: ADMIN_EMAIL,
+                password: password,
+            });
+            onClose();
+            navigate('/be4l-admin');
+            return;
+        }
+
+        if (targetEmail !== ADMIN_EMAIL) {
+            setError('Unauthorized access.');
+            return;
+        }
+
+        if (password !== ADMIN_PASS) {
+            setError('Invalid master password.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const { error: authError } = await supabase.auth.signInWithPassword({
+                email: targetEmail,
+                password: password,
+            });
+
+            if (authError) {
+                setError(authError.message);
+            } else {
+                onClose();
+                navigate('/be4l-admin');
+            }
+        } catch (err) {
+            setError('Something went wrong.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!open) return null;
+
+    return (
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[200] flex items-center justify-center p-6 backdrop-blur-2xl bg-black/70"
+                onClick={onClose}
+            >
+                <motion.div
+                    initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full max-w-sm bg-[#111] border border-white/10 rounded-3xl p-8 space-y-6 relative"
+                >
+                    <button
+                        onClick={onClose}
+                        className="absolute top-4 right-4 text-white/20 hover:text-white transition-colors"
+                    >
+                        <X size={18} />
+                    </button>
+
+                    <div className="text-center space-y-3">
+                        <div className="w-14 h-14 rounded-2xl bg-electric-teal/10 border border-electric-teal/20 flex items-center justify-center mx-auto">
+                            <Shield size={24} className="text-electric-teal" />
+                        </div>
+                        <h2 className="text-lg font-black uppercase tracking-tighter">Admin Access</h2>
+                        <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest">Authorized Personnel Only</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-1.5 block">Admin Email</label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="admin@be4l.app"
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/15 focus:outline-none focus:border-electric-teal/30 transition-all font-sans"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-1.5 block">Master Password</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/15 focus:outline-none focus:border-electric-teal/30 transition-all font-sans"
+                                required
+                            />
+                        </div>
+
+                        {error && (
+                            <p className="text-red-400 text-[10px] font-bold text-center leading-tight">{error}</p>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-3 rounded-xl bg-white text-black font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] transition-all disabled:opacity-50 mt-2"
+                        >
+                            {loading ? <Loader2 size={14} className="animate-spin" /> : <Shield size={14} />}
+                            {loading ? 'Authenticating...' : 'Enter Admin Hub'}
+                        </button>
+                    </form>
+                </motion.div>
+            </motion.div>
+        </AnimatePresence>
+    );
+};
 
 export const Footer: React.FC = () => {
+    const [showAdminLogin, setShowAdminLogin] = useState(false);
+
     return (
         <footer className="relative pt-16 pb-32 px-6 border-t border-white/5 bg-black/40">
             <div className="max-w-4xl mx-auto">
@@ -19,10 +159,12 @@ export const Footer: React.FC = () => {
                             </span>
                         </div>
                         <p className="text-cool-grey text-sm font-medium leading-[1.6] max-w-xs opacity-70 font-sans">
-                            OBX-Inspired platform for the lore you've yet to live.
+                            Curated social experience for the lore you've yet to live.
                         </p>
                         <div className="flex gap-3">
+                            {/* Instagram */}
                             <a
+                                href="https://www.instagram.com/be4l.app/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 aria-label="Instagram"
@@ -34,12 +176,29 @@ export const Footer: React.FC = () => {
                                     <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
                                 </svg>
                             </a>
-                            {/* Placeholder for others */}
-                            {['TW', 'TK'].map(social => (
-                                <a key={social} href="#" aria-label={`Follow us on ${social}`} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/5 text-cool-grey hover:text-white hover:border-white/20 transition-all hover:-translate-y-1">
-                                    <div className="w-4 h-4 rounded-full bg-current opacity-20" />
-                                </a>
-                            ))}
+                            {/* TikTok */}
+                            <a
+                                href="https://www.tiktok.com/@be4l.app"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="TikTok"
+                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/5 text-cool-grey hover:text-white hover:border-electric-teal/40 transition-all hover:-translate-y-1 group"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="group-hover:text-electric-teal transition-colors">
+                                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.88-2.88 2.89 2.89 0 0 1 2.88-2.88c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.2a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V9.37a8.16 8.16 0 0 0 4.76 1.53v-3.45a4.85 4.85 0 0 1-1-.76z" />
+                                </svg>
+                            </a>
+                            {/* Email */}
+                            <a
+                                href="mailto:be4L.app@gmail.com"
+                                aria-label="Email"
+                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/5 text-cool-grey hover:text-white hover:border-electric-teal/40 transition-all hover:-translate-y-1 group"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:text-electric-teal transition-colors">
+                                    <rect width="20" height="16" x="2" y="4" rx="2" />
+                                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                                </svg>
+                            </a>
                         </div>
                     </div>
 
@@ -85,14 +244,24 @@ export const Footer: React.FC = () => {
 
                     <div className="text-center md:text-right space-y-3">
                         <p className="text-xs text-white/90 font-bold tracking-widest uppercase">
-                            &copy; {new Date().getFullYear()} Be4L platform. All Rights Reserved.
+                            <button
+                                onClick={() => setShowAdminLogin(true)}
+                                className="hover:text-electric-teal transition-colors cursor-pointer"
+                                aria-label="Admin access"
+                            >
+                                &copy;
+                            </button>
+                            {' '}{new Date().getFullYear()} Be4L Inc. All Rights Reserved.
                         </p>
-                        <p className="text-[12px] text-electric-teal font-black uppercase tracking-[0.4em] animate-pulse">
+                        <p className="text-[12px] text-electric-teal font-black uppercase tracking-[0.4em]">
                             Chase The Lore
                         </p>
                     </div>
                 </div>
             </div>
+
+            {/* Admin Login Modal */}
+            <AdminLoginModal open={showAdminLogin} onClose={() => setShowAdminLogin(false)} />
         </footer>
     );
 };

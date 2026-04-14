@@ -14,7 +14,9 @@ import {
     MessageCircle,
     TrendingUp,
     Camera,
-    PlayCircle
+    PlayCircle,
+    Video,
+    Handshake
 } from 'lucide-react';
 
 export const PartnerPage: React.FC = () => {
@@ -57,6 +59,15 @@ export const PartnerPage: React.FC = () => {
             desc: 'Convert one-time visitors into a loyal community. Message your followers and drop exclusive quests to your tribe.',
             example: 'We help you create the community; we give you the tools to keep them.',
             color: 'text-pink-400'
+        },
+        {
+            id: 'creators',
+            icon: Video,
+            badge: 'CREATOR MATCHMAKING',
+            title: 'WE MATCH YOU WITH CREATORS',
+            desc: 'Get paired with local content creators who promote your brand to their audience. They create the content; you receive the foot traffic. Performance-based — you only pay when it converts.',
+            example: 'A creator posts a TikTok about your venue → Their followers book through Be4L → You get real customers, they earn commission.',
+            color: 'text-purple-400'
         }
     ];
 
@@ -228,6 +239,23 @@ export const PartnerPage: React.FC = () => {
                                                     ))}
                                                 </div>
                                                 <p className="text-xs font-black tracking-[0.5em] text-electric-teal uppercase">Connected Tribe</p>
+                                            </div>
+                                        )}
+                                        {section.id === 'creators' && (
+                                            <div className="relative w-full h-full flex items-center justify-center">
+                                                <div className="flex items-center gap-6">
+                                                    <div className="w-20 h-20 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                                                        <TrendingUp size={32} className="text-electric-teal" />
+                                                    </div>
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <div className="w-10 h-[2px] bg-gradient-to-r from-purple-400 to-pink-400" />
+                                                        <Handshake size={20} className="text-pink-400" />
+                                                        <div className="w-10 h-[2px] bg-gradient-to-r from-pink-400 to-orange-400" />
+                                                    </div>
+                                                    <div className="w-20 h-20 rounded-2xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center">
+                                                        <Video size={32} className="text-purple-400" />
+                                                    </div>
+                                                </div>
                                             </div>
                                         )}
                                     </div>

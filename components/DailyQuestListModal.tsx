@@ -49,7 +49,7 @@ const DailyQuestListModal: React.FC<DailyQuestListModalProps> = ({ onClose }) =>
                                 <CheckSquare size={20} className="text-primary" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-black text-primary-text uppercase tracking-wider">Side Quest To Do</h2>
+                                <h2 className="text-lg font-black text-primary-text uppercase tracking-wider">Quest List</h2>
                                 <p className="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Personal Objectives</p>
                             </div>
                         </div>

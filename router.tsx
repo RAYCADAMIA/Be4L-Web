@@ -35,6 +35,9 @@ const VerifyBooking = lazy(() => import('./components/Dibs/VerifyBooking'));
 const HomePage = lazy(() => import('./components/HomePage').then(module => ({ default: module.HomePage })));
 const GuestHome = lazy(() => import('./components/Guest/GuestHome').then(module => ({ default: module.GuestHome })));
 const AuthPage = lazy(() => import('./pages/AuthPage').then(module => ({ default: module.AuthPage })));
+const CreatorProgramPage = lazy(() => import('./pages/CreatorProgramPage'));
+const CreatorApplyPage = lazy(() => import('./pages/CreatorApplyPage'));
+const Be4LAdminHub = lazy(() => import('./pages/Be4LAdminHub'));
 
 export const router = createBrowserRouter([
     {
@@ -60,7 +63,7 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: 'lore',
-                        element: <Suspense fallback={<HeartbeatLoader />}><LorePage /></Suspense>
+                        element: <Navigate to="/" replace />
                     },
                     {
                         path: 'about',
@@ -93,6 +96,14 @@ export const router = createBrowserRouter([
             {
                 path: 'team',
                 element: <Suspense fallback={<HeartbeatLoader />}><TeamPage /></Suspense>
+            },
+            {
+                path: 'Careers/Creator-Program',
+                element: <Suspense fallback={<HeartbeatLoader />}><CreatorProgramPage /></Suspense>
+            },
+            {
+                path: 'Careers/Creator-Program/apply',
+                element: <Suspense fallback={<HeartbeatLoader />}><CreatorApplyPage /></Suspense>
             },
             // Public Verify Route
             {
@@ -129,7 +140,7 @@ export const router = createBrowserRouter([
 
             {
                 path: 'lore',
-                element: <Suspense fallback={<HeartbeatLoader />}><LorePage /></Suspense>
+                element: <Navigate to="/app/home" replace />
             },
             {
                 path: 'chat',
@@ -160,5 +171,10 @@ export const router = createBrowserRouter([
                 element: <Suspense fallback={<HeartbeatLoader />}><ProfilePage /></Suspense>
             }
         ]
+    },
+    {
+        path: '/be4l-admin',
+        element: <Suspense fallback={<HeartbeatLoader />}><Be4LAdminHub /></Suspense>,
+        errorElement: <ErrorBoundary />
     }
 ]);

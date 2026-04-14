@@ -231,6 +231,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                                                         <span className="text-[9px] font-bold">Privacy Center</span>
                                                     </button>
 
+                                                    {/* Dev: Reset Brand - Hidden for now
                                                     <div className="h-px bg-white/5 mx-2 my-0.5" />
 
                                                     <button
@@ -258,8 +259,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                                                             <span className="text-[6px] text-gray-400 font-medium">Purge account meta to re-test</span>
                                                         </div>
                                                     </button>
-
-                                                    <div className="h-px bg-white/5 mx-2 my-0.5" />
+                                                    */}
 
                                                     <div className="px-1 py-1">
                                                         <button
@@ -431,76 +431,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     )}
                 </AnimatePresence>
 
-                {/* Aura Stats Modal */}
-                <AnimatePresence>
-                    {showAuraModal && (
-                        <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center px-4 pt-20 pb-24 md:p-6">
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="absolute inset-0 bg-black/80 backdrop-blur-2xl"
-                                onClick={() => setShowAuraModal(false)}
-                            />
-                            <motion.div
-                                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                                animate={{ scale: 1, opacity: 1, y: 0 }}
-                                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                                className="bg-[#0A0A0A] border border-white/10 rounded-[3rem] w-full max-w-sm relative z-10 shadow-3xl overflow-hidden p-8"
-                            >
-                                <button
-                                    onClick={() => setShowAuraModal(false)}
-                                    className="absolute top-6 right-6 p-2 hover:bg-white/5 rounded-full transition-colors"
-                                >
-                                    <X size={20} className="text-gray-500" />
-                                </button>
-
-                                <div className="text-center mb-8">
-                                    <div className="w-16 h-16 bg-electric-teal/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <Activity size={32} className="text-electric-teal" />
-                                    </div>
-                                    <h3 className="text-xl font-black uppercase tracking-tighter text-white">Your Aura</h3>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mt-1">Social Reliability Score</p>
-                                </div>
-
-                                <div className="space-y-6">
-                                    <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
-                                        <p className="text-xs text-gray-400 leading-relaxed text-center italic">
-                                            "Aura represents your social reliability and ecosystem standing. Earn points by hosting successful quests, staying active, and being a trusted member of the community."
-                                        </p>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1">Recent Gains</h4>
-                                        <div className="space-y-2">
-                                            {[
-                                                { label: 'Quest Hosted', points: '+50', date: '2h ago' },
-                                                { label: 'Daily Streak', points: '+10', date: '5h ago' },
-                                                { label: 'Early Arrival', points: '+25', date: 'Yesterday' }
-                                            ].map((item, i) => (
-                                                <div key={i} className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded-xl">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[10px] font-bold text-white uppercase">{item.label}</span>
-                                                        <span className="text-[8px] text-gray-600 font-medium">{item.date}</span>
-                                                    </div>
-                                                    <span className="text-xs font-black text-electric-teal">{item.points}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={() => setShowAuraModal(false)}
-                                    className="w-full mt-8 py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-electric-teal transition-all active:scale-95"
-                                >
-                                    Got it
-                                </button>
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
-
                 <div className="flex items-center justify-center gap-8 text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-500 mb-10 w-full">
                     <div
                         className="flex flex-col items-center cursor-pointer hover:opacity-70 transition-opacity"
@@ -517,17 +447,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                         <span className="text-white text-xl md:text-2xl leading-none mb-1">{user.following_count?.toLocaleString() || 0}</span>
                         <span>Following</span>
                     </div>
-                    <div className="w-px h-10 bg-white/5" />
-                    <button
-                        className="flex flex-col items-center cursor-pointer hover:opacity-70 transition-opacity group"
-                        onClick={() => setShowAuraModal(true)}
-                    >
-                        <span className="text-electric-teal text-xl md:text-2xl leading-none mb-1 flex items-center gap-1 group-hover:scale-110 transition-transform">
-                            <Activity size={20} className="fill-current" />
-                            {(user.aura_points || 0).toLocaleString()}
-                        </span>
-                        <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Aura</span>
-                    </button>
                 </div>
 
                 {/* Action Bar (Refined for centering) */}

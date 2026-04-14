@@ -6,7 +6,7 @@ import { VisionSection } from './Landing/VisionSection';
 import { PhoneShowcaseSection } from './Landing/PhoneShowcaseSection';
 import { RoadmapSection } from './Landing/RoadmapSection';
 import { FeatureShowcase } from './Landing/FeatureShowcase';
-import { PartnerPitch, UserCTA, HUDMenu, Starfield, TeamRecruitment, PoweredBy, HowItWorks } from './Landing/LandingComponents';
+import { PartnerPitch, CreatorPitch, UserCTA, HUDMenu, Starfield, TeamRecruitment, PoweredBy, HowItWorks } from './Landing/LandingComponents';
 import { Footer } from './Shared/Footer';
 // Lazy Load AuthScreen
 const AuthScreen = React.lazy(() => import('./AuthScreen').then(module => ({ default: module.AuthScreen })));
@@ -75,9 +75,11 @@ export const LandingPage: React.FC<{ bypassSplash?: boolean; onReset?: () => voi
                             <PoweredBy />
                         </div>
 
-                        <div id="roadmap" className="scroll-mt-32">
+{/* <div id="roadmap" className="scroll-mt-32">
                             <RoadmapSection />
-                        </div>
+                        </div> */}
+
+                        <CreatorPitch />
 
                         <PartnerPitch />
 

@@ -101,10 +101,10 @@ export const PlatformLayout: React.FC = () => {
 
     const navItems = [
         { label: 'Home', path: !user ? '/' : '/app/home', icon: Home },
-        { label: 'Lore', path: user ? '/app/lore' : '/lore', icon: Aperture },
+        { label: 'Dibs', path: user ? '/app/dibs' : '/dibs', icon: ShoppingBag },
         { label: 'Quests', path: user ? '/app/quests' : '/quests', icon: Compass },
         { label: 'Chat', path: '/app/chat', icon: MessageCircle }, // Restricted
-        { label: 'Dibs', path: user ? '/app/dibs' : '/dibs', icon: ShoppingBag },
+        { label: 'Lore', path: user ? '/app/lore' : '/lore', icon: Aperture },
     ];
 
     const shouldShowFooter = ['/', '/quests', '/dibs', '/app/home', '/app/quests', '/app/dibs', '/app/lore'].includes(location.pathname) || location.pathname === '/' || location.pathname.startsWith('/quests') || location.pathname.startsWith('/dibs');
@@ -194,16 +194,20 @@ export const PlatformLayout: React.FC = () => {
                                     key={item.label}
                                     id={`nav-${item.label.toLowerCase()}-mobile`}
                                     onClick={() => {
+                                        if (item.label === 'Lore') return;
                                         if (!user && item.label === 'Profile') {
                                             setShowAuthModal(true);
                                         } else {
                                             navigate(item.path);
                                         }
                                     }}
-                                    className={`group flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-300 relative ${isActive ? 'text-primary' : 'text-white/40 hover:text-white'}`}
+                                    className={`group flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-300 relative ${isActive ? 'text-primary' : 'text-white/40 hover:text-white'} ${item.label === 'Lore' ? 'cursor-not-allowed opacity-50' : ''}`}
                                 >
                                     <div className="relative p-1">
                                         <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} className="relative z-10" />
+                                        {item.label === 'Lore' && (
+                                            <span className="absolute -top-1 -right-2 bg-primary text-[5px] text-black px-1 rounded-full font-black tracking-tighter shadow-lg shadow-primary/20">SOON</span>
+                                        )}
                                         {isActive && (
                                             <motion.div
                                                 layoutId="mobileActiveNav"

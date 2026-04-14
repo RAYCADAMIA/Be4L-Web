@@ -48,6 +48,39 @@ export const UserCTA: React.FC<UserCTAProps> = ({ onJoinClick }) => {
     );
 };
 
+export const CreatorPitch: React.FC = () => {
+    const navigate = useNavigate();
+
+    return (
+        <section className="py-24 px-6 relative overflow-hidden">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
+                viewport={{ once: true }}
+                className="max-w-4xl mx-auto text-center relative z-10"
+            >
+                <h3 className="text-3xl md:text-5xl font-black text-white mb-4 font-display uppercase tracking-tighter brand-text-dusk">Are you a Content Creator?</h3>
+                <div className="flex justify-center mb-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20">
+                        <div className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400">Now Open</span>
+                    </div>
+                </div>
+                <p className="text-base md:text-lg text-cool-grey mb-8 max-w-xl mx-auto font-sans font-medium">
+                    Monetize your influence. Get matched with local brands, create authentic content, and earn from every booking you drive.
+                </p>
+                <button
+                    onClick={() => navigate('/Careers/Creator-Program')}
+                    className="px-8 py-3 glass-panel text-white font-bold rounded-full hover:border-purple-400 transition-all text-xs tracking-widest font-display group"
+                >
+                    <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">Join Our Creator Program</span>
+                </button>
+            </motion.div>
+        </section>
+    );
+};
+
 export const PartnerPitch: React.FC = () => {
     const navigate = useNavigate();
 
@@ -305,8 +338,7 @@ export const HUDMenu: React.FC<HUDMenuProps> = ({ onJoinClick, isScrolled = true
                     </>
                 ) : (
                     <>
-                        <a href="#vision" className="text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Vision</a>
-                        <a href="#roadmap" className="text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Roadmap</a>
+<a href="#vision" className="text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Vision</a>
                         <button onClick={() => navigate('/partner')} className="text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors font-display">Partner</button>
                     </>
                 )}

@@ -25,7 +25,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (!forceRefresh) {
                 const savedUser = localStorage.getItem('be4l_session');
                 if (savedUser) {
-                    setUser(JSON.parse(savedUser));
+                    const parsed = JSON.parse(savedUser);
+                    setUser(parsed);
+                    setLoading(false);
+                    return;
+                }
+            }
+
+            // If current user is a guest, don't try to fetch from Supabase
+            const savedSession = localStorage.getItem('be4l_session');
+            if (savedSession) {
+                const parsed = JSON.parse(savedSession);
+                if (parsed?.is_guest) {
+                    setUser(parsed);
                     setLoading(false);
                     return;
                 }

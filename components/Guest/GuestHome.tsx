@@ -5,7 +5,7 @@ import { VisionSection } from '../Landing/VisionSection';
 import { PhoneShowcaseSection } from '../Landing/PhoneShowcaseSection';
 import { RoadmapSection } from '../Landing/RoadmapSection';
 import { FeatureShowcase } from '../Landing/FeatureShowcase';
-import { PartnerPitch, UserCTA, Starfield, TeamRecruitment, PoweredBy, HowItWorks } from '../Landing/LandingComponents';
+import { PartnerPitch, CreatorPitch, UserCTA, Starfield, TeamRecruitment, PoweredBy, HowItWorks } from '../Landing/LandingComponents';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Sparkles, ArrowRight, Star, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -107,9 +107,7 @@ export const GuestHome: React.FC = () => {
                                 What's the plan?
                             </h1>
                         </div>
-                        <p className="text-electric-teal font-black uppercase tracking-[0.2em] text-[10px] mb-4">
-                            Do a side quest now to farm aura points
-                        </p>
+
                         <div className="flex items-center gap-2 group cursor-pointer">
                             <MapPin size={18} className="text-electric-teal group-hover:animate-bounce" />
                             <p className="text-cool-grey font-bold text-sm tracking-widest uppercase">
@@ -245,11 +243,14 @@ export const GuestHome: React.FC = () => {
                     </div>
 
                     {/* Roadmap (14th) */}
-                    <div id="roadmap" className="scroll-mt-32">
+{/* <div id="roadmap" className="scroll-mt-32">
                         <RoadmapSection />
-                    </div>
+                    </div> */}
 
-                    {/* Are you an Operator (15th) */}
+                    {/* Are you a Content Creator (15th) */}
+                    <CreatorPitch />
+
+                    {/* Are you an Operator (16th) */}
                     <PartnerPitch />
 
                     {/* Are you up for a side quest (16th) */}

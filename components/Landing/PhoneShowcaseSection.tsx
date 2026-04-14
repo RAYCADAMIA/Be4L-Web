@@ -62,7 +62,7 @@ export const PhoneShowcaseSection: React.FC = () => {
                         className="space-y-2 mb-8"
                     >
                         <p className="text-cool-grey text-sm md:text-lg font-medium leading-relaxed">
-                            An OBX-inspired platform for the lore you’ve yet to live.
+                            A curated social experience for the lore you've yet to live.
                         </p>
                     </motion.div>
 

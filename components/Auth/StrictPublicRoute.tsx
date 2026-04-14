@@ -31,8 +31,7 @@ export const StrictPublicRoute: React.FC<StrictPublicRouteProps> = ({ children, 
         if (redirectPath) {
             targetPath = redirectPath;
         } else if (currentPath === '/') {
-            // Allow logged-in users to see Landing/GuestHome
-            return children ? <>{children}</> : <Outlet />;
+            targetPath = '/app/home';
         } else if (currentPath === '/quests') {
             targetPath = '/app/quests';
         } else if (currentPath === '/dibs') {
