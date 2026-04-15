@@ -261,6 +261,7 @@ export interface Quest {
   host_capture_url?: string;
   location_coords?: { latitude: number; longitude: number };
   location_name?: string;
+  image_url?: string;
 }
 
 // JOIN FLOW

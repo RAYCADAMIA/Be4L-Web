@@ -171,7 +171,7 @@ export const ChatPage: React.FC = () => {
                                                                         const threeDays = 3 * 24 * 60 * 60 * 1000;
                                                                         if (diff < threeDays) {
                                                                             const daysLeft = Math.ceil((threeDays - diff) / (24 * 60 * 60 * 1000));
-                                                                            showToast(`Frequency locked. You can relocate again in ${daysLeft} days.`, 'warning');
+                                                                            showToast(`Frequency locked. You can relocate again in ${daysLeft} days.`, 'info');
                                                                             return;
                                                                         }
                                                                     }

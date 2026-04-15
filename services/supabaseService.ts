@@ -1117,7 +1117,7 @@ export const supabaseService = {
       // Fetch the single global chat gracefully
       let { data } = await supabase.from('echoes').select('*').eq('type', 'GLOBAL').limit(1);
       if (data && data.length > 0) {
-        return { id: data[0].id, name: data[0].name };
+        return data[0];
       }
       // Create it if it doesn't exist
       const { data: newGlobal } = await supabase.from('echoes')

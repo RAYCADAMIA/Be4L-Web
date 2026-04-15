@@ -622,6 +622,7 @@ export const MOCK_PARTNER_POSTS: import('./types').PartnerPost[] = [
       price: 3750,
       image_url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3',
       category: 'event',
+      type: 'EVENT',
       description: 'The ultimate summer electronic dance festival.',
       available_slots: 4000,
       total_slots: 4000,

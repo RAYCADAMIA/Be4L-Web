@@ -553,7 +553,16 @@ export const Be4LAdminHub: React.FC = () => {
         };
         checkAdmin();
     }, []);
-
+    const loadStats = async () => {
+        setLoading(true);
+        const [profiles, operators, pendingOps, creators, quests, bookings, echoes, notifs, reports] = await Promise.all([
+            supabase.from('profiles').select('id', { count: 'exact', head: true }),
+            supabase.from('operators').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+            supabase.from('operators').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+            supabase.from('creator_applications').select('id', { count: 'exact', head: true }),
+            supabase.from('quests').select('id', { count: 'exact', head: true }),
+            supabase.from('dibs_bookings').select('id', { count: 'exact', head: true }),
+            supabase.from('echoes').select('id', { count: 'exact', head: true }),
             supabase.from('notifications').select('id', { count: 'exact', head: true }),
             supabase.from('platform_reports').select('id', { count: 'exact', head: true }),
         ]);
