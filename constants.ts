@@ -121,6 +121,7 @@ export const OTHER_USERS: User[] = [
   { id: 'u10', handle: 'barry_peeler', username: 'barry_peeler', name: 'Barry', avatar_url: 'https://tse2.mm.bing.net/th?q=Nicholas%20Cirillo%20Headshot&w=500&h=500&c=7', streak_count: 50, bio: 'Peeler. Business first. Stay away from the cut.', aura: mockAura(1500, 310), reliability_score: 1500, life_exp: 8000, level: 10, life_streak: 50, followers_count: 850, following_count: 10, cover_url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2074&auto=format&fit=crop', aura_history: [] },
   { id: 'op9', handle: 'cloud29', username: 'cloud29', name: 'Cloud29 Events', avatar_url: 'https://ui-avatars.com/api/?name=Cloud+29&background=6366f1&color=fff', streak_count: 102, is_operator: true, bio: 'High-altitude house parties. Elevate your nightlife experience.', aura: mockAura(5000, 450), reliability_score: 5000, life_exp: 50000, level: 50, life_streak: 102, followers_count: 4200, following_count: 150, cover_url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=2070&auto=format&fit=crop', aura_history: [] },
   { id: 'be4l-official', handle: 'be4l', username: 'be4l', name: 'Be4L', avatar_url: '/logo.png', is_operator: true, bio: 'Official Be4L Command Account. Stay connected.', aura: mockAura(9999, 0), reliability_score: 9999, life_exp: 100000, level: 99, life_streak: 365, followers_count: 50000, following_count: 0, cover_url: '', aura_history: [] },
+  { id: 'op-samal-freedive', handle: 'samal_freedive', username: 'samal_freedive', name: 'Samal Freedive', avatar_url: '/samal_freedive_logo.png', is_operator: true, bio: 'Master the depths. Premier freediving school in Samal Island.', aura: mockAura(4200, 150), reliability_score: 4200, life_exp: 25000, level: 30, life_streak: 120, followers_count: 3200, following_count: 100, cover_url: '/samal_freedive_course.png', aura_history: [] },
 ];
 
 
@@ -437,6 +438,22 @@ export const MOCK_CAPTURES: Capture[] = [
     state: 'active',
     reaction_count: 980,
     comment_count: 75
+  },
+  {
+    id: 'samal-lore-1',
+    user_id: 'op-samal-freedive',
+    user: { id: 'op-samal-freedive', handle: 'samal_freedive', name: 'Samal Freedive', avatar_url: '/samal_freedive_logo.png' } as any,
+    media_type: 'image',
+    front_media_url: '/samal_freedive_logo.png',
+    back_media_url: '/samal_freedive_course.png',
+    caption: 'Morning depth session. 🤿',
+    created_at: new Date(Date.now() - 3600000).toISOString(),
+    captured_at: new Date(Date.now() - 3600000).toISOString(),
+    location_name: 'Samal Blue Hole',
+    visibility: 'public',
+    state: 'active',
+    reaction_count: 85,
+    comment_count: 12
   }
 ];
 
@@ -676,6 +693,20 @@ export const MOCK_PARTNER_POSTS: import('./types').PartnerPost[] = [
     likes_count: 312,
     comments_count: 28,
     created_at: new Date(Date.now() - 259200000).toISOString(),
+  },
+  {
+    id: 'pp-samal-1',
+    operator_id: 'op-samal-freedive',
+    operator: {
+      business_name: 'Samal Freedive',
+      logo_url: '/samal_freedive_logo.png',
+    } as any,
+    caption: 'Discover the silent world. 🌊 Our next Intro to Freediving course starts next weekend! Limited slots available. #SamalFreedive #FreedivingPhilippines #SamalIsland',
+    media_urls: ['/samal_freedive_course.png'],
+    tagged_item_id: 'i-samal-freedive-course',
+    likes_count: 320,
+    comments_count: 45,
+    created_at: new Date(Date.now() - 7200000).toISOString(),
   }
 ];
 
@@ -724,6 +755,32 @@ export const MOCK_PLACES: any[] = [
     category: 'Sports',
     items: [
       { id: 'i4', operator_id: 'op3', title: 'Night League Registration', price: 3000, category: 'Competition', image_url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc', unit_label: 'team', type: 'EVENT', available_slots: 8, tiers: [{ id: 'nl1', name: 'Team Entry', price: 3000, perks: ['Tournament Slot', 'Jersey'], capacity: 8, available: 4 }] }
+    ]
+  },
+  {
+    id: 'op-samal-freedive',
+    user_id: 'op-samal-freedive',
+    business_name: 'Samal Freedive',
+    logo_url: '/samal_freedive_logo.png',
+    category: 'Adventures',
+    location_text: 'Samal, Davao del Norte',
+    items: [
+      {
+        id: 'i-samal-freedive-course',
+        operator_id: 'op-samal-freedive',
+        title: 'Intro to Freediving',
+        description: 'Learn the fundamentals of freediving, breath-hold techniques, and equalization in the pristine waters of Samal.',
+        price: 3500,
+        category: 'Course',
+        image_url: '/samal_freedive_course.png',
+        unit_label: 'pax',
+        type: 'EVENT',
+        event_date: new Date(Date.now() + 86400000 * 7).toISOString(),
+        available_slots: 6,
+        tiers: [
+          { id: 'sf1', name: 'Standard Course', price: 3500, perks: ['1-Day Session', 'Gear Rental', 'Certificate'], capacity: 6, available: 6 }
+        ]
+      }
     ]
   }
 ];
