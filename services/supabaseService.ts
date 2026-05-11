@@ -150,6 +150,11 @@ const STATIC_DIB_ITEMS = [
 export const supabaseService = {
   supabase,
   auth: {
+    getUser: () => supabase.auth.getUser(),
+    getToken: async () => {
+      const { data } = await supabase.auth.getSession();
+      return data.session?.access_token || null;
+    },
     sendOtp: async (phone: string): Promise<{ success: boolean; error?: string }> => {
       const cleanPhone = phone.replace(/\D/g, '');
       const formattedPhone = phone.startsWith('+') ? phone : `+63${cleanPhone}`;
@@ -213,8 +218,8 @@ export const supabaseService = {
     },
     claimBrandAccess: async (code: string): Promise<{ success: boolean; error?: string }> => {
       try {
-        const cleanCode = code.replace(/\s/g, '').toUpperCase();
-        if (cleanCode !== 'BE4L-BRAND-ACCESS') {
+        const cleanCode = code.trim();
+        if (cleanCode.toLowerCase() !== 'begonia') {
           return { success: false, error: 'Invalid or Expired Access Code' };
         }
 
@@ -1579,10 +1584,14 @@ export const supabaseService = {
       let dbBookings: any[] = [];
       try {
         const { data } = await supabase.from('dibs_bookings')
-          .select(`*, user:profiles(name, username, avatar_url), item:dibs_items(title)`)
+          .select(`*, profiles(name, username, avatar_url), dibs_items(title)`)
           .eq('operator_id', oid)
           .order('created_at', { ascending: false });
-        if (data) dbBookings = data;
+        if (data) dbBookings = data.map((b: any) => ({
+          ...b,
+          user: b.profiles,
+          item: b.dibs_items
+        }));
       } catch (e) { }
 
       // Filter local bookings for this operator
@@ -1715,7 +1724,7 @@ export const supabaseService = {
   partner: {
     getPosts: async (operatorId?: string): Promise<import('../types').PartnerPost[]> => {
       try {
-        let query = supabase.from('partner_posts').select(`*, operator:operators(*), tagged_item:dibs_items(*)`);
+        let query = supabase.from('partner_posts').select(`*, operators(*), dibs_items(*)`);
         if (operatorId) query = query.eq('operator_id', operatorId);
         const { data, error } = await query.order('created_at', { ascending: false });
         if (error) {
@@ -1723,7 +1732,11 @@ export const supabaseService = {
           if (error.code === 'PGRST116' || error.message.includes('not found')) throw error;
           console.error("Partner posts fetch error:", error);
         }
-        if (data && data.length > 0) return data as any;
+        if (data && data.length > 0) return data.map((p: any) => ({
+          ...p,
+          operator: p.operators,
+          tagged_item: p.dibs_items
+        })) as any;
       } catch (e) {
         console.warn("Supabase partner_posts table might be missing, falling back to mock data.");
       }
@@ -1850,3 +1863,22 @@ export const supabaseService = {
     }
   }
 };
+
+export async function addLandingPageEmail(email: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { data, error } = await supabase
+      .from('landing_signups')
+      .insert([{ email, source: 'landing_page' }])
+      .select()
+
+    if (error) {
+      console.error('Error saving landing page email:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  } catch (err) {
+    console.error('Unexpected error saving email:', err)
+    return { success: false, error: 'Failed to save email' }
+  }
+}
