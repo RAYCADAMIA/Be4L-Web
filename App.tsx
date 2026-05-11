@@ -8,6 +8,8 @@ import './index.css';
 import { Starfield } from './components/Landing/LandingComponents';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { PreLaunchWelcome } from './components/ui/PreLaunchWelcome';
+// @ts-ignore - LaunchLanding will be created in Task 5
+import { LaunchLanding } from './components/Landing/LaunchLanding';
 
 const AppContent = () => {
     return (
@@ -25,6 +27,12 @@ const AppContent = () => {
 };
 
 const App = () => {
+    const showLanding = import.meta.env.VITE_SHOW_LANDING_PAGE === 'true';
+
+    if (showLanding) {
+        return <LaunchLanding />;
+    }
+
     return (
         <AuthProvider>
             <NavigationProvider>
