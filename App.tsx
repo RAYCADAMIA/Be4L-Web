@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './components/Toast';
 import { NavigationProvider } from './contexts/NavigationContext';
 import './index.css';
+import './styles/landing-animations.css';
 import { Starfield } from './components/Landing/LandingComponents';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { PreLaunchWelcome } from './components/ui/PreLaunchWelcome';
