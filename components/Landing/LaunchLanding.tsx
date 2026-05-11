@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { AnimatedOrbs } from './AnimatedOrbs'
 import { SocialLinks } from './SocialLinks'
 import { addLandingPageEmail } from '../../services/supabaseService'
@@ -9,13 +9,38 @@ export function LaunchLanding() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
 
+  // Cleanup timeout when submitted state changes
+  useEffect(() => {
+    if (submitted) {
+      const timer = setTimeout(() => setSubmitted(false), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [submitted])
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value)
+    // Clear error when user starts typing (better UX)
+    if (error) {
+      setError('')
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
+    // Validate email is not empty
     if (!email.trim()) {
       setError('Please enter a valid email')
+      setLoading(false)
+      return
+    }
+
+    // Validate email format with regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email.trim())) {
+      setError('Please enter a valid email address')
       setLoading(false)
       return
     }
@@ -25,7 +50,6 @@ export function LaunchLanding() {
     if (result.success) {
       setSubmitted(true)
       setEmail('')
-      setTimeout(() => setSubmitted(false), 5000)
     } else {
       setError(result.error || 'Failed to save email. Try again.')
     }
@@ -57,14 +81,21 @@ export function LaunchLanding() {
 
         {/* Email signup form */}
         <form onSubmit={handleSubmit} className="hero-content-stagger-3 mb-12">
+          {/* Accessible form label */}
+          <label htmlFor="email-input" className="sr-only">
+            Email address
+          </label>
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <input
+              id="email-input"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               placeholder="your@email.com"
               className="px-6 py-4 rounded-lg bg-purple-900/20 border-2 border-purple-500 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all duration-200 backdrop-blur-sm w-full sm:w-auto"
               disabled={loading}
+              aria-describedby={error ? 'email-error' : undefined}
             />
             <button
               type="submit"
@@ -82,7 +113,7 @@ export function LaunchLanding() {
             </p>
           )}
           {error && (
-            <p className="mt-4 text-red-400 text-sm">
+            <p id="email-error" className="mt-4 text-red-400 text-sm" role="alert">
               {error}
             </p>
           )}
