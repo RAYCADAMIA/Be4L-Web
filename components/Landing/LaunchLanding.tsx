@@ -5,6 +5,7 @@ import { addLandingPageEmail } from '../../services/supabaseService'
 
 export function LaunchLanding() {
   const [email, setEmail] = useState('')
+  const [instagramHandle, setInstagramHandle] = useState('')
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -45,11 +46,12 @@ export function LaunchLanding() {
       return
     }
 
-    const result = await addLandingPageEmail(email)
+    const result = await addLandingPageEmail(email, instagramHandle)
 
     if (result.success) {
       setSubmitted(true)
       setEmail('')
+      setInstagramHandle('')
     } else {
       setError(result.error || 'Failed to save email. Try again.')
     }
@@ -81,29 +83,43 @@ export function LaunchLanding() {
 
         {/* Email signup form */}
         <form onSubmit={handleSubmit} className="hero-content-stagger-3 mb-12">
-          {/* Accessible form label */}
+          {/* Accessible form labels */}
           <label htmlFor="email-input" className="sr-only">
             Email address
           </label>
+          <label htmlFor="instagram-input" className="sr-only">
+            Instagram handle (optional)
+          </label>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <input
-              id="email-input"
-              type="email"
-              value={email}
-              onChange={handleEmailChange}
-              placeholder="your@email.com"
-              className="px-6 py-4 rounded-lg bg-purple-900/20 border-2 border-purple-500 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all duration-200 backdrop-blur-sm w-full sm:w-auto"
-              disabled={loading}
-              aria-describedby={error ? 'email-error' : undefined}
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-8 py-4 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-            >
-              {loading ? 'Saving...' : 'Notify Me'}
-            </button>
+          <div className="flex flex-col gap-3 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                id="email-input"
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+                placeholder="your@email.com"
+                className="px-6 py-4 rounded-lg bg-purple-900/20 border-2 border-purple-500 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all duration-200 backdrop-blur-sm w-full sm:flex-1"
+                disabled={loading}
+                aria-describedby={error ? 'email-error' : undefined}
+              />
+              <input
+                id="instagram-input"
+                type="text"
+                value={instagramHandle}
+                onChange={(e) => setInstagramHandle(e.target.value)}
+                placeholder="@instagram (optional)"
+                className="px-6 py-4 rounded-lg bg-purple-900/20 border-2 border-purple-500 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all duration-200 backdrop-blur-sm w-full sm:w-auto"
+                disabled={loading}
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-8 py-4 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                {loading ? 'Saving...' : 'Notify Me'}
+              </button>
+            </div>
           </div>
 
           {/* Status messages */}
