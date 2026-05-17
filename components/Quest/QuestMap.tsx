@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Users, Zap, Target, X, ChevronRight, Trophy, MapPin, ExternalLink } from 'lucide-react';
-import { Quest } from '../../types';
+import { Quest, QuestStatus } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface QuestMapProps {
@@ -76,7 +76,7 @@ const QuestMap: React.FC<QuestMapProps> = ({ quests, onQuestClick, isFull = fals
             const now = new Date();
             const timeDiff = startTime.getTime() - now.getTime();
             const minutesToStart = Math.floor(timeDiff / (1000 * 60));
-            const isLive = q.status === 'ACTIVE';
+            const isLive = (q.status as any) === 'ACTIVE' || q.status === QuestStatus.ACTIVE;
             const isStartingSoon = !isLive && minutesToStart > 0 && minutesToStart <= 60;
 
             // Styles
@@ -200,7 +200,7 @@ const QuestMap: React.FC<QuestMapProps> = ({ quests, onQuestClick, isFull = fals
                                     let label = "UPCOMING";
                                     let color = "text-gray-400"; // Default
 
-                                    if (selectedQuest.status === 'ACTIVE') {
+                                    if ((selectedQuest.status as any) === 'ACTIVE' || selectedQuest.status === QuestStatus.ACTIVE) {
                                         label = "HAPPENING NOW";
                                         color = "text-red-500 animate-pulse";
                                     } else if (diffMins <= 20 && diffMins > 0) {

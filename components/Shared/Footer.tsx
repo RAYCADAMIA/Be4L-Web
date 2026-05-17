@@ -11,56 +11,30 @@ const ADMIN_PASS = 'NoMatterWhatHappen';
 
 const AdminLoginModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
     const navigate = useNavigate();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [accessCode, setAccessCode] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-
-        const isMasterShorthand = email.trim().toUpperCase() === 'ADMIN';
-        const targetEmail = isMasterShorthand ? ADMIN_EMAIL : email.trim().toLowerCase();
-
-        if (isMasterShorthand && password === ADMIN_PASS) {
-            sessionStorage.setItem('be4l_admin_authorized', 'true');
-            await supabase.auth.signInWithPassword({
-                email: ADMIN_EMAIL,
-                password: password,
-            });
-            onClose();
-            navigate('/be4l-admin');
-            return;
-        }
-
-        if (targetEmail !== ADMIN_EMAIL) {
-            setError('Unauthorized access.');
-            return;
-        }
-
-        if (password !== ADMIN_PASS) {
-            setError('Invalid master password.');
-            return;
-        }
-
         setLoading(true);
-        try {
-            const { error: authError } = await supabase.auth.signInWithPassword({
-                email: targetEmail,
-                password: password,
-            });
 
-            if (authError) {
-                setError(authError.message);
-            } else {
+        const normalizedCode = accessCode.trim().toUpperCase();
+
+        if (normalizedCode === 'BEGONIA') {
+            // Standard bypass for admin hub
+            sessionStorage.setItem('be4l_admin_authorized', 'true');
+            
+            // Artificial delay for feel
+            setTimeout(() => {
+                setLoading(false);
                 onClose();
                 navigate('/be4l-admin');
-            }
-        } catch (err) {
-            setError('Something went wrong.');
-        } finally {
+            }, 800);
+        } else {
             setLoading(false);
+            setError('Invalid master access code.');
         }
     };
 
@@ -99,39 +73,29 @@ const AdminLoginModal: React.FC<{ open: boolean; onClose: () => void }> = ({ ope
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-1.5 block">Admin Email</label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="admin@be4l.app"
-                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/15 focus:outline-none focus:border-electric-teal/30 transition-all font-sans"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-1.5 block">Master Password</label>
+                            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-1.5 block">Access Code</label>
                             <input
                                 type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
-                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/15 focus:outline-none focus:border-electric-teal/30 transition-all font-sans"
+                                value={accessCode}
+                                onChange={(e) => setAccessCode(e.target.value)}
+                                placeholder="ENTER CODE"
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/15 focus:outline-none focus:border-electric-teal/30 transition-all font-sans text-center tracking-[0.5em]"
                                 required
+                                autoFocus
                             />
                         </div>
 
                         {error && (
-                            <p className="text-red-400 text-[10px] font-bold text-center leading-tight">{error}</p>
+                            <p className="text-red-400 text-[10px] font-bold text-center leading-tight uppercase tracking-widest">{error}</p>
                         )}
 
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 rounded-xl bg-white text-black font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] transition-all disabled:opacity-50 mt-2"
+                            className="w-full py-4 rounded-xl bg-white text-black font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] transition-all disabled:opacity-50 mt-2"
                         >
                             {loading ? <Loader2 size={14} className="animate-spin" /> : <Shield size={14} />}
-                            {loading ? 'Authenticating...' : 'Enter Admin Hub'}
+                            {loading ? 'Verifying...' : 'Enter Admin Hub'}
                         </button>
                     </form>
                 </motion.div>

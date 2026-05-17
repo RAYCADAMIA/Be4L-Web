@@ -9,6 +9,7 @@ interface Props {
     quest: Quest;
     currentUser: User | null;
     onOpenDetail?: (q: Quest) => void;
+    onJoin?: () => void;
 }
 
 const QuestCard: React.FC<Props> = ({ quest, currentUser, onOpenDetail }) => {

@@ -7,7 +7,6 @@ import { Navigate, useLocation, Outlet, useNavigate, useSearchParams } from 'rea
 import { useNavigation } from '../../contexts/NavigationContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProfileOverlay from '../Profile/ProfileOverlay';
-import QuestOverlay from '../Quest/QuestOverlay';
 import { OnboardingTour } from '../Onboarding/OnboardingTour';
 import { AuraParticles } from '../Effects/AuraParticles';
 import { Footer } from '../Shared/Footer';
@@ -37,7 +36,6 @@ export const PlatformLayout: React.FC = () => {
     });
 
     const selectedProfileId = searchParams.get('profile');
-    const selectedQuestId = searchParams.get('quest');
 
     // Listen for custom events
     React.useEffect(() => {
@@ -70,12 +68,6 @@ export const PlatformLayout: React.FC = () => {
     const closeProfile = () => {
         const newParams = new URLSearchParams(searchParams);
         newParams.delete('profile');
-        setSearchParams(newParams);
-    };
-
-    const closeQuest = () => {
-        const newParams = new URLSearchParams(searchParams);
-        newParams.delete('quest');
         setSearchParams(newParams);
     };
 
@@ -228,10 +220,6 @@ export const PlatformLayout: React.FC = () => {
             <ProfileOverlay
                 userId={selectedProfileId}
                 onClose={closeProfile}
-            />
-            <QuestOverlay
-                questId={selectedQuestId}
-                onClose={closeQuest}
             />
             {/* <OnboardingTour /> */}
             <AuraParticles trigger={user?.aura_points || 0} />

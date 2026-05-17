@@ -1864,11 +1864,15 @@ export const supabaseService = {
   }
 };
 
-export async function addLandingPageEmail(email: string): Promise<{ success: boolean; error?: string }> {
+export async function addLandingPageEmail(email: string, instagramHandle?: string): Promise<{ success: boolean; error?: string }> {
   try {
     const { data, error } = await supabase
       .from('landing_signups')
-      .insert([{ email, source: 'landing_page' }])
+      .insert([{ 
+        email, 
+        instagram_handle: instagramHandle || null,
+        source: 'landing_page' 
+      }])
       .select()
 
     if (error) {

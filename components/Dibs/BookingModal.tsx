@@ -600,7 +600,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                             </button>
                         ) : step > 0 && step < 3 && (
                             <button
-                                onClick={() => setStep(step - 1)}
+                                onClick={() => setStep((step - 1) as 0 | 1 | 2 | 3)}
                                 className="p-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-all active:scale-90"
                             >
                                 <ChevronLeft size={20} />
@@ -1416,7 +1416,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, item, oper
                                                     isSubmitting ||
                                                     isVerifying ||
                                                     (paymentMethod === 'gcash' && (!proofFile || (verificationResult ? !verificationResult.verified : false))) ||
-                                                    paymentMethod === 'aura' ||
+                                                    (paymentMethod as string) === 'aura' ||
                                                     (bookingType === 'TIER_BASED' && !selectedTierId)
                                                 }
                                             >

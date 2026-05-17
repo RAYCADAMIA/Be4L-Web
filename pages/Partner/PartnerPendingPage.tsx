@@ -23,11 +23,11 @@ export const PartnerPendingPage: React.FC = () => {
 
                 <div className="space-y-4">
                     <h1 className="text-3xl md:text-4xl font-black font-fui text-white tracking-tighter uppercase leading-tight">
-                        SUBMISSION RECEIVED. <br />
-                        <span className="animate-liquid-text">APPLICATION UNDER REVIEW.</span>
+                        APPLICATION RECEIVED. <br />
+                        <span className="animate-liquid-text">PENDING APPROVAL.</span>
                     </h1>
-                    <p className="text-lg text-cool-grey font-medium font-sans max-w-sm mx-auto">
-                        Thanks for applying! Our team is reviewing your info and will be in touch soon via your preferred contact channel
+                    <p className="text-lg text-cool-grey font-medium font-sans max-w-sm mx-auto leading-relaxed">
+                        We received your application! Our admins will review your info and we will send an email to your contact address within <span className="text-white font-bold">48 hours</span> for your account access.
                     </p>
                 </div>
 

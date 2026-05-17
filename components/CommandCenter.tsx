@@ -19,7 +19,7 @@ export const CommandCenter: React.FC = () => {
         const loadDashboard = async () => {
             setIsLoading(true);
             // Simulate fetching a "Trending" quest
-            const quests = await supabaseService.quests.getQuests('All', user?.id);
+            const quests = await supabaseService.quests.getQuests('All');
             if (quests.length > 0) {
                 setTrendingQuest(quests[0]);
             }

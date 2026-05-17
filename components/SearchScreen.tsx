@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Search, ArrowUpRight, TrendingUp, ChevronLeft, User as UserIcon, Zap, Shield } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { MOCK_USER, MOCK_QUESTS, MOCK_CAPTURES, OTHER_USERS } from '../constants';
-import { Quest, Capture, User as UserType } from '../types';
+import { Quest, Capture, User as UserType, QuestStatus } from '../types';
 import { supabaseService } from '../services/supabaseService';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -135,7 +136,7 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ onClose, onOpenQuest, onOpe
                                                     )}
                                                 </div>
                                                 {u.is_operator && (
-                                                    <div className="absolute -bottom-1 -right-1 bg-electric-teal text-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-[#0A0A0A]">
+                                                    <div className="absolute -bottom-1 -right-1 bg-electric-teal text-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-[#0E0C0B]">
                                                         <Zap size={8} className="fill-current" />
                                                     </div>
                                                 )}

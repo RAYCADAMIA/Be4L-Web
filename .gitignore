@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Tool directories and backups
+.claude/
+.superpowers/
+*.backup
+

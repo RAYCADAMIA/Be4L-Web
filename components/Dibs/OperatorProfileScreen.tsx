@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     ArrowLeft, ArrowRight, MapPin, Users, Star, MessageCircle, Heart, Share2, Grid, Info,
-    ShoppingBag, Settings, QrCode, BadgeCheck, ChevronLeft, Phone, Globe, Instagram, Clock
+    ShoppingBag, Settings, QrCode, BadgeCheck, ChevronLeft, Phone, Globe, Instagram, Clock, Plus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabaseService } from '../../services/supabaseService';
 import { Operator, DibsItem } from '../../types';
 import { LocationModal } from '../ui/LocationModal';
 import { EKGLoader, FloatingTabs } from '../ui/AestheticComponents';
-import BookingModal from './BookingModal'; // We might replace this with the new Flow later
+import BookingSheet from './BookingSheet';
 import { useNavigation } from '../../contexts/NavigationContext';
 import { useAuth } from '../../contexts/AuthContext';
 import OperatorDashboard from './OperatorDashboard'; // Import Dashboard
@@ -445,26 +445,21 @@ const OperatorProfileScreen: React.FC<OperatorProfileScreenProps> = ({ operatorD
                         >
                             <OperatorDashboard
                                 onBack={() => setShowDashboard(false)}
-                                initialTab={initialDashboardTab}
+                                initialTab={initialDashboardTab === 'menu' ? 'items' : initialDashboardTab}
                             />
                         </motion.div>
                     )
                 }
             </AnimatePresence >
 
-            {/* BOOKING MODAL (Legacy flow, will upgrade to Customizable Page later) */}
-            <AnimatePresence>
-                {
-                    selectedItem && (
-                        <BookingModal
-                            isOpen={!!selectedItem}
-                            onClose={() => setSelectedItem(null)}
-                            item={selectedItem}
-                            operator={operator}
-                        />
-                    )
-                }
-            </AnimatePresence >
+            {selectedItem && (
+                <BookingSheet
+                    open={!!selectedItem}
+                    onClose={() => setSelectedItem(null)}
+                    item={selectedItem}
+                    operator={operator}
+                />
+            )}
 
             {/* Create Post Modal */}
             <AnimatePresence>

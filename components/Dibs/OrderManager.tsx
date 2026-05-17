@@ -1,10 +1,68 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Check, X, Clock, ExternalLink, RefreshCw, Filter, AlertCircle, MessageCircle, Lock, Plus, Store, Calendar, ChevronLeft } from 'lucide-react';
+import { Check, X, Clock, ExternalLink, RefreshCw, Filter, AlertCircle, MessageCircle, Lock, Plus, Store, Calendar, ChevronLeft, Shield, Zap, Upload } from 'lucide-react';
 import { supabaseService } from '../../services/supabaseService';
 import { DibsBooking, DibsItem } from '../../types';
 import { EKGLoader } from '../ui/AestheticComponents';
+
+const AIVerdictPanel: React.FC<{ booking: DibsBooking }> = ({ booking }) => {
+    const ai = booking.ai_verification;
+    const legacyScore = booking.confidence_score;
+    const score = ai?.confidence_score ?? legacyScore ?? 1;
+    const pct = Math.round(score * 100);
+
+    const status: 'verified' | 'flagged' | 'rejected' =
+        ai?.status === 'verified' ? 'verified' :
+        ai?.status === 'rejected' ? 'rejected' :
+        ai?.status === 'flagged' ? 'flagged' :
+        score >= 0.9 ? 'verified' : score < 0.5 ? 'rejected' : 'flagged';
+
+    const autoApproved = score >= 0.9 && (booking.operator as any)?.auto_verify_payments === true;
+
+    const palette =
+        status === 'verified' ? { bg: 'bg-electric-teal/5', border: 'border-electric-teal/20', text: 'text-electric-teal', label: autoApproved ? 'Auto-Approved' : 'AI Verified' } :
+        status === 'flagged' ? { bg: 'bg-yellow-500/5', border: 'border-yellow-500/20', text: 'text-yellow-400', label: 'Needs Review' } :
+        { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', label: 'Rejected' };
+
+    const ref = ai?.extracted_ref ?? booking.extracted_ref;
+    const checks = ai?.checks;
+
+    return (
+        <div className={`${palette.bg} border ${palette.border} rounded-2xl p-4 space-y-3`}>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <Shield size={14} className={palette.text} />
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${palette.text}`}>{palette.label}</span>
+                    {autoApproved && <Zap size={10} className="text-electric-teal" />}
+                </div>
+                <div className={`text-xs font-mono font-black ${palette.text}`}>{pct}%</div>
+            </div>
+            {ref && (
+                <div className="text-[9px] font-mono font-black text-white/40">REF: {ref}</div>
+            )}
+            {checks && (
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-1">
+                    {Object.entries(checks).map(([k, v]) => (
+                        <div key={k} className="flex items-center justify-between text-[10px]">
+                            <span className="text-gray-400 capitalize truncate">{k.replace(/_/g, ' ')}</span>
+                            {v ? <Check className="text-green-400 shrink-0" size={12} /> : <X className="text-red-400 shrink-0" size={12} />}
+                        </div>
+                    ))}
+                </div>
+            )}
+            {ai?.flags && ai.flags.length > 0 && (
+                <div className="flex flex-wrap gap-1 pt-1">
+                    {ai.flags.map(f => (
+                        <span key={f} className="text-[8px] font-black uppercase tracking-widest bg-red-500/10 text-red-400 px-2 py-0.5 rounded-full">
+                            {f.replace(/_/g, ' ')}
+                        </span>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 
 const OrderCard = ({ booking, onUpdateStatus }: { booking: DibsBooking, onUpdateStatus: (id: string, status: string) => void }) => {
     const isPending = booking.status === 'PENDING_VERIFICATION' || booking.status === 'PENDING_PAYMENT';
@@ -89,28 +147,8 @@ const OrderCard = ({ booking, onUpdateStatus }: { booking: DibsBooking, onUpdate
                     </div>
                     <div className="relative rounded-2xl overflow-hidden border border-white/5 h-48 group/img">
                         <img src={booking.payment_proof_url} alt="Payment Proof" className="w-full h-full object-cover grayscale opacity-60 group-hover/img:grayscale-0 group-hover/img:opacity-100 transition-all duration-500" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-white/[0.02] via-transparent to-transparent flex items-end p-4">
-                            <div className="w-full flex items-center justify-between">
-                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md border ${(booking.confidence_score || 1) < 0.5 ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-electric-teal/10 border-electric-teal/20 text-electric-teal'}`}>
-                                    {(booking.confidence_score || 1) < 0.5 ? <AlertCircle size={10} /> : <Check size={10} />}
-                                    <span className="text-[9px] font-black uppercase tracking-widest">
-                                        {(booking.confidence_score || 1) < 0.5 ? 'Scam Alert' : 'System Verified'}
-                                    </span>
-                                </div>
-                                {booking.extracted_ref && (
-                                    <span className="text-[9px] font-mono font-black text-white/40">REF: {booking.extracted_ref}</span>
-                                )}
-                            </div>
-                        </div>
                     </div>
-                    {(booking.confidence_score || 1) < 0.5 && (
-                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex items-center gap-3">
-                            <AlertCircle size={14} className="text-red-500 shrink-0" />
-                            <p className="text-[8px] font-black text-red-400 uppercase tracking-widest leading-relaxed">
-                                WARNING: Reference number detected in other transactions. Please verify manualy before confirming.
-                            </p>
-                        </div>
-                    )}
+                    <AIVerdictPanel booking={booking} />
                 </div>
             ) : isPending && (
                 <div className="py-8 bg-white/5 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-2 opacity-60">
@@ -128,6 +166,14 @@ const OrderCard = ({ booking, onUpdateStatus }: { booking: DibsBooking, onUpdate
                         className="flex-1 h-[48px] rounded-2xl bg-red-500/5 border border-red-500/10 text-red-500 font-black text-[10px] uppercase tracking-widest hover:bg-red-500/10 transition-all active:scale-95 disabled:opacity-50"
                     >
                         Reject
+                    </button>
+                    <button
+                        onClick={() => handleAction('REUPLOAD_REQUESTED')}
+                        disabled={isUpdating}
+                        className="flex-1 h-[48px] rounded-2xl bg-yellow-500/5 border border-yellow-500/10 text-yellow-400 font-black text-[10px] uppercase tracking-widest hover:bg-yellow-500/10 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    >
+                        <Upload size={12} />
+                        Re-upload
                     </button>
                     <button
                         onClick={() => handleAction('CONFIRMED')}

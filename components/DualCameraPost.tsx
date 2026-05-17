@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useToast } from './Toast';
-import { MoreHorizontal, User as UserIcon, Lock, Globe, Smile, X, Check, Trash2, Download, MessageCircle, UserPlus, Search, Share2, Users } from 'lucide-react';
+import { MoreHorizontal, User as UserIcon, Lock, Globe, Smile, X, Check, Trash2, Download, MessageCircle, UserPlus, Search, Share2, Users, Zap } from 'lucide-react';
 import MapPopup from './MapPopup';
 import { Capture, User, Reaction, QuestType, QuestStatus } from '../types';
 import { OTHER_USERS } from '../constants';

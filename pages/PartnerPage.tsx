@@ -16,7 +16,12 @@ import {
     Camera,
     PlayCircle,
     Video,
-    Handshake
+    Handshake,
+    BarChart3,
+    CreditCard,
+    Package,
+    Calendar,
+    LineChart
 } from 'lucide-react';
 
 export const PartnerPage: React.FC = () => {
@@ -34,12 +39,30 @@ export const PartnerPage: React.FC = () => {
             color: 'text-electric-teal'
         },
         {
+            id: 'commerce',
+            icon: CreditCard,
+            badge: 'DYNAMIC COMMERCE',
+            title: 'CUSTOMIZABLE BOOKING ENGINE',
+            desc: 'From event tickets and service slots to exclusive VIP exclusivity. Set your rules, collect upfront payments, and secure your revenue before they arrive.',
+            example: 'Selling "Early Bird" tickets? Or exclusive court blocks? Secure a spot with upfront payment to ensure zero no-shows.',
+            color: 'text-orange-400'
+        },
+        {
             id: 'verification',
             icon: QrCode,
             badge: 'SEAMLESS OPS',
             title: 'SECURE QR VERIFICATION',
             desc: 'Every quest participant is verified. Real-time QR ticket confirmation ensures valid traffic and zero friction.',
             example: 'No more manual lists. Scan, verify, and let them play.',
+            color: 'text-purple-400'
+        },
+        {
+            id: 'analytics',
+            icon: BarChart3,
+            badge: 'COMMAND CENTER',
+            title: 'MANAGE ORDERS & ANALYTICS',
+            desc: 'A complete OS for your business. Track incoming orders, manage real-time inventory, and visualize growth with deep revenue analytics.',
+            example: 'See live revenue charts, fulfill incoming orders, and add inventory items that users can secure their spot to instantly.',
             color: 'text-blue-400'
         },
         {
@@ -49,7 +72,7 @@ export const PartnerPage: React.FC = () => {
             title: 'YOUR BUSINESS, YOUR RULES',
             desc: 'Get your own dedicated partner page. Upload high-res photos, videos, and custom Lore to showcase your vibe.',
             example: 'It\'s like a social media profile, but built for closing sales.',
-            color: 'text-purple-400'
+            color: 'text-pink-400'
         },
         {
             id: 'community',
@@ -58,15 +81,15 @@ export const PartnerPage: React.FC = () => {
             title: 'STAY CONNECTED WITH YOUR COMMUNITY',
             desc: 'Convert one-time visitors into a loyal community. Message your followers and drop exclusive quests to your tribe.',
             example: 'We help you create the community; we give you the tools to keep them.',
-            color: 'text-pink-400'
+            color: 'text-blue-400'
         },
         {
             id: 'creators',
             icon: Video,
             badge: 'CREATOR MATCHMAKING',
             title: 'WE MATCH YOU WITH CREATORS',
-            desc: 'Get paired with local content creators who promote your brand to their audience. They create the content; you receive the foot traffic. Performance-based — you only pay when it converts.',
-            example: 'A creator posts a TikTok about your venue → Their followers book through Be4L → You get real customers, they earn commission.',
+            desc: 'Get paired with local content creators who promote your brand to their audience. They create the content; you receive the foot traffic.',
+            example: 'A creator posts a TikTok about your venue → Their followers book through Be4L → You get real customers.',
             color: 'text-purple-400'
         }
     ];
@@ -100,7 +123,7 @@ export const PartnerPage: React.FC = () => {
                             </p>
                         </motion.div>
 
-                        <div className="flex flex-col md:flex-row items-center justify-center gap-6 mt-12">
+                        <div className="flex justify-center mt-12">
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
@@ -110,51 +133,10 @@ export const PartnerPage: React.FC = () => {
                                 START YOUR PILOT QUEST
                                 <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
                             </motion.button>
-
-                            <div className="px-8 py-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-md">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-cool-grey">
-                                    <span className="text-white animate-pulse">●</span> EXCLUSIVE PILOT TESTING LIVE
-                                </span>
-                            </div>
                         </div>
                     </div>
 
-                    {/* Image Break - Premium Visual */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1 }}
-                        className="relative w-full aspect-[16/9] md:aspect-[21/9] rounded-[2rem] md:rounded-[4rem] overflow-hidden mb-40 border border-white/5 shadow-2xl"
-                    >
-                        <img
-                            src="/assets/landing/partner_venue_hero.png"
-                            alt="The Be4L Experience"
-                            className="w-full h-full object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-700 opacity-60"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20" />
-                        <div className="absolute bottom-12 left-12 right-12 flex justify-between items-end">
-                            <div className="space-y-2">
-                                <h2 className="text-4xl font-black tracking-tighter uppercase brand-text-dusk">Vibrant Community.</h2>
-                                <p className="text-cool-grey font-bold uppercase tracking-widest text-xs">Real-world engagement at its peak.</p>
-                            </div>
-                            <div className="hidden md:flex gap-4">
-                                <div className="p-4 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 flex items-center gap-3">
-                                    <Users className="text-electric-teal" size={24} />
-                                    <div>
-                                        <p className="text-lg font-black leading-none">5k+</p>
-                                        <p className="text-[8px] font-bold uppercase text-cool-grey tracking-widest">Active Questers</p>
-                                    </div>
-                                </div>
-                                <div className="p-4 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 flex items-center gap-3">
-                                    <TrendingUp className="text-electric-teal" size={24} />
-                                    <div>
-                                        <p className="text-lg font-black leading-none">+250%</p>
-                                        <p className="text-[8px] font-bold uppercase text-cool-grey tracking-widest">Traffic Spike</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
+
 
                     <div className="space-y-40">
                         {sections.map((section, i) => (
@@ -207,14 +189,55 @@ export const PartnerPage: React.FC = () => {
                                                 <Target size={120} className="text-electric-teal relative z-10" strokeWidth={1} />
                                             </div>
                                         )}
-                                        {section.id === 'verification' && (
-                                            <div className="relative w-full h-full flex flex-col items-center justify-center gap-8">
-                                                <QrCode size={180} className="text-electric-teal opacity-80" strokeWidth={1} />
-                                                <div className="flex gap-4">
-                                                    {[1, 2, 3].map(j => (
-                                                        <div key={j} className="h-2 w-12 rounded-full bg-electric-teal/20" />
+                                        {section.id === 'analytics' && (
+                                            <div className="relative w-full h-full p-8 flex flex-col justify-center">
+                                                <div className="flex items-end gap-2 h-32 mb-4">
+                                                    {[40, 70, 45, 90, 65, 80].map((h, j) => (
+                                                        <motion.div
+                                                            key={j}
+                                                            initial={{ height: 0 }}
+                                                            whileInView={{ height: `${h}%` }}
+                                                            transition={{ duration: 1, delay: j * 0.1 }}
+                                                            className="flex-1 bg-gradient-to-t from-blue-500/20 to-blue-400 rounded-t-lg"
+                                                        />
                                                     ))}
                                                 </div>
+                                                <div className="flex justify-between items-center pt-4 border-t border-white/10">
+                                                    <div className="flex gap-2">
+                                                        <div className="p-2 bg-blue-500/20 rounded-md"><Package size={16} className="text-blue-400" /></div>
+                                                        <div className="p-2 bg-blue-500/20 rounded-md"><LineChart size={16} className="text-blue-400" /></div>
+                                                    </div>
+                                                    <p className="text-[10px] font-black font-fui text-blue-400">+124% REVENUE</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {section.id === 'verification' && (
+                                            <div className="relative w-full h-full flex flex-col items-center justify-center gap-8">
+                                                <QrCode size={180} className="text-purple-400 opacity-80" strokeWidth={1} />
+                                                <div className="flex gap-4">
+                                                    {[1, 2, 3].map(j => (
+                                                        <div key={j} className="h-2 w-12 rounded-full bg-purple-400/20" />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {section.id === 'commerce' && (
+                                            <div className="relative w-full h-full flex items-center justify-center">
+                                                <div className="glass-panel p-6 rounded-2xl border-orange-500/20 w-64 space-y-4">
+                                                    <div className="flex justify-between">
+                                                        <Calendar size={20} className="text-orange-400" />
+                                                        <div className="px-2 py-0.5 rounded bg-orange-400/20 text-[8px] font-black text-orange-400">UPFRONT</div>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <div className="h-2 w-full bg-white/10 rounded-full" />
+                                                        <div className="h-2 w-2/3 bg-white/10 rounded-full" />
+                                                    </div>
+                                                    <div className="pt-4 flex items-center justify-between">
+                                                        <p className="text-xs font-black">SECURE SPOT</p>
+                                                        <CreditCard size={18} className="text-white/40" />
+                                                    </div>
+                                                </div>
+                                                <div className="absolute -top-4 -right-4 w-24 h-24 bg-orange-500/20 blur-3xl rounded-full" />
                                             </div>
                                         )}
                                         {section.id === 'branding' && (
@@ -238,7 +261,7 @@ export const PartnerPage: React.FC = () => {
                                                         </div>
                                                     ))}
                                                 </div>
-                                                <p className="text-xs font-black tracking-[0.5em] text-electric-teal uppercase">Connected Tribe</p>
+                                                <p className="text-xs font-black tracking-[0.5em] text-blue-400 uppercase">Connected Tribe</p>
                                             </div>
                                         )}
                                         {section.id === 'creators' && (

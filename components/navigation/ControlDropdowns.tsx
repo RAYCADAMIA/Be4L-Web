@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Plus, Trash2, Bell, Star, Heart, MessageCircle, Calendar, CheckSquare, LogOut, Settings, User, ArrowRight, Zap, Search, Layout, Bookmark, History, Target, TrendingUp, Sparkles, ShoppingBag, Sun, Moon, CloudSun } from 'lucide-react';
+import { Check, Plus, Trash2, Bell, Star, Heart, MessageCircle, Calendar, CheckSquare, LogOut, Settings, User, ArrowRight, Zap, Search, Layout, Bookmark, History, Target, TrendingUp, Sparkles, ShoppingBag, Sun, Moon, CloudSun, X } from 'lucide-react';
 import { ThemeMode, useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -147,7 +147,7 @@ export const NotificationWindow: React.FC = () => {
     const handleNotifClick = (n: any) => {
         if (n.target_id) {
             if (n.type.startsWith('QUEST')) {
-                navigate(`/app/quests?quest=${n.target_id}`);
+                navigate(`/app/quest/${n.target_id}`);
             } else {
                 // Handle posts etc
             }

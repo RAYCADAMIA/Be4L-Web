@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     X, Calendar, MapPin, Zap, ArrowRight, ChevronLeft, CalendarDays,
     ChevronRight, MessageSquare, Compass, Plus, Minus, ShieldCheck, Trophy, Clock,
-    Briefcase, Dumbbell, LayoutGrid, Plane, ChevronDown, MonitorPlay, CalendarCheck,
+    Briefcase, Dumbbell, LayoutGrid, Plane, ChevronDown,
     Globe, Signal, Users
 } from 'lucide-react';
 import { useMotionValue, useTransform } from 'framer-motion';
@@ -13,7 +13,8 @@ import { QuestType, QuestStatus, User, QuestVisibilityScope, QuestTimingIntent }
 import { QUEST_VIBE_PRESETS } from '../constants';
 import { useToast } from './Toast';
 import { AestheticDayPicker, AestheticTimeGrid } from './ui/AestheticDateTimePicker';
-import { MissionTimeline } from './ui/AestheticComponents';
+import { Sheet } from './ui/Sheet';
+import InvitationPreview from './Quest/shared/InvitationPreview';
 
 interface CreateQuestScreenProps {
     onClose: () => void;
@@ -73,8 +74,8 @@ const SlideToLaunch: React.FC<{ onLaunch: () => void, loading: boolean }> = ({ o
             />
             <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="flex items-center gap-3">
-                    <span className="text-[9px] font-black text-white/90 uppercase tracking-[0.3em] ml-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                        {loading ? 'INITIATING...' : 'SLIDE TO POST'}
+                    <span className="text-[9px] font-black text-[#F5E6D3]/90 uppercase tracking-[0.3em] ml-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                        {loading ? 'SENDING…' : 'SLIDE TO SEND INVITATION'}
                     </span>
                     {!loading && (
                         <motion.div animate={{ x: [0, 5, 0], opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 1.5 }}>
@@ -311,9 +312,7 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                         label: "View Post Details",
                         onClick: () => {
                             if (response.questId) {
-                                // Since we navigate to /app/quests?questId=...
-                                // The QuestsScreen will handle opening the modal
-                                navigate(`/app/quests?questId=${response.questId}`);
+                                navigate(`/app/quest/${response.questId}`);
                             }
                         }
                     }
@@ -331,33 +330,74 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
         }
     };
 
+    const stageLabels = ['The Call', 'Where', 'The Guestlist', 'Send it'];
+
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 pt-24 pb-32">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
-
-            <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                className="relative w-full max-w-md bg-[var(--bg-glass)] backdrop-blur-[40px] backdrop-saturate-150 border border-[var(--border-glass)] rounded-[2.5rem] overflow-hidden flex flex-col shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] min-h-[420px] max-h-full h-auto ring-1 ring-white/10"
-            >
-                {/* Header */}
-                <div className="px-5 pt-3 pb-1 flex justify-between items-center bg-gradient-to-b from-white/[0.02] to-transparent shrink-0">
-                    <div className="flex items-center gap-3">
-                        <button onClick={step === 1 ? onClose : () => setStep(step - 1)} className="p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-all">
-                            <ChevronLeft size={16} />
-                        </button>
-                        <div>
-                            <h2 className="text-base font-black uppercase tracking-tighter text-white">Create a Quest</h2>
-                            <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Stage {step} of {totalSteps}</p>
-                        </div>
-                    </div>
-                    <button onClick={onClose} className="p-2 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all">
-                        <X size={18} />
+        <Sheet
+            open={true}
+            onClose={onClose}
+            variant="auto"
+            size="lg"
+            showClose
+            title="Compose invitation"
+            subtitle={`Stage ${step} of ${totalSteps} · ${stageLabels[step - 1]}`}
+            dismissible={!loading}
+            bodyClassName="px-5 py-4"
+            headerAccessory={
+                step > 1 ? (
+                    <button
+                        onClick={() => setStep(step - 1)}
+                        className="p-2 rounded-full bg-white/5 border border-white/10 text-[#8B7E6D] hover:text-[#F5E6D3] transition-all active:scale-95"
+                        aria-label="Back"
+                    >
+                        <ChevronLeft size={16} />
                     </button>
+                ) : undefined
+            }
+            footer={
+                <div>
+                    {step < totalSteps ? (
+                        <button
+                            onClick={() => {
+                                if (step === 1) {
+                                    const finalCategory = category === 'Others' ? customCategory : category;
+                                    const finalActivity = activity === 'Custom' ? customActivity : activity;
+                                    if (!title.trim()) { showToast('Give your invitation a title.', 'info'); return; }
+                                    if (!finalCategory) { showToast('Pick a category.', 'info'); return; }
+                                    if (!finalActivity) { showToast('Pick an activity.', 'info'); return; }
+                                    if (timingIntent === QuestTimingIntent.FLEXIBLE) {
+                                        if (!flexibleDateTag) { showToast('Pick a timeframe.', 'info'); return; }
+                                        if (!timeWindow) { showToast('Pick a vibe window.', 'info'); return; }
+                                    }
+                                }
+                                if (step === 2) {
+                                    if (!locationName.trim()) setLocationName('TBD');
+                                }
+                                setStep(step + 1);
+                            }}
+                            className="w-full py-4 rounded-full bg-white text-[#080707] font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(255,255,255,0.15)] hover:scale-[1.02] active:scale-95 transition-all"
+                        >
+                            {step === 3 ? 'Review invitation' : 'Continue'} <ArrowRight size={14} />
+                        </button>
+                    ) : (
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-3">
+                            <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-[0.2em] px-1">
+                                <div className="flex items-center gap-1.5">
+                                    {visibility === QuestVisibilityScope.PUBLIC ? <Globe size={10} className="text-[#FFB854]" /> :
+                                        visibility === QuestVisibilityScope.FOLLOWERS ? <Signal size={10} className="text-[#FFB854]" /> : <Users size={10} className="text-[#FFB854]" />}
+                                    <span className="text-[#F5E6D3]">{visibility}</span>
+                                    <span className="text-[#8B7E6D] mx-1">·</span>
+                                    <span className="text-[#8B7E6D]">{capacity} spots</span>
+                                </div>
+                                <span className="text-[#8B7E6D]">{timingIntent === QuestTimingIntent.NOW ? 'SPONTY' : timingIntent === QuestTimingIntent.SCHEDULED ? 'CANON' : 'FLEX'}</span>
+                            </div>
+                            <SlideToLaunch onLaunch={handleLaunch} loading={loading} />
+                        </div>
+                    )}
                 </div>
-
-                <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-2">
+            }
+        >
+            <div className="relative">
                     <AnimatePresence mode="wait">
                         {step === 1 && (
                             <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
@@ -854,165 +894,82 @@ const CreateQuestScreen: React.FC<CreateQuestScreenProps> = ({ onClose, onQuestC
                         )}
 
                         {step === 4 && (
-                            <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                                <div className="space-y-4 rounded-[2rem] bg-gradient-to-br from-[var(--bg-glass)] to-transparent border border-[var(--border-tech)] p-6 relative overflow-hidden group shadow-2xl">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[50px] rounded-full pointer-events-none group-hover:bg-primary/20 transition-all duration-500" />
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="text-[var(--text-primary)] font-black text-lg uppercase leading-tight">{title}</h3>
-                                            <p className="text-primary text-[10px] font-bold uppercase tracking-widest mt-1">{category} • {activity}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4 pt-2">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            {/* Left Column: Logistical Info */}
-                                            <div className="space-y-3">
-                                                <div className="flex items-start gap-3">
-                                                    <MapPin size={14} className="text-gray-500 mt-0.5" />
-                                                    <div>
-                                                        <p className="text-[var(--text-primary)] text-xs font-bold leading-tight">{locationName || 'DAVAO CITY'}</p>
-                                                        <p className="text-[var(--text-secondary)] text-[7px] uppercase tracking-wider mt-0.5">Location</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-start gap-3">
-                                                    <CalendarDays size={14} className="text-gray-500 mt-0.5" />
-                                                    <div>
-                                                        <p className="text-white text-xs font-bold leading-tight">
-                                                            {timingIntent === 'NOW' ? 'Happening Now' : selectedDate.toDateString()}
-                                                        </p>
-                                                        <p className="text-gray-500 text-[7px] uppercase tracking-wider mt-0.5">
-                                                            {timingIntent === 'NOW' ? `${duration}H Duration` : `${startTime || 'TBD'} - ${endTime || 'TBD'}`}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-start gap-3">
-                                                    <MessageSquare size={14} className="text-gray-500 mt-0.5" />
-                                                    <div className="flex-1">
-                                                        <p className="text-[var(--text-secondary)] text-[10px] italic font-medium leading-tight line-clamp-3">{description || 'Join the quest.'}</p>
-                                                        <p className="text-[var(--text-secondary)] text-[7px] uppercase tracking-wider mt-1">Briefing</p>
-                                                    </div>
-                                                </div>
-
-                                                {vibeSignals.length > 0 && (
-                                                    <div className="flex items-start gap-3">
-                                                        <Compass size={14} className="text-primary mt-0.5" />
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {vibeSignals.map((v, i) => (
-                                                                <span key={`${v}-${i}`} className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[6px] font-black uppercase tracking-wider">{v}</span>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Right Column: Mission Details */}
-                                            <div className="space-y-3">
-                                                {itinerary.length > 0 ? (
-                                                    <div className="flex items-start gap-3">
-                                                        <Clock size={14} className="text-primary mt-0.5" />
-                                                        <div className="space-y-1">
-                                                            {itinerary.slice(0, 3).map((it, i) => (
-                                                                <div key={i} className="flex gap-1.5 min-w-0">
-                                                                    <span className="text-[7px] font-black text-[var(--text-secondary)]/30 shrink-0">{it.time}</span>
-                                                                    <span className="text-[8px] font-bold text-[var(--text-secondary)] truncate leading-tight">{it.description}</span>
-                                                                </div>
-                                                            ))}
-                                                            {itinerary.length > 3 && <p className="text-[6px] text-gray-500 italic">+ {itinerary.length - 3} more</p>}
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-start gap-3 opacity-30">
-                                                        <Clock size={14} className="text-gray-600 mt-0.5" />
-                                                        <p className="text-[8px] font-black uppercase tracking-widest text-gray-600">No Itinerary</p>
-                                                    </div>
-                                                )}
-
-                                                {checklist.length > 0 && (
-                                                    <div className="flex items-start gap-3">
-                                                        <ShieldCheck size={14} className="text-gray-500 mt-0.5" />
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {checklist.slice(0, 4).map((c, i) => (
-                                                                <span key={`${c}-${i}`} className="text-[8px] text-gray-500 font-medium tracking-tight">• {c}</span>
-                                                            ))}
-                                                            {checklist.length > 4 && <span className="text-[7px] text-gray-600 font-medium">+{checklist.length - 4}</span>}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
+                            <motion.div key="s4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                                <div className="px-1">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FFB854]">Send it</p>
+                                    <p className="text-[11px] text-[#8B7E6D] font-medium mt-1 leading-relaxed">Here's how the squad will see your invitation.</p>
                                 </div>
+                                <InvitationPreview
+                                    host={currentUser}
+                                    title={title}
+                                    description={description}
+                                    category={category === 'Others' ? (customCategory || undefined) : (category || undefined)}
+                                    whenLabel={
+                                        timingIntent === QuestTimingIntent.NOW
+                                            ? `Happening now · ${duration}h`
+                                            : timingIntent === QuestTimingIntent.FLEXIBLE
+                                            ? `${flexibleDateTag || 'Flexible'} · ${timeWindow || 'Open window'}`
+                                            : `${selectedDate.toLocaleDateString([], { month: 'short', day: 'numeric' })}${
+                                                  startTime ? ` @ ${formatTime24to12(startTime)}` : ' @ TBD'
+                                              }`
+                                    }
+                                    whereLabel={locationName || undefined}
+                                    vibeTags={vibeSignals}
+                                    capacity={capacity}
+                                    visibilityLabel={
+                                        visibility === QuestVisibilityScope.PUBLIC
+                                            ? 'Public'
+                                            : visibility === QuestVisibilityScope.FOLLOWERS
+                                            ? 'Followers'
+                                            : 'Friends'
+                                    }
+                                />
 
-
+                                {(itinerary.length > 0 || checklist.length > 0) && (
+                                    <div className="rounded-[2rem] bg-white/[0.02] border border-white/5 p-5 space-y-4">
+                                        {itinerary.length > 0 && (
+                                            <div>
+                                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#8B7E6D] mb-2">The Plan</p>
+                                                <div className="space-y-1.5">
+                                                    {itinerary.slice(0, 4).map((it, i) => (
+                                                        <div key={i} className="flex gap-2 items-center">
+                                                            <span className="text-[9px] font-black text-[#FFB854] w-14 shrink-0">{it.time}</span>
+                                                            <span className="text-[11px] text-[#F5E6D3]/80 truncate">{it.description}</span>
+                                                        </div>
+                                                    ))}
+                                                    {itinerary.length > 4 && (
+                                                        <p className="text-[9px] text-[#8B7E6D] italic ml-16">+ {itinerary.length - 4} more</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {checklist.length > 0 && (
+                                            <div>
+                                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#8B7E6D] mb-2">Essentials</p>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {checklist.map((c, i) => (
+                                                        <span key={i} className="px-2 py-1 rounded-lg bg-white/[0.04] border border-white/5 text-[10px] font-medium text-[#F5E6D3]/80">
+                                                            {c}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </motion.div>
                         )}
                     </AnimatePresence>
                 </div>
 
-                {/* Footer Nav */}
-                <div className="p-4 pt-2 bg-gradient-to-t from-white/[0.02] to-transparent shrink-0">
-                    {step < totalSteps ? (
-                        <button
-                            onClick={() => {
-                                if (step === 1) {
-                                    const finalCategory = category === 'Others' ? customCategory : category;
-                                    const finalActivity = activity === 'Custom' ? customActivity : activity;
-
-                                    if (!title.trim()) { showToast("Mission Title required.", "info"); return; }
-                                    if (!finalCategory) { showToast("Select a Category.", "info"); return; }
-                                    if (!finalActivity) { showToast("Select an Activity.", "info"); return; }
-
-                                    if (timingIntent === QuestTimingIntent.SCHEDULED) {
-                                        // Optional as per request
-                                    }
-                                    if (timingIntent === QuestTimingIntent.FLEXIBLE) {
-                                        if (!flexibleDateTag) { showToast("Pick a timeframe.", "info"); return; }
-                                        if (!timeWindow) { showToast("Select a vibe window.", "info"); return; }
-                                    }
-                                }
-                                if (step === 2) {
-                                    if (!locationName.trim()) {
-                                        setLocationName('TBD');
-                                    }
-                                }
-                                if (step === 3) {
-                                    // Optional checks for Itinerary 
-                                }
-                                setStep(step + 1);
-                            }}
-                            className="w-full py-2.5 rounded-xl bg-primary text-black font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] transition-all shadow-xl text-[9px]"
-                        >
-                            {step === 3 ? 'Final Review' : 'Next Stage'} <ArrowRight size={14} />
-                        </button>
-                    ) : (
-                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                            <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-[0.2em] mb-3 px-1">
-                                <div className="flex items-center gap-1.5">
-                                    {visibility === QuestVisibilityScope.PUBLIC ? <Globe size={10} className="text-primary" /> :
-                                        visibility === QuestVisibilityScope.FOLLOWERS ? <Signal size={10} className="text-primary" /> : <Users size={10} className="text-purple-400" />}
-                                    <span className="text-white">{visibility}</span>
-                                    <span className="text-gray-700 mx-1">•</span>
-                                    <span className="text-gray-500">{capacity} Spots</span>
-                                </div>
-                                <span className="text-gray-700">{timingIntent === 'now' ? 'SPONTY' : timingIntent === 'scheduled' ? 'CANON' : 'FLEX'}</span>
-                            </div>
-                            <SlideToLaunch onLaunch={handleLaunch} loading={loading} />
-                        </div>
-                    )}
-                </div>
-
-                {/* Modals */}
+                {/* Nested pickers */}
                 <AnimatePresence>
-                    {showDatePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticDayPicker value={selectedDate} onChange={setSelectedDate} onClose={() => setShowDatePicker(false)} /></div>}
-                    {showStartTimePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={startTime} onChange={setStartTime} onClose={() => setShowStartTimePicker(false)} /></div>}
-                    {showEndTimePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={endTime} onChange={setEndTime} onClose={() => setShowEndTimePicker(false)} minTime={startTime} /></div>}
-                    {showItinTimePicker && <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={itinTime} onChange={setItinTime} onClose={() => setShowItinTimePicker(false)} /></div>}
+                    {showDatePicker && <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/95 p-6"><AestheticDayPicker value={selectedDate} onChange={setSelectedDate} onClose={() => setShowDatePicker(false)} /></div>}
+                    {showStartTimePicker && <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={startTime} onChange={setStartTime} onClose={() => setShowStartTimePicker(false)} /></div>}
+                    {showEndTimePicker && <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={endTime} onChange={setEndTime} onClose={() => setShowEndTimePicker(false)} minTime={startTime} /></div>}
+                    {showItinTimePicker && <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/95 p-6"><AestheticTimeGrid value={itinTime} onChange={setItinTime} onClose={() => setShowItinTimePicker(false)} /></div>}
                 </AnimatePresence>
-            </motion.div>
-        </div>
+        </Sheet>
     );
 };
 

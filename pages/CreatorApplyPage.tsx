@@ -101,6 +101,20 @@ export const CreatorApplyPage: React.FC = () => {
                 }]);
 
             if (dbError) throw dbError;
+
+            // Notify Admin
+            const ADMIN_ID = 'b05bfd15-2593-4506-87c1-53f186c530fb';
+            await supabase.from('notifications').insert({
+                user_id: ADMIN_ID,
+                type: 'CREATOR_APPLICATION',
+                title: 'New Creator Application',
+                content: `${form.full_name.trim()} has applied for the Creator Program.`,
+                metadata: {
+                    full_name: form.full_name.trim(),
+                    niche: form.content_niche
+                }
+            });
+
             setSubmitted(true);
         } catch (err: any) {
             console.error('Creator application error:', err);

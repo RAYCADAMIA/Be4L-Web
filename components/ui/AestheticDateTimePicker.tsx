@@ -16,7 +16,7 @@ interface AestheticTimeGridProps {
     minTime?: string; // "HH:MM" 24h format for comparison
 }
 
-const flipTransition = {
+const flipTransition: any = {
     duration: 0.6,
     ease: [0.22, 1, 0.36, 1]
 };
@@ -52,7 +52,7 @@ export const AestheticDayPicker: React.FC<AestheticDayPickerProps> = ({ value, o
                 animate="animate"
                 exit="exit"
                 transition={flipTransition}
-                className="bg-[#0A0A0A] border border-white/10 rounded-[2rem] p-6 shadow-2xl relative overflow-hidden"
+                className="bg-[#0E0C0B] border border-white/10 rounded-[2rem] p-6 shadow-2xl relative overflow-hidden"
             >
                 {/* Header */}
                 <div className="flex justify-between items-center mb-6">
@@ -137,7 +137,7 @@ export const AestheticTimeGrid: React.FC<AestheticTimeGridProps> = ({ value, onC
                 animate="animate"
                 exit="exit"
                 transition={flipTransition}
-                className="bg-[#0A0A0A] border border-white/10 rounded-[2rem] p-6 shadow-2xl relative overflow-hidden"
+                className="bg-[#0E0C0B] border border-white/10 rounded-[2rem] p-6 shadow-2xl relative overflow-hidden"
             >
                 <div className="flex justify-between items-center mb-6 px-2">
                     <h3 className="text-sm font-black tracking-[0.2em] text-white">SELECT TIME</h3>

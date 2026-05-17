@@ -42,8 +42,7 @@ const NotificationsScreen: React.FC<{ onClose: () => void }> = ({ onClose }) => 
     const handleNotificationClick = (n: any) => {
         if (n.target_id) {
             if (n.type.startsWith('QUEST')) {
-                // Navigate to quest detail via URL param that opens the overlay
-                navigate(`/app/quests?quest=${n.target_id}`);
+                navigate(`/app/quest/${n.target_id}`);
                 onClose();
             }
         }

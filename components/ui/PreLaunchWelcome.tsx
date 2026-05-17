@@ -7,6 +7,9 @@ export const PreLaunchWelcome = () => {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
+        const hasSeenDisclaimer = localStorage.getItem('be4l_disclaimer_seen');
+        if (hasSeenDisclaimer) return;
+
         // Delay adjusted to 6s to coincide with the "Be For Life -> Be4L" transition (4.5s + animation time)
         const timer = setTimeout(() => setIsVisible(true), 6000);
         return () => clearTimeout(timer);
@@ -14,6 +17,7 @@ export const PreLaunchWelcome = () => {
 
     const handleDismiss = () => {
         setIsVisible(false);
+        localStorage.setItem('be4l_disclaimer_seen', 'true');
         window.dispatchEvent(new Event('disclaimerDismissed'));
     };
 
@@ -25,7 +29,7 @@ export const PreLaunchWelcome = () => {
                         initial={{ opacity: 0, scale: 0.9, y: 30 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                        className="relative w-full max-w-md rounded-[2.5rem] bg-[#0A0A0A] border border-white/10 shadow-[0_0_80px_rgba(45,212,191,0.1)] overflow-hidden"
+                        className="relative w-full max-w-md rounded-[2.5rem] bg-[#0E0C0B] border border-white/10 shadow-[0_0_80px_rgba(45,212,191,0.1)] overflow-hidden"
                     >
                         {/* Status Bar */}
 

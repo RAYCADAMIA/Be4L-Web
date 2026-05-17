@@ -189,7 +189,7 @@ export const SplashScreen: React.FC<{ onComplete: (user: UserType) => void }> = 
             bio,
             avatar_url: finalAvatarUrl,
             streak_count: 0
-        });
+        } as any);
     };
 
     if (editingImage) {

@@ -5,7 +5,7 @@ export interface Operator {
     user_id: string;
     business_name: string;
     slug: string;
-    bio?: string;
+    bio: string;
     category: string;
     cover_photo_url: string;
     logo_url: string;
@@ -13,6 +13,7 @@ export interface Operator {
     is_verified?: boolean;
     offerings?: string[]; // e.g. ["Pickleball", "Coaching"]
     rating?: number;
+    vibe_tags?: string[];
 }
 
 interface Props {

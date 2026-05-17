@@ -23,8 +23,8 @@ export const AnimationOrchestrator: React.FC<AnimationOrchestratorProps> = ({ ch
     // Fade out logo as we scroll past hero (0 to 600px)
     const logoOpacity = useTransform(scrollY, [0, 600], [1, 0]);
     const logoScale = useTransform(scrollY, [0, 600], [1, 0.8]);
-    const moveTimerRef = React.useRef<any>();
-    const shrinkTimerRef = React.useRef<any>();
+    const moveTimerRef = React.useRef<any>(undefined);
+    const shrinkTimerRef = React.useRef<any>(undefined);
 
     const reset = () => {
         if (moveTimerRef.current) clearTimeout(moveTimerRef.current);

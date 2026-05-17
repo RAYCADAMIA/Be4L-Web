@@ -139,7 +139,7 @@ export const GuestHome: React.FC = () => {
                                         onJoin={handleAuthTrigger}
                                         onOpenDetail={(q) => {
                                             if (q.id) {
-                                                navigate(`/app/quests?quest=${q.id}`);
+                                                navigate(`/app/quest/${q.id}`);
                                             }
                                         }}
                                     />
@@ -204,6 +204,7 @@ export const GuestHome: React.FC = () => {
                                     <div key={post.id} className="snap-center">
                                         <PartnerPostCard
                                             post={post}
+                                            currentUser={null as any}
                                             onOpenProfile={(id) => {
                                                 const op = brands.find(b => b.user_id === id);
                                                 if (op) navigate('/app/shop/' + op.slug);

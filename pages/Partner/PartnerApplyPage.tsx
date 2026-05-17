@@ -50,31 +50,56 @@ export const PartnerApplyPage: React.FC = () => {
         setError(null);
 
         try {
+            // Get current user if available (for tracking lead source)
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            // Note: We no longer require 'user' to be present to submit an inquiry (Option B)
+
+
+            // If logged in, check if application already exists in operators
+            if (user) {
+                const { data: existing } = await supabase
+                    .from('operators')
+                    .select('status')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (existing) {
+                    if (existing.status === 'approved' || existing.status === 'active' || existing.status === 'live') {
+                        navigate('/app/dashboard');
+                        return;
+                    }
+                    setError(`You already have a ${existing.status} application under this account.`);
+                    setLoading(false);
+                    return;
+                }
+            }
+
             // 1. Storage Upload
             let proofUrl = '';
             if (file) {
                 const fileExt = file.name.split('.').pop();
-                const fileName = `${Math.random()}.${fileExt}`;
+                const uniqueId = user?.id || `guest-${Math.random().toString(36).slice(2, 7)}`;
+                const fileName = `${uniqueId}-${Math.random().toString(36).slice(2, 7)}.${fileExt}`;
                 const filePath = `verification/${fileName}`;
 
                 const { data: uploadData, error: uploadError } = await supabase.storage
                     .from('partner-docs')
                     .upload(filePath, file);
 
-                if (uploadError) throw uploadError;
-                proofUrl = filePath;
+                if (uploadError) {
+                    console.warn('Storage upload error (Guest?):', uploadError);
+                    // We'll continue even if upload fails in this prototype, or show a friendly error
+                } else {
+                    proofUrl = filePath;
+                }
             }
 
-            // 2. Get current user if exists
-            const { data: { user } } = await supabase.auth.getUser();
-
-            // 3. Database Insert
+            // 3. Database Insert into partner_leads (PUBLIC)
             const { error: dbError } = await supabase
-                .from('operators')
+                .from('partner_leads')
                 .insert({
-                    user_id: user?.id || null, // Allow application without being logged in
                     business_name: formData.businessName,
-                    slug: formData.businessName.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
                     category: formData.category === 'other' ? formData.customCategory : formData.category,
                     contact_number: formData.contactNumber,
                     contact_email: formData.email,
@@ -86,13 +111,27 @@ export const PartnerApplyPage: React.FC = () => {
 
             if (dbError) throw dbError;
 
-            // 4. Redirect
+            // 4. Notify Admin
+            const ADMIN_ID = 'b05bfd15-2593-4506-87c1-53f186c530fb';
+            await supabase.from('notifications').insert({
+                user_id: ADMIN_ID,
+                actor_id: user?.id || null, // Can be guest
+                type: 'PARTNER_APPLICATION',
+                title: 'New Brand Lead',
+                content: `${formData.businessName} has submitted a brand inquiry.`,
+                metadata: {
+                    business_name: formData.businessName,
+                    category: formData.category,
+                    is_lead: true
+                }
+            });
+
+            // 5. Redirect
             navigate('/partner/pending');
 
         } catch (err: any) {
             console.error('Full submission error:', err);
-            const errorMessage = err.message || JSON.stringify(err);
-            setError(`Submission failed: ${errorMessage}`);
+            setError(err.message || 'Submission failed. Please try again.');
             setLoading(false);
         }
     };

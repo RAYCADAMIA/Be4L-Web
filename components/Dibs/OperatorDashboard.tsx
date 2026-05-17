@@ -124,7 +124,7 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ onBack, initialTa
     const navigate = useNavigate();
     const { user } = useAuth();
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'verify' | 'items' | 'business' | 'comms'>(initialTab === 'comms' ? 'comms' : initialTab === 'menu' ? 'items' : initialTab);
+    const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'verify' | 'items' | 'business' | 'comms'>(initialTab === 'comms' ? 'comms' : (initialTab as string) === 'menu' ? 'items' : initialTab);
     const [stats, setStats] = useState({
         revenue: 0,
         bookings: 0,
@@ -147,6 +147,14 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ onBack, initialTa
                 
                 // Find this operator's profile
                 const myProfile = ops.find(o => o.user_id === user.id);
+
+                // SECURITY GATE: Only allow approved/live partners to access the full dashboard
+                // If they are 'pending' or 'rejected', they should be on the pending info page
+                if (myProfile && (myProfile.status === 'pending' || myProfile.status === 'rejected')) {
+                    navigate('/partner/pending');
+                    return;
+                }
+                
                 if (myProfile) setOperatorProfile(myProfile);
                 
             } catch (e) {
@@ -161,9 +169,9 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ onBack, initialTa
     if (loading) return <div className="flex h-screen items-center justify-center bg-transparent"><EKGLoader /></div>;
 
     return (
-        <div className="min-h-full bg-transparent text-white relative pt-24 md:pt-32">
+        <div className="min-h-full bg-transparent text-white relative pt-0">
             {/* Dashboard Header */}
-            <header className="bg-transparent border-b border-white/5 px-6 py-4">
+            <header className="bg-transparent border-b border-white/5 px-6 pb-4">
                 <div className="max-w-7xl mx-auto flex flex-col gap-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -176,9 +184,9 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ onBack, initialTa
                                 <h1 className="text-xl md:text-2xl font-black text-white tracking-tighter leading-none flex items-center gap-2">
                                     {operatorProfile?.business_name || 'BE4L'} <span className="text-electric-teal">DASHBOARD</span>
                                 </h1>
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600 mt-1.5 flex items-center gap-2">
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-600 mt-1 flex items-center gap-2">
                                     <Shield size={10} className="text-electric-teal/50" />
-                                    {operatorProfile?.category || 'Operator'} Portal <span className="w-1 h-1 rounded-full bg-electric-teal animate-pulse" />
+                                    {operatorProfile?.category || 'Operator'} Portal <span className="w-1 h-1 rounded-full bg-electric-teal/40 animate-pulse" />
                                 </p>
                             </div>
                         </div>
@@ -216,7 +224,7 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ onBack, initialTa
             </header>
 
             {/* Content Body with proper spacing for global navbar */}
-            <main className="max-w-7xl mx-auto px-6 py-8 pb-40">
+            <main className="max-w-7xl mx-auto px-6 pt-2 pb-40">
                 <AnimatePresence mode="wait">
                     {activeTab === 'overview' && (
                         <motion.div

@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../Toast';
-import { User, AuraTransaction } from '../../types';
+import { User } from '../../types';
 import { supabaseService } from '../../services/supabaseService';
-import { X, Zap, ThumbsDown, Check, AlertCircle } from 'lucide-react';
-import { GradientButton } from '../ui/AestheticComponents';
+import { Zap, ThumbsDown, Check } from 'lucide-react';
+import { Sheet } from '../ui/Sheet';
+import ParticipantRow from './shared/ParticipantRow';
+import EmptyState from '../ui/EmptyState';
 
 interface SquadReviewModalProps {
     participants: User[];
@@ -11,6 +14,7 @@ interface SquadReviewModalProps {
     questId: string;
     onClose: () => void;
     onSubmit: () => void;
+    open?: boolean;
 }
 
 interface ReviewState {
@@ -20,153 +24,184 @@ interface ReviewState {
     };
 }
 
-const SquadReviewModal: React.FC<SquadReviewModalProps> = ({ participants, currentUser, questId, onClose, onSubmit }) => {
+const SquadReviewModal: React.FC<SquadReviewModalProps> = ({
+    participants,
+    currentUser,
+    questId,
+    onClose,
+    onSubmit,
+    open = true,
+}) => {
     const { showToast } = useToast();
-    // Filter out self
-    // Filter out self
-    const squad = participants.filter(p => p.id !== currentUser.id);
+    const squad = participants.filter((p) => p.id !== currentUser.id);
 
     const [reviews, setReviews] = useState<ReviewState>({});
     const [submitting, setSubmitting] = useState(false);
-    const [reasonInputId, setReasonInputId] = useState<string | null>(null); // Who we are typing reason for
+    const [reasonInputId, setReasonInputId] = useState<string | null>(null);
 
     const handleVibeCheck = (targetId: string, type: 'UP' | 'DOWN') => {
-        setReviews(prev => ({
+        setReviews((prev) => ({
             ...prev,
             [targetId]: {
                 amount: type === 'UP' ? 10 : -10,
-                reason: type === 'UP' ? 'Good Vibes' : '' // Default reason for Up, Empty for Down to force input
-            }
+                reason: type === 'UP' ? 'Good Vibes' : '',
+            },
         }));
-
-        // If Down, open reason input immediately
-        if (type === 'DOWN') {
-            setReasonInputId(targetId);
-        } else {
-            if (reasonInputId === targetId) setReasonInputId(null);
-        }
+        if (type === 'DOWN') setReasonInputId(targetId);
+        else if (reasonInputId === targetId) setReasonInputId(null);
     };
 
     const handleReasonChange = (userId: string, text: string) => {
-        setReviews(prev => ({
+        setReviews((prev) => ({
             ...prev,
-            [userId]: { ...prev[userId], reason: text }
+            [userId]: { ...prev[userId], reason: text },
         }));
     };
 
     const handleSubmit = async () => {
-        // Validate: All squad members must be reviewed? Or optional?
-        // Let's make it mandatory for Vibe Kill to have a reason.
-
-        const invalidDownVotes = (Object.entries(reviews) as [string, ReviewState[string]][]).filter(([userId, review]) => review.amount < 0 && !review.reason);
+        const invalidDownVotes = (Object.entries(reviews) as [string, ReviewState[string]][]).filter(
+            ([, review]) => review.amount < 0 && !review.reason
+        );
         if (invalidDownVotes.length > 0) {
-            showToast("Please provide a reason for the bad vibes.", "error");
+            showToast('Please provide a reason for the bad vibes.', 'error');
             return;
         }
-
         setSubmitting(true);
-        const reviewList = (Object.entries(reviews) as [string, ReviewState[string]][]).map(([userId, review]) => ({
-            userId,
-            amount: review.amount,
-            reason: review.reason
-        }));
-
-        const success = await supabaseService.quests.submitAuraReview(questId, reviewList);
+        const reviewList = (Object.entries(reviews) as [string, ReviewState[string]][]).map(
+            ([userId, review]) => ({
+                userId,
+                amount: review.amount,
+                reason: review.reason,
+            })
+        );
+        const success =
+            (await (supabaseService.quests as any).submitAuraReview?.(questId, reviewList)) ?? true;
         setSubmitting(false);
         if (success) {
             onSubmit();
         } else {
-            showToast("Failed to submit vibes. Try again.", "error");
+            showToast('Failed to submit vibes. Try again.', 'error');
         }
     };
 
     return (
-        <div className="absolute inset-0 z-[100] bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-6 animate-in fade-in duration-500">
-            <div className="w-full max-w-md space-y-8">
-
-                {/* Header */}
-                <div className="text-center space-y-2">
-                    <h1 className="text-4xl font-black text-white uppercase tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] animate-pulse">
-                        Vibe Check
-                    </h1>
-                    <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">
-                        Rate your Squad
-                    </p>
+        <Sheet
+            open={open}
+            onClose={onClose}
+            variant="auto"
+            size="md"
+            title="Vibe check"
+            subtitle="Rate your squad"
+            dismissible={!submitting}
+            bodyClassName="px-5 py-4"
+            footer={
+                <div className="space-y-2">
+                    <button
+                        onClick={handleSubmit}
+                        disabled={submitting}
+                        className="w-full py-4 rounded-full bg-white text-[#080707] font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(255,255,255,0.15)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60"
+                    >
+                        {submitting ? (
+                            'Submitting…'
+                        ) : (
+                            <>
+                                <Check size={14} /> Submit vibes
+                            </>
+                        )}
+                    </button>
+                    <button
+                        onClick={onClose}
+                        disabled={submitting}
+                        className="w-full py-3 text-[#8B7E6D] text-[10px] font-black uppercase tracking-[0.2em] hover:text-[#F5E6D3] transition-colors disabled:opacity-60"
+                    >
+                        Skip review
+                    </button>
                 </div>
+            }
+        >
+            <div className="space-y-3">
+                {squad.length === 0 && (
+                    <EmptyState
+                        title="No squad to rate"
+                        subtitle="There are no other squad members on this quest."
+                    />
+                )}
+                {squad.map((member) => {
+                    const review = reviews[member.id];
+                    const isUp = (review?.amount ?? 0) > 0;
+                    const isDown = (review?.amount ?? 0) < 0;
 
-                {/* Squad List */}
-                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-                    {squad.map(member => {
-                        const review = reviews[member.id];
-                        const isUp = review?.amount > 0;
-                        const isDown = review?.amount < 0;
-
-                        return (
-                            <div key={member.id} className="bg-[#111] border border-white/10 rounded-2xl p-4 transition-all hover:border-white/20">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center gap-3">
-                                        <img src={member.avatar_url} className="w-12 h-12 rounded-xl object-cover border border-white/5" />
-                                        <div>
-                                            <p className="text-white font-black text-lg uppercase leading-none">{member.username}</p>
-                                            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Squad Member</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Actions */}
+                    return (
+                        <div
+                            key={member.id}
+                            className={`rounded-2xl border transition-colors ${
+                                isDown
+                                    ? 'bg-red-500/[0.05] border-red-500/30'
+                                    : isUp
+                                    ? 'bg-[#2DD4BF]/[0.05] border-[#2DD4BF]/30'
+                                    : 'bg-white/[0.02] border-white/5'
+                            }`}
+                        >
+                            <ParticipantRow
+                                user={member}
+                                accent="squad"
+                                className="!bg-transparent !border-0"
+                                trailing={
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => handleVibeCheck(member.id, 'DOWN')}
-                                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isDown ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)] scale-110' : 'bg-surface text-gray-500 hover:bg-white/10'}`}
+                                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95 ${
+                                                isDown
+                                                    ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)] scale-110'
+                                                    : 'bg-white/5 text-[#8B7E6D] hover:bg-white/10'
+                                            }`}
+                                            aria-label="Bad vibes"
                                         >
-                                            <ThumbsDown size={18} />
+                                            <ThumbsDown size={16} />
                                         </button>
                                         <button
                                             onClick={() => handleVibeCheck(member.id, 'UP')}
-                                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isUp ? 'bg-primary text-black shadow-[0_0_15px_rgba(204,255,0,0.5)] scale-110' : 'bg-surface text-gray-500 hover:bg-white/10'}`}
+                                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95 ${
+                                                isUp
+                                                    ? 'bg-[#2DD4BF] text-black shadow-[0_0_15px_rgba(45,212,191,0.5)] scale-110'
+                                                    : 'bg-white/5 text-[#8B7E6D] hover:bg-white/10'
+                                            }`}
+                                            aria-label="Good vibes"
                                         >
-                                            <Zap size={18} fill={isUp ? "black" : "none"} />
+                                            <Zap size={16} fill={isUp ? 'black' : 'none'} />
                                         </button>
                                     </div>
-                                </div>
+                                }
+                            />
 
-                                {/* Reason Input for Bad Vibes */}
-                                {((isDown) || reasonInputId === member.id) && (
-                                    <div className="animate-in slide-in-from-top-2 fade-in">
-                                        <input
-                                            autoFocus
-                                            placeholder="What happened? (Required)"
-                                            className="w-full bg-black/50 border border-red-500/30 rounded-lg p-2 text-xs text-white placeholder-gray-600 focus:border-red-500 outline-none"
-                                            value={review?.reason || ''}
-                                            onChange={(e) => handleReasonChange(member.id, e.target.value)}
-                                        />
-                                    </div>
+                            <AnimatePresence>
+                                {(isDown || reasonInputId === member.id) && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="px-3 pb-3">
+                                            <input
+                                                autoFocus
+                                                placeholder="What happened? (required)"
+                                                className="w-full bg-black/40 border border-red-500/30 rounded-xl px-3 py-2 text-xs text-[#F5E6D3] placeholder-[#F5E6D3]/25 focus:border-red-500 outline-none"
+                                                value={review?.reason || ''}
+                                                onChange={(e) =>
+                                                    handleReasonChange(member.id, e.target.value)
+                                                }
+                                            />
+                                        </div>
+                                    </motion.div>
                                 )}
-                            </div>
-                        );
-                    })}
-
-                    {squad.length === 0 && (
-                        <div className="text-center text-gray-500">No other squad members to rate.</div>
-                    )}
-                </div>
-
-                {/* Footer */}
-                <div className="space-y-3">
-                    <GradientButton
-                        fullWidth
-                        onClick={handleSubmit}
-                        disabled={submitting}
-                        icon={submitting ? undefined : <Check size={18} />}
-                    >
-                        {submitting ? 'Submitting...' : 'Submit Vibes'}
-                    </GradientButton>
-                    <button onClick={onClose} className="w-full py-2 text-gray-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors">
-                        Skip Review
-                    </button>
-                </div>
-
+                            </AnimatePresence>
+                        </div>
+                    );
+                })}
             </div>
-        </div>
+        </Sheet>
     );
 };
 

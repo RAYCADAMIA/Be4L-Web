@@ -13,6 +13,7 @@ import { useScrollBehavior } from '../../hooks/useScrollBehavior';
 import { ChatHeader } from './ChatFilters';
 import { OTHER_USERS } from '../../constants';
 import UserListModal from '../UserListModal';
+import ChatListItem from './ChatListItem';
 
 interface ChatListScreenProps {
     onOpenChat: (chatId: string, name: string) => void;
@@ -110,7 +111,7 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
     const [showSquadCreator, setShowSquadCreator] = useState(false);
     const [squadStep, setSquadStep] = useState<'FRIENDS' | 'NAME'>('FRIENDS');
     const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>([]);
-    const [friendList, setFriendList] = useState<User[]>([]);
+    const [friendList, setFriendList] = useState<any[]>([]);
     const [tempSquadName, setTempSquadName] = useState('');
 
     const [refreshKey, setRefreshKey] = useState(0);
@@ -291,7 +292,7 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
             const threeDays = 3 * 24 * 60 * 60 * 1000;
             if (diff < threeDays) {
                 const daysLeft = Math.ceil((threeDays - diff) / (24 * 60 * 60 * 1000));
-                showToast(`Frequency locked. You can relocate again in ${daysLeft} days.`, 'warning');
+                showToast(`Frequency locked. You can relocate again in ${daysLeft} days.`, 'error');
                 return;
             }
         }
@@ -561,36 +562,15 @@ const ChatListScreen: React.FC<ChatListScreenProps> = ({ onOpenChat, onBack, onO
                                     const rest = chats.filter((c: any) => !['GLOBAL', 'CITY'].includes(c.type));
 
                                     const renderCard = (chat: any) => (
-                                        <motion.div
+                                        <ChatListItem
                                             key={chat.id}
-                                            whileHover={{ x: 4 }}
+                                            avatarUrl={chat.avatar}
+                                            name={chat.type === 'CITY' ? chat.actualCityName || chat.name : chat.name}
+                                            preview={chat.lastMsg}
+                                            timestamp={chat.time}
+                                            unread={Number(chat.unread) > 0}
                                             onClick={() => onOpenChat(chat.id, chat.type === 'CITY' ? chat.actualCityName : chat.name)}
-                                            className="flex items-center gap-3.5 p-3 rounded-2xl bg-white/[0.03] backdrop-blur-sm border border-white/5 hover:bg-white/[0.06] hover:border-white/10 transition-all cursor-pointer group mb-1.5"
-                                        >
-                                            <div className="relative">
-                                                <div className={`w-10 h-10 rounded-full overflow-hidden border border-white/10 p-0.5 bg-black`}>
-                                                    <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
-                                                </div>
-                                                {chat.unread > 0 && (
-                                                    <div className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] bg-electric-teal rounded-full border-2 border-black flex items-center justify-center px-0.5">
-                                                        <span className="text-[8px] font-black text-black">{chat.unread}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex justify-between items-center mb-0.5">
-                                                    <h3 className="text-sm font-bold text-white/90 group-hover:text-electric-teal transition-colors tracking-tight truncate">
-                                                        {chat.name}
-                                                    </h3>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-[9px] font-medium text-white/30 tracking-tight">{chat.time}</span>
-                                                    </div>
-                                                </div>
-                                                <p className={`text-[11px] truncate ${chat.unread > 0 ? 'text-white/80 font-semibold' : 'text-white/40 font-normal'} ${chat.lastMsg?.startsWith('[System]') ? 'text-electric-teal/60 italic' : ''}`}>
-                                                    {chat.lastMsg}
-                                                </p>
-                                            </div>
-                                        </motion.div>
+                                        />
                                     );
 
                                     return (

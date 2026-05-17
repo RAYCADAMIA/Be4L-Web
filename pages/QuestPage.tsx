@@ -2,14 +2,13 @@ import React, { useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Quest } from '../types';
 import QuestsScreen from '../components/QuestsScreen';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export const QuestPage: React.FC = () => {
     useDocumentTitle('Quests');
     const { user, loading } = useAuth();
     const navigate = useNavigate();
-    const [searchParams, setSearchParams] = useSearchParams();
 
     const handleLegacyNavigate = (tab: string) => {
         if (tab === 'HOME') navigate('/app/home');
@@ -17,8 +16,8 @@ export const QuestPage: React.FC = () => {
     };
 
     const handleOpenQuest = useCallback((q: Quest) => {
-        setSearchParams({ quest: q.id });
-    }, [setSearchParams]);
+        navigate(`/app/quest/${q.id}`);
+    }, [navigate]);
 
     if (loading) return <div>Loading...</div>;
 

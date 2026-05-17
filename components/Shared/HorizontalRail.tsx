@@ -18,8 +18,8 @@ export const HorizontalRail: React.FC<HorizontalRailProps> = ({
     const velocity = useRef(0);
     const lastX = useRef(0);
     const lastTime = useRef(0);
-    const animationFrameId = useRef<number>();
-    const snapTimeoutId = useRef<NodeJS.Timeout>();
+    const animationFrameId = useRef<number | undefined>(undefined);
+    const snapTimeoutId = useRef<NodeJS.Timeout | undefined>(undefined);
 
     // Smart Snap: Disable snap while scrolling (trackpad/swipe), re-enable after stop
     const handleScroll = () => {

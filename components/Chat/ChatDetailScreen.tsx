@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Camera, Send, Check, X, MapPin, Zap, Info, Phone, Shield, Trash2, Sparkles, ChevronRight, MoreHorizontal, Globe } from 'lucide-react';
+import { ChevronLeft, MapPin, Zap, MoreHorizontal, Globe } from 'lucide-react';
 import { supabaseService } from '../../services/supabaseService';
 import { Message } from '../../types';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MOCK_USER, OTHER_USERS } from '../../constants';
 
 import { HeartbeatTransition } from '../ui/AestheticComponents';
+import MessageBubble from './MessageBubble';
+import ChatComposer from './ChatComposer';
+import EmptyState from '../ui/EmptyState';
 
 interface ChatDetailScreenProps {
     chatId: string;
@@ -54,7 +57,7 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
                 return [...prev, incomingMsg];
             });
         });
-        return () => channel.unsubscribe();
+        return () => { channel.unsubscribe(); };
     }, [chatId]);
 
     const loadMessages = async (isFirst: boolean) => {
@@ -114,7 +117,8 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
                         if (currentUser?.user_metadata?.name) {
                             senderName = currentUser.user_metadata.name;
                         } else if (currentUser) {
-                            const profile = await supabaseService.profile.getProfile(currentUser.id);
+                            const result: any = await supabaseService.profiles.getProfile(currentUser.id);
+                            const profile = result?.data ?? result;
                             if (profile?.name) senderName = profile.name;
                         }
 
@@ -122,8 +126,8 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
                             user_id: targetUserId,
                             type: 'MESSAGE',
                             title: 'New Message',
-                            body: `${senderName} sent you a message`,
-                            link: `/app/chat?id=${chatId}`
+                            content: `${senderName} sent you a message`,
+                            metadata: { link: `/app/chat?id=${chatId}` }
                         });
                     }
                 } catch (e) {
@@ -177,92 +181,53 @@ const ChatDetailScreen: React.FC<ChatDetailScreenProps> = ({ chatId, chatName, o
             {/* Messages Area */}
             <div
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto px-6 py-4 space-y-8 no-scrollbar scroll-smooth"
+                className="flex-1 overflow-y-auto px-4 md:px-6 py-4 no-scrollbar scroll-smooth"
             >
                 <HeartbeatTransition loading={loading} label="Decrypting Comms...">
                     {messages.length === 0 ? (
-                        <div className="py-20 text-center opacity-10">
-                            <Zap size={48} className="mx-auto mb-4" />
-                            <p className="text-xs font-black uppercase tracking-widest">Awaiting signal...</p>
+                        <div className="py-16">
+                            <EmptyState
+                                icon={<Zap size={20} />}
+                                title="Awaiting signal"
+                                subtitle="Send the first message and kick off the chat."
+                            />
                         </div>
                     ) : (
-                        messages.map((msg, idx) => {
-                            const showAvatar = idx === 0 || messages[idx - 1].sender_id !== msg.sender_id;
-                            const senderId = msg.sender_id === 'me' ? 'me' : msg.sender_id;
-
-                            return (
-                                <div key={msg.id} className={`flex ${msg.is_me ? 'justify-end' : 'justify-start'} group items-end gap-3`}>
-                                    {!msg.is_me && (
-                                        <div
-                                            onClick={() => navigate(`/app/${senderId}`)}
-                                            className={`w-9 h-9 rounded-[1.1rem] bg-white/5 border border-white/10 shrink-0 transition-all cursor-pointer hover:border-primary/50 overflow-hidden shadow-lg ${showAvatar ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
-                                        >
-                                            <img
-                                                src={[...OTHER_USERS, MOCK_USER].find(u => u.id === senderId)?.avatar_url || `https://i.pravatar.cc/100?u=${senderId}`}
-                                                className="w-full h-full object-cover"
-                                                alt="avatar"
-                                            />
-                                        </div>
-                                    )}
-                                    <div className={`flex flex-col ${msg.is_me ? 'items-end' : 'items-start'} max-w-[75%]`}>
-                                        <div className={`
-                                            px-5 py-3.5 text-[13px] leading-relaxed shadow-2xl relative
-                                            ${msg.is_me
-                                                ? 'bg-gradient-to-br from-primary to-primary/80 text-black font-bold rounded-[1.8rem] rounded-br-[0.4rem]'
-                                                : 'bg-white/[0.03] backdrop-blur-md text-white font-medium border border-white/5 rounded-[1.8rem] rounded-bl-[0.4rem]'}
-                                        `}>
-                                            {msg.content}
-                                        </div>
-                                        <span className="text-[7px] font-black uppercase tracking-widest text-white/20 mt-2 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {msg.timestamp}
-                                        </span>
-                                    </div>
-                                </div>
-                            );
-                        })
+                        <div className="max-w-3xl mx-auto">
+                            {messages.map((msg, idx) => {
+                                const prev = messages[idx - 1];
+                                const next = messages[idx + 1];
+                                const senderId = msg.sender_id === 'me' ? 'me' : msg.sender_id;
+                                const avatar =
+                                    [...OTHER_USERS, MOCK_USER].find((u) => u.id === senderId)?.avatar_url ||
+                                    `https://i.pravatar.cc/100?u=${senderId}`;
+                                return (
+                                    <MessageBubble
+                                        key={msg.id}
+                                        message={msg}
+                                        prev={prev}
+                                        next={next}
+                                        senderAvatar={avatar}
+                                        showAvatar
+                                    />
+                                );
+                            })}
+                        </div>
                     )}
                 </HeartbeatTransition>
             </div>
 
-            {/* Input Bar */}
-            <div className="p-6 pb-10 md:pb-8 shrink-0 relative z-20">
-                <div className="max-w-4xl mx-auto flex items-center gap-3 bg-white/[0.03] backdrop-blur-3xl border border-white/10 p-2 rounded-[2.2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] focus-within:border-primary/30 transition-all duration-500">
-                    <button
-                        onClick={handleCamera}
-                        className="w-11 h-11 rounded-full flex items-center justify-center text-white/20 hover:text-white hover:bg-white/5 transition-all outline-none"
-                    >
-                        <Camera size={20} />
-                    </button>
-                    <input
-                        type="text"
+            {/* Composer */}
+            <div className="shrink-0 relative z-20 pb-safe">
+                <div className="max-w-4xl mx-auto">
+                    <ChatComposer
                         value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder={cooldown > 0 ? `Transmitting in ${cooldown}s...` : "What's up, chat?"}
-                        disabled={cooldown > 0}
-                        className={`
-                            flex-1 bg-transparent border-none outline-none text-[13px] font-bold px-2 transition-colors
-                            ${cooldown > 0 ? 'text-white/30 placeholder:text-white/30 italic' : 'text-white placeholder:text-white/10'}
-                        `}
+                        onChange={setNewMessage}
+                        onSend={handleSend}
+                        onCamera={handleCamera}
+                        cooldown={cooldown}
+                        placeholder="What's up, chat?"
                     />
-                    {cooldown > 0 && (
-                        <div className="absolute right-16 top-1/2 -translate-y-1/2 w-5 h-5">
-                            <svg className="animate-spin w-full h-full text-white/20" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                            </svg>
-                        </div>
-                    )}
-                    <button
-                        onClick={handleSend}
-                        disabled={!newMessage.trim() || cooldown > 0}
-                        className={`
-                            w-11 h-11 rounded-full flex items-center justify-center transition-all duration-500
-                            ${newMessage.trim() && cooldown === 0 ? 'bg-primary text-black scale-100 rotate-0 shadow-[0_0_20px_rgba(45,212,191,0.4)]' : 'bg-white/5 text-white/10 scale-90 rotate-12'}
-                        `}
-                    >
-                        <Send size={18} className={newMessage.trim() ? 'translate-x-0.5' : ''} />
-                    </button>
                 </div>
             </div>
             {/* Minimalist Floating Toast */}

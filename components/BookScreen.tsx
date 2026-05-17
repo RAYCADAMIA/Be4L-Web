@@ -238,7 +238,7 @@ const BookScreen: React.FC<{
                                         <div key={item.id} className="w-[300px] shrink-0 snap-center">
                                             <DibsItemCard
                                                 item={item}
-                                                operator={brands.find(b => b.user_id === item.operator_id)}
+                                                operator={brands.find(b => b.user_id === item.operator_id) as any}
                                                 onClick={() => setSelectedItem(item)}
                                             />
                                         </div>

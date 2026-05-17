@@ -158,7 +158,7 @@ const ProfileOverlay: React.FC<ProfileOverlayProps> = ({ userId, onClose }) => {
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-black text-gray-600 uppercase">Aura Points</p>
-                                            <p className="text-lg font-black">{user.aura || 0}</p>
+                                            <p className="text-lg font-black">{typeof user.aura === 'object' ? (user.aura?.score || 0) : (user.aura || 0)}</p>
                                         </div>
                                     </div>
                                     <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center gap-4">
